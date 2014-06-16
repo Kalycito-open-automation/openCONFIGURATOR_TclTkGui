@@ -595,12 +595,16 @@ proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
     global infoWindow
     global warWindow
     global errWindow
-
+    global image_dir
+    
     variable _consoleCounter
     incr _consoleCounter
 
     set nbname Console$_consoleCounter
     set frmPath [$nbpath insert end $nbname -text $tabname]
+
+    image create photo img_error_small -file "$image_dir/error_small.gif"
+    image create photo img_warning_small -file "$image_dir/warning_small.gif"
 
     set scrollWin [ScrolledWindow::create $frmPath.scrollWin -auto both]
     if {$choice == 1} {
@@ -612,12 +616,12 @@ proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
         set errWindow [Console::InitErrorWindow $scrollWin]
         set window $errWindow
         lappend errWindow $nbpath $nbname
-        $nbpath itemconfigure $nbname -image [Bitmap::get error_small]
+        $nbpath itemconfigure $nbname -image img_error_small
     } elseif {$choice == 3} {
         set warWindow [Console::InitWarnWindow $scrollWin]
         set window $warWindow
         lappend warWindow $nbpath $nbname
-        $nbpath itemconfigure $nbname -image [Bitmap::get warning_small]
+        $nbpath itemconfigure $nbname -image img_warning_small
     } else {
         #invalid selection
         return
@@ -646,7 +650,8 @@ proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
 proc NoteBookManager::create_treeBrowserWindow {nbpath } {
     global treeFrame
     global treePath
-
+    global image_dir
+    
     set nbname objectTree
     set frmPath [$nbpath insert end $nbname -text "Network Browser"]
 
@@ -662,12 +667,15 @@ proc NoteBookManager::create_treeBrowserWindow {nbpath } {
     $scrollWin setwidget $treeBrowser
     set treePath $treeBrowser
 
+    image create photo img_right -file "$image_dir/right.gif"
+    image create photo img_left -file "$image_dir/left.gif"
+
     pack $scrollWin -side top -fill both -expand yes -pady 1
     set treeFrame [frame $frmPath.f1]
     pack $treeFrame -side bottom -pady 5
     entry $treeFrame.en_find -textvariable FindSpace::txtFindDym -width 10 -background white -validate key -vcmd "FindSpace::Find %P"
-    button $treeFrame.bt_next -text " Next " -command "FindSpace::Next" -image [Bitmap::get right] -relief flat
-    button $treeFrame.bt_prev -text " Prev " -command "FindSpace::Prev" -image [Bitmap::get left] -relief flat
+    button $treeFrame.bt_next -text " Next " -command "FindSpace::Next" -image img_right -relief flat
+    button $treeFrame.bt_prev -text " Prev " -command "FindSpace::Prev" -image img_left -relief flat
     grid config $treeFrame.en_find -row 0 -column 0 -sticky ew
     grid config $treeFrame.bt_prev -row 0 -column 1 -sticky s -padx 5
     grid config $treeFrame.bt_next -row 0 -column 2 -sticky s
@@ -1617,7 +1625,7 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     global status_save
     global CNDatalist
     global cnPropSaveBtn
-
+    global image_dir
 
     #save node name and node number
     set newNodeId [$frame0.sp_nodeNo get]
@@ -1760,8 +1768,10 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     set ObdTreeNode OBD$tmpNode-1
     catch {$treePath delete $ObdTreeNode}
     #insert the OBD ico only for expert view mode
+    
+    image create photo img_pdo -file "$image_dir/pdo.gif"
     if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-        $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image [Bitmap::get pdo]
+        $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
     }
     set mnNodeType 0
     set mnNodeId 240

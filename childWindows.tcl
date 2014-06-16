@@ -1086,6 +1086,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempRa_
     global nodeIdList
     global status_save
     global viewChgFlg
+    global image_dir
 
     #CloseProject is called to delete node and insert tree
     Operations::CloseProject
@@ -1110,8 +1111,9 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempRa_
 
     #New project is created need to save
     set status_save 1
-
-    $treePath insert end ProjectNode MN-$mnCount -text "openPOWERLINK_MN(240)" -open 1 -image [Bitmap::get mn]
+    
+    image create photo img_mn -file "$image_dir/mn.gif"
+    $treePath insert end ProjectNode MN-$mnCount -text "openPOWERLINK_MN(240)" -open 1 -image img_mn
     lappend nodeIdList 240 
 
     if {$conf == "off" || $conf == "on" } {
@@ -1129,7 +1131,6 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempRa_
 		    return
 	    }
         #All the nw project has view type SIMPLE do not insert OBD icon
-        #$treePath insert end MN-$mnCount OBD-$mnCount-1 -text "OBD" -open 0 -image [Bitmap::get pdo]
 
 	    set result [WrapperInteractions::Import OBD-$mnCount-1 0 240]
 	    thread::send  [tsv::set application importProgress] "StopProgress"
@@ -1261,6 +1262,7 @@ proc ChildWindows::AddIndexWindow {} {
     global indexVar
     global frame2
     global status_save
+    global image_dir
 
     set winAddIdx .addIdx
     catch "destroy $winAddIdx"
@@ -1393,8 +1395,11 @@ proc ChildWindows::AddIndexWindow {} {
 		    set indexNode IndexValue-$nodePosition-$count
 		    set subIndexNode SubIndexValue-$nodePosition-$count
 	    }
-
-	    $treePath insert $indexPosition $parentNode $indexNode -text [lindex $indexName 1]\(0x$indexVar\) -open 0 -image [Bitmap::get index]
+	    
+	    image create photo img_index -file "$image_dir/index.gif"
+	    image create photo img_subindex -file "$image_dir/subindex.gif"
+	    
+	    $treePath insert $indexPosition $parentNode $indexNode -text [lindex $indexName 1]\(0x$indexVar\) -open 0 -image img_index
 	    set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeId $nodePos sub $indexPos $indexVar]
 	    set sidxCount [llength $sidxCorrList]
 	    for {set tempSidxCount 0} { $tempSidxCount < $sidxCount } {incr tempSidxCount} {
@@ -1402,7 +1407,7 @@ proc ChildWindows::AddIndexWindow {} {
 		    set subIndexName [GetSubIndexAttributesbyPositions $nodePos $indexPos $sortedSubIndexPos  0 ]
 		    set subIndexId [GetSubIndexIDbyPositions $nodePos $indexPos $sortedSubIndexPos ]
 		    set subIndexId [lindex $subIndexId 1]
-		    $treePath insert $tempSidxCount $indexNode $subIndexNode-$tempSidxCount -text [lindex $subIndexName 1]\(0x$subIndexId\) -open 0 -image [Bitmap::get subindex]
+		    $treePath insert $tempSidxCount $indexNode $subIndexNode-$tempSidxCount -text [lindex $subIndexName 1]\(0x$subIndexId\) -open 0 -image img_subindex
 		    $treePath itemconfigure $subIndexNode-$tempSidxCount -open 0
 	    }
 	    catch { $frame2.bt_cancel invoke }
@@ -1452,6 +1457,7 @@ proc ChildWindows::AddSubIndexWindow {} {
     global subIndexVar
     global frame2
     global status_save
+    global image_dir
 
     set winAddSidx .addSidx
     catch "destroy $winAddSidx"
@@ -1539,13 +1545,14 @@ proc ChildWindows::AddSubIndexWindow {} {
 
 	    set subIndexName []
 	    set subIndexName [GetSubIndexAttributes $nodeId $nodeType $indexVar $subIndexVar 0]
-
+	    
+	    image create photo img_subindex -file "$image_dir/subindex.gif"
 	    if {[string match "TPdo*" $node]} {
-		    $treePath insert $subIndexPos $node TPdoSubIndexValue-$nodePos-$count -text [lindex $subIndexName 1]\(0x$subIndexVar\) -open 0 -image [Bitmap::get subindex]
+		    $treePath insert $subIndexPos $node TPdoSubIndexValue-$nodePos-$count -text [lindex $subIndexName 1]\(0x$subIndexVar\) -open 0 -image img_subindex
 	    } elseif {[string match "RPdo*" $node]} {
-		    $treePath insert $subIndexPos $node RPdoSubIndexValue-$nodePos-$count -text [lindex $subIndexName 1]\(0x$subIndexVar\) -open 0 -image [Bitmap::get subindex]
+		    $treePath insert $subIndexPos $node RPdoSubIndexValue-$nodePos-$count -text [lindex $subIndexName 1]\(0x$subIndexVar\) -open 0 -image img_subindex
 	    } else {
-		    $treePath insert $subIndexPos $node SubIndexValue-$nodePos-$count -text [lindex $subIndexName 1]\(0x$subIndexVar\) -open 0 -image [Bitmap::get subindex]
+		    $treePath insert $subIndexPos $node SubIndexValue-$nodePos-$count -text [lindex $subIndexName 1]\(0x$subIndexVar\) -open 0 -image img_subindex
 	    }
 	    catch { $frame2.bt_cancel invoke }
 	    return
@@ -1595,6 +1602,7 @@ proc ChildWindows::AddPDOWindow {} {
     global pdoVar
     global frame2
     global status_save
+    global image_dir
 
     set winAddPdo .addPdo
     catch "destroy $winAddPdo"
@@ -1747,7 +1755,10 @@ proc ChildWindows::AddPDOWindow {} {
 		    #should not occur
 		    return
 	    }
-	    $treePath insert $indexPosition $parentNode $indexNode -text [lindex $indexName 1]\(0x$pdoVar\) -open 0 -image [Bitmap::get index]
+	    
+	    image create photo img_index -file "$image_dir/index.gif"
+	    image create photo img_subindex -file "$image_dir/subindex.gif"
+	    $treePath insert $indexPosition $parentNode $indexNode -text [lindex $indexName 1]\(0x$pdoVar\) -open 0 -image img_index
 
 	    set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeId $nodePos sub $indexPos $pdoVar]
 	    set sidxCount [llength $sidxCorrList]
@@ -1756,7 +1767,7 @@ proc ChildWindows::AddPDOWindow {} {
 		    set subIndexName [GetSubIndexAttributesbyPositions $nodePos $indexPos $sortedSubIndexPos  0 ]
 		    set subIndexId [GetSubIndexIDbyPositions $nodePos $indexPos $sortedSubIndexPos ]
 		    set subIndexId [lindex $subIndexId 1]
-		    $treePath insert $tempSidxCount $indexNode $subIndexNode-$tempSidxCount -text [lindex $subIndexName 1]\(0x$subIndexId\) -open 0 -image [Bitmap::get subindex]
+		    $treePath insert $tempSidxCount $indexNode $subIndexNode-$tempSidxCount -text [lindex $subIndexName 1]\(0x$subIndexId\) -open 0 -image img_subindex
 		    $treePath itemconfigure $subIndexNode-$tempSidxCount -open 0
 	    }
 	    catch { $frame2.bt_cancel invoke }
