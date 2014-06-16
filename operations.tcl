@@ -189,6 +189,7 @@ source [file join $dir option.tcl]
 global projectDir
 global projectName
 global build_nodesList
+global image_dir
 
 set build_nodesList 0
 set cnCount 0
@@ -830,6 +831,7 @@ proc Operations::RePopulate { projectDir projectName } {
     global nodeIdList
     global mnCount
     global cnCount
+    global image_dir
 
     #reset the nodeIdList
     set nodeIdList ""
@@ -838,7 +840,13 @@ proc Operations::RePopulate { projectDir projectName } {
     set cnCount 1
 
     catch {$treePath delete ProjectNode}
-    $treePath insert end root ProjectNode -text $projectName -open 1 -image [Bitmap::get network]
+    
+    image create photo img_network -file "$image_dir/network.gif"
+    image create photo img_mn -file "$image_dir/mn.gif"
+    image create photo img_pdo -file "$image_dir/pdo.gif"
+    image create photo img_cn -file "$image_dir/cn.gif"
+    
+    $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
     #API GetNodeCount
     set count [new_intp]
     set catchErrCode [GetNodeCount 240 $count]
@@ -857,17 +865,17 @@ proc Operations::RePopulate { projectDir projectName } {
 			    set nodeName [lindex $catchErrCode 1]
 			    if {$nodeId == 240} {
 				    set nodeType 0
-				    $treePath insert end ProjectNode MN-$mnCount -text "$nodeName\(240\)" -open 1 -image [Bitmap::get mn]
+				    $treePath insert end ProjectNode MN-$mnCount -text "$nodeName\(240\)" -open 1 -image img_mn
 				    set treeNode OBD-$mnCount-1
 				#insert the OBD icon only if the view is in EXPERT mode
 				    if {[string match "EXPERT" $Operations::viewType ] == 1} {
-					    $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image [Bitmap::get pdo]
+					    $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
 				    }
 
 			    } else {
 				    set nodeType 1
 				    set treeNode CN-$mnCount-$cnCount
-				    set child [$treePath insert end MN-$mnCount $treeNode -text "$nodeName\($nodeId\)" -open 0 -image [Bitmap::get cn]]
+				    set child [$treePath insert end MN-$mnCount $treeNode -text "$nodeName\($nodeId\)" -open 0 -image img_cn]
 			    }
 			    if { [ catch { set result [WrapperInteractions::Import $treeNode $nodeType $nodeId] } ] } {
                     # error has occured
@@ -920,7 +928,8 @@ proc Operations::BasicFrames { } {
     global f5
     global LastTableFocus
     global lastVideoModeSel
-
+    global image_dir
+    
     variable bb_connect
     variable mainframe
     variable notebook
@@ -942,6 +951,8 @@ proc Operations::BasicFrames { } {
     variable idxMenu
     variable sidxMenu
 
+    set image_dir "$rootDir/images"
+ 
     set progressmsg "Please wait while loading ..."
     set prgressindicator -1
     set ImageKalycito Splash
@@ -1088,28 +1099,41 @@ proc Operations::BasicFrames { } {
 	    # toolbar  creation
     set toolbar  [MainFrame::addtoolbar $mainframe]
     pack $toolbar -expand yes -fill x
+
+    
+    image create photo img_page_white -file "$image_dir/page_white.gif"
+    image create photo img_disk -file "$image_dir/disk.gif"
+    image create photo img_disk_multiple -file "$image_dir/disk_multiple.gif"
+    image create photo img_openfolder -file "$image_dir/openfolder.gif"
+    image create photo img_find -file "$image_dir/find.gif"
+    image create photo img_build -file "$image_dir/build.gif"
+    image create photo img_clean -file "$image_dir/clean.gif"
+    image create photo img_transfer -file "$image_dir/transfer.gif"
+    image create photo img_kalycito_icon -file "$image_dir/kalycito_icon.gif"
+    #image create photo clean -file "$image_dir/clean.gif"
+    
     set bbox [ButtonBox::create $toolbar.bbox1 -spacing 0 -padx 1 -pady 1]
-    set Buttons(new) [ButtonBox::add $bbox -image [Bitmap::get page_white] \
+    set Buttons(new) [ButtonBox::add $bbox -image img_page_white \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Create new project" -command { Operations::InitiateNewProject }]
-    set Buttons(save) [ButtonBox::add $bbox -image [Bitmap::get disk] \
+    set Buttons(save) [ButtonBox::add $bbox -image img_disk \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Save Project" -command Operations::Saveproject]
-    set Buttons(saveAll) [ButtonBox::add $bbox -image [Bitmap::get disk_multiple] \
+    set Buttons(saveAll) [ButtonBox::add $bbox -image img_disk_multiple \
             	-highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             	-helptext "Save Project as" -command ChildWindows::SaveProjectAsWindow]
-	    set toolbarButtons(Operations::OpenProjectWindow) [ButtonBox::add $bbox -image [Bitmap::get openfolder] \
+	    set toolbarButtons(Operations::OpenProjectWindow) [ButtonBox::add $bbox -image img_openfolder \
             	-highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             	-helptext "Open Project" -command Operations::OpenProjectWindow]
 
-	    pack $bbox -side left -anchor w
+    pack $bbox -side left -anchor w
     set prgressindicator 8
     set sep0 [Separator::create $toolbar.sep0 -orient vertical]
     pack $sep0 -side left -fill y -padx 4 -anchor w
 
     set bbox [ButtonBox::create $toolbar.bbox2 -spacing 1 -padx 1 -pady 1]
     pack $bbox -side left -anchor w
-    set bb_find [ButtonBox::add $bbox -image [Bitmap::get find]\
+    set bb_find [ButtonBox::add $bbox -image img_find \
             -height 21\
             -width 21\
             -helptype balloon\
@@ -1122,7 +1146,7 @@ proc Operations::BasicFrames { } {
 
     set bbox [ButtonBox::create $toolbar.bbox5 -spacing 1 -padx 1 -pady 1]
     pack $bbox -side left -anchor w
-    set bb_build [ButtonBox::add $bbox -image [Bitmap::get build]\
+    set bb_build [ButtonBox::add $bbox -image img_build \
             -height 21\
             -width 21\
             -helptype balloon\
@@ -1130,7 +1154,7 @@ proc Operations::BasicFrames { } {
             -helptext "Build Project"\
 	    -command "Operations::BuildProject"]
     pack $bb_build -side left -padx 4
-    set bb_clean [ButtonBox::add $bbox -image [Bitmap::get clean]\
+    set bb_clean [ButtonBox::add $bbox -image img_clean \
         	-height 21\
 		    -width 21\
             -helptype balloon\
@@ -1138,13 +1162,12 @@ proc Operations::BasicFrames { } {
             -helptext "clean Project"\
 		    -command "Operations::CleanProject"]
     pack $bb_clean -side left -padx 4
-
     set sep2 [Separator::create $toolbar.sep2 -orient vertical]
     pack $sep2 -side left -fill y -padx 4 -anchor w
 
     set bbox [ButtonBox::create $toolbar.bbox4 -spacing 1 -padx 1 -pady 1]
     pack $bbox -side left -anchor w
-    set bb_build [ButtonBox::add $bbox -image [Bitmap::get transfer]\
+    set bb_build [ButtonBox::add $bbox -image img_transfer \
             -height 21\
             -width 21\
             -helptype balloon\
@@ -1158,7 +1181,7 @@ proc Operations::BasicFrames { } {
 
     set bbox [ButtonBox::create $toolbar.bbox7 -spacing 1 -padx 1 -pady 1]
     pack $bbox -side right
-    set bb_kaly [ButtonBox::add $bbox -image [Bitmap::get kalycito_icon]\
+    set bb_kaly [ButtonBox::add $bbox -image img_kalycito_icon \
             -height 21\
             -width 40\
             -helptype balloon\
@@ -3351,6 +3374,7 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
     global mnCount
     global nodeIdList
     global status_save
+    global image_dir
 
 	#Check XDC for schema compliance if existing
 	if {$tmpImpDir != ""} {
@@ -3391,7 +3415,10 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
 
     lappend nodeIdList $nodeId
     #creating the GUI for CN
-    set child [$treePath insert end $node $treeNodeCN -text "$cnName\($nodeId\)" -open 0 -image [Bitmap::get cn]]
+    image create photo img_cn -file "$image_dir/cn.gif"
+    image create photo img_pdo -file "$image_dir/pdo.gif"
+
+    set child [$treePath insert end $node $treeNodeCN -text "$cnName\($nodeId\)" -open 0 -image img_cn]
 
     if {$tmpImpDir != ""} {
 	    #API for Importxml
@@ -3417,7 +3444,7 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
 	    catch {$treePath delete $ObdTreeNode}
 	    #insert the OBD ico only for expert view mode
 	    if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-		$treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image [Bitmap::get pdo]
+		$treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
 	    }
 	    set mnNodeType 0
 	    set mnNodeId 240
@@ -3452,7 +3479,10 @@ proc Operations::InsertTree { } {
     global mnCount
     incr cnCount
     incr mnCount
-    $treePath insert end root ProjectNode -text "POWERLINK Network" -open 1 -image [Bitmap::get network]
+    global image_dir
+    
+    image create photo img_network -file "$image_dir/network.gif"
+    $treePath insert end root ProjectNode -text "POWERLINK Network" -open 1 -image img_network
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -4343,7 +4373,7 @@ proc Operations::BuildProject {} {
             tk_messageBox -message "$msg" -icon warning -title "Warning" -parent .
             return
         } elseif {$errCycleTimeFlag == 1} {
-            set result [tk_messageBox -message "$msg\nDo you want to copy the default value 50000 Âµs" -type yesno -icon info -title "Information" -parent .]
+            set result [tk_messageBox -message "$msg\nDo you want to copy the default value 50000 µs" -type yesno -icon info -title "Information" -parent .]
             switch -- $result {
 			    yes {
 				#API for SetBasicIndexAttributes
@@ -4594,6 +4624,7 @@ proc Operations::ReImport {} {
     global f2
     global f3
     global f4
+    global image_dir
 
     set node [$treePath selection get]
     if {[string match "MN*" $node]} {
@@ -4678,7 +4709,8 @@ proc Operations::ReImport {} {
             #only in expert mode when there is no OBD icon then insert the it
 		    if { ($res == -1) && ([string match "EXPERT" $Operations::viewType ] == 1) } {
 			    #there can be one OBD in MN so -1 is hardcoded
-			    $treePath insert 0 MN$tmpNode OBD$tmpNode-1 -text "OBD" -open 0 -image [Bitmap::get pdo]
+			    image create photo img_pdo -file "$image_dir/pdo.gif"
+			    $treePath insert 0 MN$tmpNode OBD$tmpNode-1 -text "OBD" -open 0 -image img_pdo
 		    }
 	    }
 	    Operations::RemoveAllFrames
@@ -4711,6 +4743,7 @@ proc Operations::DeleteTreeNode {} {
     global userPrefList
     global status_save
     global build_nodesList
+    global image_dir
 
     set node [$treePath selection get]
 
@@ -4831,7 +4864,8 @@ proc Operations::DeleteTreeNode {} {
 		    catch {$treePath delete $ObdTreeNode}
 		    #insert the OBD ico only for expert view mode
 		    if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-			$treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image [Bitmap::get pdo]
+			image create photo img_pdo -file "$image_dir/pdo.gif"
+			$treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
 		    }
 		    set mnNodeType 0
 		    set mnNodeId 240
@@ -5328,6 +5362,8 @@ proc Operations::AutoGenerateMNOBD {} {
 	global f0
 	global f1
 	global f2
+	global image_dir
+
 	set node [$treePath selection get]
 	if {[string match "MN*" $node]} {
 		set child [$treePath nodes $node]
@@ -5363,7 +5399,8 @@ proc Operations::AutoGenerateMNOBD {} {
 		catch {
 			if { ($res == -1) && ( [string match "EXPERT" $Operations::viewType ] == 1 ) } {
 				#there can be one OBD in MN so -1 is hardcoded insert the OBD icon only for expert view
-				$treePath insert 0 MN$tmpNode OBD$tmpNode-1 -text "OBD" -open 0 -image [Bitmap::get pdo]
+				image create photo img_pdo -file "$image_dir/pdo.gif"
+				$treePath insert 0 MN$tmpNode OBD$tmpNode-1 -text "OBD" -open 0 -image img_pdo
 			}
 		}
 		catch {$treePath delete [$treePath nodes OBD$tmpNode-1]}

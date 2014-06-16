@@ -198,8 +198,9 @@ proc WrapperInteractions::SortNode {nodeType nodeID nodePos choice {indexPos ""}
 proc WrapperInteractions::Import {parentNode nodeType nodeID } {
     global treePath
     global cnCount
-
+    global image_dir
     global LocvarProgbar
+
     set LocvarProgbar 0
     set errorString []
 
@@ -231,9 +232,14 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
     set parentId [lrange $parentId 1 end]
     set parentId [join $parentId -]
     
-    $treePath insert end $parentNode PDO-$parentId -text "PDO" -open 0 -image [Bitmap::get pdo]
-    $treePath insert end PDO-$parentId TPDO-$parentId -text "TPDO" -open 0 -image [Bitmap::get pdo]
-    $treePath insert end PDO-$parentId RPDO-$parentId -text "RPDO" -open 0 -image [Bitmap::get pdo]
+    image create photo img_pdo -file "$image_dir/pdo.gif"
+    image create photo img_index -file "$image_dir/index.gif"
+    image create photo img_subindex -file "$image_dir/subindex.gif"
+    
+    
+    $treePath insert end $parentNode PDO-$parentId -text "PDO" -open 0 -image img_pdo
+    $treePath insert end PDO-$parentId TPDO-$parentId -text "TPDO" -open 0 -image img_pdo
+    $treePath insert end PDO-$parentId RPDO-$parentId -text "RPDO" -open 0 -image img_pdo
 
     #ocfmRetCode GetIndexCount(int NodeID, ENodeType NodeType, int* Out_IndexCount);
     set count [new_intp]
@@ -272,7 +278,7 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 	        return fail
         }
 
-        $treePath insert $inc $parentNode IndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image [Bitmap::get index]
+        $treePath insert $inc $parentNode IndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
         set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $sortedIndexPos $IndexValue]
 
         set SIdxCount [new_intp]
@@ -302,7 +308,7 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 		        Operations::CloseProject
 		        return fail
 	        }
-	        $treePath insert end IndexValue-$parentId-$inc SubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image [Bitmap::get subindex]
+	        $treePath insert end IndexValue-$parentId-$inc SubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
         }
         update idletasks
     }
@@ -334,7 +340,8 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 	        Operations::CloseProject
 	        return fail
         }
-        $treePath insert $inc TPDO-$parentId TPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image [Bitmap::get index]
+	
+        $treePath insert $inc TPDO-$parentId TPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
         set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $sortedIndexPos $IndexValue]
         set SIdxCount [new_intp]
         set catchErrCode [GetSubIndexCount $nodeID $nodeType $IndexValue $SIdxCount]
@@ -363,7 +370,7 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 		        Operations::CloseProject
 		        return fail
 	        }
-	        $treePath insert end TPdoIndexValue-$parentId-$inc TPdoSubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image [Bitmap::get subindex]
+	        $treePath insert end TPdoIndexValue-$parentId-$inc TPdoSubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
         }
         update idletasks
     }
@@ -395,7 +402,7 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 	        Operations::CloseProject
 	        return fail
         }
-        $treePath insert $inc RPDO-$parentId RPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image [Bitmap::get index]
+        $treePath insert $inc RPDO-$parentId RPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
         set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $sortedIndexPos $IndexValue]
         set SIdxCount [new_intp]
         set catchErrCode [GetSubIndexCount $nodeID $nodeType $IndexValue $SIdxCount]
@@ -424,7 +431,7 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 		        return fail
 	        }
 	        set SIdxName [lindex $catchErr 1]
-	        $treePath insert end RPdoIndexValue-$parentId-$inc RPdoSubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image [Bitmap::get subindex]
+	        $treePath insert end RPdoIndexValue-$parentId-$inc RPdoSubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
         }
         update idletasks
     }
@@ -443,6 +450,8 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 proc WrapperInteractions::RebuildNode {{Node ""}} {
 	global treePath
 	global nodeSelect
+	global image_dir
+	
 	if {$Node == ""} {
 		set Node $nodeSelect
 	}
@@ -530,7 +539,8 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
 			}
 			return fail
 		}
-		$treePath insert end $Node SubIndexValue-$nodePosition-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image [Bitmap::get subindex]
+		image create photo img_subindex -file "$image_dir/subindex.gif"
+		$treePath insert end $Node SubIndexValue-$nodePosition-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
 	}
 	update idletasks
 }
