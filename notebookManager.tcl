@@ -139,14 +139,14 @@ proc NoteBookManager::create_tab { nbpath choice } {
     label $tabInnerf1.la_pdo   -text "PDO Mapping"
 
     entry $tabInnerf0.en_idx1 -state disabled -width 20
-    entry $tabInnerf0.en_nam1 -width 20 -textvariable tmpNam$_pageCounter -relief ridge -justify center -bg white -width 30 -validate key -vcmd "Validation::IsValidStr %P"
+    entry $tabInnerf0.en_nam1 -state disabled -width 20 -textvariable tmpNam$_pageCounter -relief ridge -justify center -bg white -width 30 -validate key -vcmd "Validation::IsValidStr %P"
     entry $tabInnerf1.en_obj1 -state disabled -width 20
     entry $tabInnerf1.en_data1 -state disabled -width 20
     entry $tabInnerf1.en_access1 -state disabled -width 20
     entry $tabInnerf1.en_upper1 -state disabled -width 20
-    bind $tabInnerf1.en_upper1 <FocusOut> "NoteBookManager::LimitFocusChanged $tabInnerf1 $tabInnerf1.en_upper1"
+    #bind $tabInnerf1.en_upper1 <FocusOut> "NoteBookManager::LimitFocusChanged $tabInnerf1 $tabInnerf1.en_upper1"
     entry $tabInnerf1.en_lower1 -state disabled -width 20
-    bind $tabInnerf1.en_lower1 <FocusOut> "NoteBookManager::LimitFocusChanged $tabInnerf1 $tabInnerf1.en_lower1"
+    #bind $tabInnerf1.en_lower1 <FocusOut> "NoteBookManager::LimitFocusChanged $tabInnerf1 $tabInnerf1.en_lower1"
     entry $tabInnerf1.en_pdo1 -state disabled -width 20
     entry $tabInnerf1.en_default1 -state disabled -width 20
     entry $tabInnerf1.en_value1 -width 20 -textvariable tmpValue$_pageCounter  -relief ridge -bg white
@@ -853,207 +853,6 @@ proc NoteBookManager::InsertHex {entryPath dataType} {
     }
 }
 
-##---------------------------------------------------------------------------------------------------
-##  NoteBookManager::ConvertMNDec
-##
-##  Arguments : framePath0 - path of the frame containing value and default entry widget
-##
-##  Results : -
-##
-##  Description : converts value into decimal and changes validation for entry
-##---------------------------------------------------------------------------------------------------
-#proc NoteBookManager::ConvertMNDec {framePath0 framePath1} {
-#    global lastConv
-#    global userPrefList
-#    global nodeSelect
-#    global MNDatalist
-#
-#    if { $lastConv != "dec"} {
-#        set lastConv dec
-#        set schRes [lsearch $userPrefList [list $nodeSelect *]]
-#        if {$schRes  == -1} {
-#            lappend userPrefList [list $nodeSelect dec]
-#        } else {
-#            set userPrefList [lreplace $userPrefList $schRes $schRes [list $nodeSelect dec] ]
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list cycleTimeDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath0.en_time cget -state]
-#            $framePath0.en_time configure -validate none -state normal
-#            NoteBookManager::InsertDecimal $framePath0.en_time $dataType
-#            $framePath0.en_time configure -validate key -vcmd "Validation::IsDec %P $framePath0.en_time %d %i $dataType" -state $state
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list asynMTUSizeDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath1.en_advOption1 cget -state]
-#            $framePath1.en_advOption1 configure -validate none -state normal
-#            NoteBookManager::InsertDecimal $framePath1.en_advOption1 $dataType
-#            $framePath1.en_advOption1 configure -validate key -vcmd "Validation::IsDec %P $framePath1.en_advOption1 %d %i $dataType" -state $state
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list asynTimeoutDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath1.en_advOption2 cget -state]
-#            $framePath1.en_advOption2 configure -validate none -state normal
-#            NoteBookManager::InsertDecimal $framePath1.en_advOption2 $dataType
-#            $framePath1.en_advOption2 configure -validate key -vcmd "Validation::IsDec %P $framePath1.en_advOption2 %d %i $dataType" -state $state
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list multiPrescalerDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath1.en_advOption3 cget -state]
-#            $framePath1.en_advOption3 configure -validate none -state normal
-#            NoteBookManager::InsertDecimal $framePath1.en_advOption3 $dataType
-#            $framePath1.en_advOption3 configure -validate key -vcmd "Validation::IsDec %P $framePath1.en_advOption3 %d %i $dataType" -state $state
-#        }
-#    } else {
-#        #already dec is selected
-#    }
-#}
-#
-##---------------------------------------------------------------------------------------------------
-##  NoteBookManager::ConvertMNHex
-##
-##  Arguments : framePath - path containing the value and default entry widget
-##
-##  Results : -
-##
-##  Description : converts the value to hexadecimal and changes validation for entry
-##---------------------------------------------------------------------------------------------------
-#proc NoteBookManager::ConvertMNHex {framePath0 framePath1} {
-#    global lastConv
-#    global userPrefList
-#    global nodeSelect
-#    global MNDatalist
-#
-#    if { $lastConv != "hex"} {
-#        set lastConv hex
-#        set schRes [lsearch $userPrefList [list $nodeSelect *]]
-#        if {$schRes  == -1} {
-#            lappend userPrefList [list $nodeSelect hex]
-#        } else {
-#           set userPrefList [lreplace $userPrefList $schRes $schRes [list $nodeSelect hex] ]
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list cycleTimeDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath0.en_time cget -state]
-#            $framePath0.en_time configure -validate none -state normal
-#            NoteBookManager::InsertHex $framePath0.en_time $dataType
-#            $framePath0.en_time configure -validate key -vcmd "Validation::IsHex %P %s $framePath0.en_time %d %i $dataType" -state $state
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list asynMTUSizeDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath1.en_advOption1 cget -state]
-#            $framePath1.en_advOption1 configure -validate none -state normal
-#            NoteBookManager::InsertHex $framePath1.en_advOption1 $dataType
-#            $framePath1.en_advOption1 configure -validate key -vcmd "Validation::IsHex %P %s $framePath1.en_advOption1 %d %i $dataType" -state $state
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list asynTimeoutDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath1.en_advOption2 cget -state]
-#            $framePath1.en_advOption2 configure -validate none -state normal
-#            NoteBookManager::InsertHex $framePath1.en_advOption2 $dataType
-#            $framePath1.en_advOption2 configure -validate key -vcmd "Validation::IsHex %P %s $framePath1.en_advOption2 %d %i $dataType" -state $state
-#        }
-#
-#        set schDataRes [lsearch $MNDatalist [list multiPrescalerDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $MNDatalist $schDataRes] 1]
-#            set state [$framePath1.en_advOption3 cget -state]
-#            $framePath1.en_advOption3 configure -validate none -state normal
-#            NoteBookManager::InsertHex $framePath1.en_advOption3 $dataType
-#            $framePath1.en_advOption3 configure -validate key -vcmd "Validation::IsHex %P %s $framePath1.en_advOption3 %d %i $dataType" -state $state
-#        }
-#    } else {
-#        #already hex is selected
-#    }
-#}
-#
-##---------------------------------------------------------------------------------------------------
-##  NoteBookManager::ConvertCNDec
-##
-##  Arguments : framePath0 - path of the frame containing value and default entry widget
-##
-##  Results : -
-##
-##  Description : converts value into decimal and changes validation for entry
-##---------------------------------------------------------------------------------------------------
-#proc NoteBookManager::ConvertCNDec {framePath0 framePath1} {
-#    global lastConv
-#    global userPrefList
-#    global nodeSelect
-#    global CNDatalist
-#
-#    if { $lastConv != "dec"} {
-#        set lastConv dec
-#        set schRes [lsearch $userPrefList [list $nodeSelect *]]
-#        if {$schRes  == -1} {
-#            lappend userPrefList [list $nodeSelect dec]
-#        } else {
-#            set userPrefList [lreplace $userPrefList $schRes $schRes [list $nodeSelect dec] ]
-#        }
-#
-#        set schDataRes [lsearch $CNDatalist [list presponseCycleTimeDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $CNDatalist $schDataRes] 1]
-#            set state [$framePath0.en_time cget -state]
-#            $framePath0.en_time configure -validate none -state normal
-#            NoteBookManager::InsertDecimal $framePath0.en_time $dataType
-#            $framePath0.en_time configure -validate key -vcmd "Validation::IsDec %P $framePath0.en_time %d %i $dataType" -state $state
-#        }
-#    } else {
-#        #already dec is selected
-#    }
-#}
-#
-##---------------------------------------------------------------------------------------------------
-##  NoteBookManager::ConvertCNHex
-##
-##  Arguments : framePath - path containing the value and default entry widget
-##
-##  Results : -
-##
-##  Description : converts the value to hexadecimal and changes validation for entry
-##---------------------------------------------------------------------------------------------------
-#proc NoteBookManager::ConvertCNHex {framePath0 framePath1} {
-#    global lastConv
-#    global userPrefList
-#    global nodeSelect
-#    global CNDatalist
-#
-#    if { $lastConv != "hex"} {
-#        set lastConv hex
-#        set schRes [lsearch $userPrefList [list $nodeSelect *]]
-#        if {$schRes  == -1} {
-#            lappend userPrefList [list $nodeSelect hex]
-#        } else {
-#           set userPrefList [lreplace $userPrefList $schRes $schRes [list $nodeSelect hex] ]
-#        }
-#
-#        set schDataRes [lsearch $CNDatalist [list presponseCycleTimeDatatype *]]
-#        if {$schDataRes  != -1 } {
-#            set dataType [lindex [lindex $CNDatalist $schDataRes] 1]
-#            set state [$framePath0.en_time cget -state]
-#            $framePath0.en_time configure -validate none -state normal
-#            NoteBookManager::InsertHex $framePath0.en_time $dataType
-#            $framePath0.en_time configure -validate key -vcmd "Validation::IsHex %P %s $framePath0.en_time %d %i $dataType" -state $state
-#        }
-#    } else {
-#        #already hex is selected
-#    }
-#}
 
 #---------------------------------------------------------------------------------------------------
 #  NoteBookManager::AppendZero
@@ -1225,16 +1024,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
         set accessType [NoteBookManager::GetEntryValue $frame1.en_access1]
         set dataType [NoteBookManager::GetEntryValue $frame1.en_data1]
     }
-    #if { [info exists lowerLimit] } {
-    #    if { $lowerLimit != "-" } {
-    #        set LOWER_LIMIT $lowerLimit
-    #    }
-    #}
-    #if { [info exists upperLimit] } {
-    #    if { $upperLimit != "-" } {
-    #        set UPPER_LIMIT $upperLimit
-    #    }
-    #}
+
     set tempValidateValue $value
 
     if { [string match -nocase "INTEGER*" $dataType] || [string match -nocase "UNSIGNED*" $dataType] || [string match -nocase "BOOLEAN" $dataType ] } {
@@ -1357,11 +1147,6 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
                     }
                 }
             }
-            #if { ($objectType == "ARRAY") || ($objectType == "VAR") } {
-            #    set catchErrCode [SetAllSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $newName $accessType $dataType $pdoType $default $upperLimit $lowerLimit $objectType [subst $[subst $chkGen]] ]
-            #} else {
-                set catchErrCode [SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $newName [subst $[subst $chkGen]] ]
-            #}
         }
     } elseif {[string match "*IndexValue*" $nodeSelect]} {
 
