@@ -495,20 +495,7 @@ proc Operations::tselectright {x y node} {
     } elseif { [string match "MN-*" $node] == 1 } {
 	    tk_popup $Operations::mnMenu $x $y
     } elseif { [string match "CN-*" $node] == 1 } {
-        if { $Operations::viewType == "SIMPLE"} {
             tk_popup $Operations::cnMenu $x $y
-        } else {
-            tk_popup $Operations::cnMenuIndex $x $y
-        }
-    } elseif { ([string match "OBD-*" $node] == 1) && ( $Operations::viewType == "EXPERT" )} {
-	    tk_popup $Operations::obdMenu $x $y
-    } elseif { [string match "PDO-*" $node] == 1 } {
-	    tk_popup $Operations::pdoMenu $x $y
-    } elseif {[string match "IndexValue-*" $node] == 1 || [string match "*PdoIndexValue-*" $node] == 1} {
-        Operations::PopupIndexMenu $node $x $y
-        return
-    } elseif {[string match "SubIndexValue-*" $node] == 1 || [string match "*PdoSubIndexValue-*" $node] == 1} {
-	    tk_popup $Operations::sidxMenu $x $y
     } else {
 	    return
     }
@@ -1042,12 +1029,6 @@ proc Operations::BasicFrames { } {
     $Operations::cnMenu add separator
     $Operations::cnMenu add command -label "Delete" -command {Operations::DeleteTreeNode}
 
-    # Menu for the Controlled Nodes with add index option
-    set Operations::cnMenuIndex [menu  .cnMenuIndex -tearoff 0]
-    $Operations::cnMenuIndex add command -label "Add Index..." -command "ChildWindows::AddIndexWindow"
-    $Operations::cnMenuIndex add command -label "Replace with XDC/XDD..." -command {Operations::ReImport}
-    $Operations::cnMenuIndex add separator
-    $Operations::cnMenuIndex add command -label "Delete" -command {Operations::DeleteTreeNode}
 
     # Menu for the Managing Nodes
     set Operations::mnMenu [menu  .mnMenu -tearoff 0]
@@ -1055,42 +1036,11 @@ proc Operations::BasicFrames { } {
     $Operations::mnMenu add command -label "Replace with XDC/XDD..." -command "Operations::ReImport"
     $Operations::mnMenu add separator
     $Operations::mnMenu add command -label "Auto Generate" -command {Operations::AutoGenerateMNOBD}
-    $Operations::mnMenu add command -label "Delete OBD" -command {Operations::DeleteTreeNode}
 
     # Menu for the Project
     set Operations::projMenu [menu  .projMenu -tearoff 0]
     $Operations::projMenu insert 0 command -label "New Project..." -command { Operations::InitiateNewProject}
     $Operations::projMenu insert 1 command -label "Open Project..." -command {Operations::OpenProjectWindow}
-
-    # Menu for the object dictionary
-    set Operations::obdMenu [menu .obdMenu -tearoff 0]
-    $Operations::obdMenu add separator
-    $Operations::obdMenu add command -label "Add Index..." -command "ChildWindows::AddIndexWindow"
-    $Operations::obdMenu add separator
-
-    # Menu for the PDO
-    set Operations::pdoMenu [menu .pdoMenu -tearoff 0]
-    $Operations::pdoMenu add separator
-    $Operations::pdoMenu add command -label "Add PDO..." -command "ChildWindows::AddPDOWindow"
-    $Operations::pdoMenu add separator
-
-    # Menu for the index
-    set Operations::idxMenu [menu .idxMenu -tearoff 0]
-    $Operations::idxMenu add command -label "Add SubIndex..." -command "ChildWindows::AddSubIndexWindow"
-    $Operations::idxMenu add separator
-    $Operations::idxMenu add command -label "Delete Index" -command {Operations::DeleteTreeNode}
-
-    # Menu for the index with only delete option
-    set Operations::idxMenuDel [menu .idxMenuDel -tearoff 0]
-    $Operations::idxMenuDel add separator
-    $Operations::idxMenuDel add command -label "Delete Index" -command {Operations::DeleteTreeNode}
-    $Operations::idxMenuDel add separator
-
-    # Menu for the subindex
-    set Operations::sidxMenu [menu .sidxMenu -tearoff 0]
-    $Operations::sidxMenu add separator
-    $Operations::sidxMenu add command -label "Delete SubIndex" -command {Operations::DeleteTreeNode}
-    $Operations::sidxMenu add separator
 
     set Operations::prgressindicator 6
     set mainframe [MainFrame::create .mainframe \
@@ -1666,9 +1616,6 @@ proc Operations::SingleClickNode {node} {
     $treePath selection set $node
     set nodeSelect $node
 
-    #remove all the frames
-    #Operations::RemoveAllFrames
-
     if {[string match "root" $node] || [string match "ProjectNode" $node] || [string match "OBD-*" $node] || [string match "PDO-*" $node]} {
         Operations::RemoveAllFrames
 	    return
@@ -2053,8 +2000,6 @@ proc Operations::SingleClickNode {node} {
 		    } else {
 			    lappend IndexProp []
 		    }
-           # puts "Index properties ErrCode->$ErrCode"
-
 	    }
 	    $tmpInnerf0.en_idx1 configure -state normal
 	    $tmpInnerf0.en_idx1 delete 0 end
@@ -2096,13 +2041,12 @@ proc Operations::SingleClickNode {node} {
         }
     }
 
-
-
     #for index less than 2000 only name and value can be edited
     $tmpInnerf0.en_nam1 configure -validate none -state normal
     $tmpInnerf0.en_nam1 delete 0 end
     $tmpInnerf0.en_nam1 insert 0 [lindex $IndexProp 0]
     $tmpInnerf0.en_nam1 configure -bg $savedBg -validate key
+    $tmpInnerf0.en_nam1 configure -state disabled -bg white
 
     # default value will always be disabled
     $tmpInnerf1.en_default1 configure -state normal -validate none
@@ -2110,6 +2054,7 @@ proc Operations::SingleClickNode {node} {
     $tmpInnerf1.en_default1 insert 0 [lindex $IndexProp 4]
     $tmpInnerf1.en_default1 configure -state disabled -bg white
 
+#Actual value will be enabled
     $tmpInnerf1.en_value1 configure -state normal -validate none -bg $savedBg
     $tmpInnerf1.en_value1 delete 0 end
     $tmpInnerf1.en_value1 insert 0 [lindex $IndexProp 5]
@@ -2119,51 +2064,39 @@ proc Operations::SingleClickNode {node} {
     $tmpInnerf1.en_lower1 insert 0 [lindex $IndexProp 7]
     $tmpInnerf1.en_lower1 configure -state $entryState -bg white -validate key
     set LOWER_LIMIT [lindex $IndexProp 7]
-
+    $tmpInnerf1.en_lower1 configure -state disabled -bg white
+    
     $tmpInnerf1.en_upper1 configure -state normal -validate none
     $tmpInnerf1.en_upper1 delete 0 end
     $tmpInnerf1.en_upper1 insert 0 [lindex $IndexProp 8]
     $tmpInnerf1.en_upper1 configure -state $entryState -bg white -validate key
-	set UPPER_LIMIT [lindex $IndexProp 8]
+    set UPPER_LIMIT [lindex $IndexProp 8]
+    $tmpInnerf1.en_upper1 configure -state disabled -bg white
 
     $tmpInnerf1.en_obj1 configure -state normal
     $tmpInnerf1.en_obj1 delete 0 end
     $tmpInnerf1.en_obj1 insert 0 [lindex $IndexProp 1]
     $tmpInnerf1.en_obj1 configure -state disabled
-    NoteBookManager::SetComboValue $tmpInnerf1.co_obj1  [lindex $IndexProp 1]
+    $tmpInnerf1.en_obj1 configure -state disabled -bg white
 
     $tmpInnerf1.en_data1 configure -state normal
     $tmpInnerf1.en_data1 delete 0 end
     $tmpInnerf1.en_data1 insert 0 [lindex $IndexProp 2]
     $tmpInnerf1.en_data1 configure -state disabled -bg white
-    NoteBookManager::SetComboValue $tmpInnerf1.co_data1 [ string toupper [lindex $IndexProp 2]]
+    $tmpInnerf1.en_data1 configure -state disabled -bg white
 
     $tmpInnerf1.en_access1 configure -state normal
     $tmpInnerf1.en_access1 delete 0 end
     $tmpInnerf1.en_access1 insert 0 [lindex $IndexProp 3]
     $tmpInnerf1.en_access1 configure -state disabled
-    NoteBookManager::SetComboValue $tmpInnerf1.co_access1 [lindex $IndexProp 3]
+    #NoteBookManager::SetComboValue $tmpInnerf1.co_access1 [lindex $IndexProp 3]
+    $tmpInnerf1.en_access1 configure -state disabled -bg white
 
     $tmpInnerf1.en_pdo1 configure -state normal
     $tmpInnerf1.en_pdo1 delete 0 end
     $tmpInnerf1.en_pdo1 insert 0 [lindex $IndexProp 6]
     $tmpInnerf1.en_pdo1 configure -state disabled
-    NoteBookManager::SetComboValue $tmpInnerf1.co_pdo1 [lindex $IndexProp 6]
-
-    #if { [expr 0x$indexId > 0x1fff] || ([lindex $IndexProp 1] == "ARRAY") || ([lindex $IndexProp 1] == "VAR") } {
-    #    #call the api to get the data list
-    #    set catchErrCode [GetNodeDataTypes $nodeId $nodeType]
-    #    #puts "GetNodeDataTypes nodeId->$nodeId errcode->[ocfmRetCode_code_get [lindex $catchErrCode 0]] catchErrCode----->$catchErrCode"
-    #    #TODO : populate the obtained datatype into the datatype combo box
-    #    #$tmpInnerf1.co_data1 configure -values
-    #}
-
-    #
-    ##for index greater than 1FFF
-    #    #for object type VAR all the fields except the default value are editable
-    #    #for object type ARRAY name of index, datatype and actual value can be edited
-    #    #for other object types only name and value alone can be edited
-    #
+    $tmpInnerf1.en_pdo1 configure -state disabled -bg white
 
     #The object less than 1FFF and object greater than 1FFF having object type
     #other than VAR only name and values are editable
@@ -2173,101 +2106,61 @@ proc Operations::SingleClickNode {node} {
     set exp3 [expr 0x$indexId > 0x1fff]
     set exp4 [lindex $IndexProp 1]
 
+    grid $tmpInnerf1.en_obj1
+    grid $tmpInnerf1.en_data1
+    grid $tmpInnerf1.en_access1    
+    grid $tmpInnerf1.en_pdo1    
+
     if {  ( $exp1 != 1 ) && ( ( $exp2 == 1) || ( ($exp3 == 1) && !($exp4 == "VAR" || $exp4 == "") ) ) } {
-        grid remove $tmpInnerf1.co_obj1
-        grid $tmpInnerf1.en_obj1
 
-        grid remove $tmpInnerf1.co_data1
-        grid $tmpInnerf1.en_data1
-
-	    if {( [expr 0x$indexId > 0x1fff] ) } {
-            #for objects greater than 1FFF show the combo box for object type
-            grid $tmpInnerf1.co_obj1
-            grid remove $tmpInnerf1.en_obj1
-            #for objects greater than 1FFF with object type ARRAY datatype can be edited
-            if { ( [lindex $IndexProp 1] == "ARRAY") } {
-                grid remove $tmpInnerf1.en_data1
-                ##configure the modifycmd of data combobox with object type
-                #$tmpInnerf1.co_data1 configure -modifycmd "NoteBookManager::ChangeValidation $tmpInnerf0 $tmpInnerf1 $tmpInnerf1.co_data1 [lindex $IndexProp 1]"
-                grid $tmpInnerf1.co_data1
-            }
-            #configure the modifycmd of data combobox with object type
-            $tmpInnerf1.co_data1 configure -modifycmd "NoteBookManager::ChangeValidation $tmpInnerf0 $tmpInnerf1 $tmpInnerf1.co_data1 [lindex $IndexProp 1]"
-        }
-
-	    grid remove $tmpInnerf1.co_access1
-	    grid $tmpInnerf1.en_access1
-
-	    grid remove $tmpInnerf1.co_pdo1
-	    grid $tmpInnerf1.en_pdo1
-        #fields are editable only for VAR type and acess type other than ro const or empty
-        #NOTE: also refer to the else part below
-	    if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
-            || [lindex $IndexProp 3] == "" || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 } {
-		    #the field is non editable
-		    $tmpInnerf1.en_value1 configure -state "disabled"
-	    } else {
-		    $tmpInnerf1.en_value1 configure -state "normal"
-	    }
+    #fields are editable only for VAR type and acess type other than ro const or empty
+    #NOTE: also refer to the else part below
+	if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
+	|| [lindex $IndexProp 3] == "" || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 } {
+		#the field is non editable
+		$tmpInnerf1.en_value1 configure -state "disabled"
+	} else {
+		$tmpInnerf1.en_value1 configure -state "normal"
+	}
     } else {
-        #these must be objects greater than 1FFF with object type VAR or objects starting with A
+        #these must be objects greater than 1FFF without object type VAR or objects starting with A
         grid $tmpInnerf1.frame1.ra_dec
-	    grid $tmpInnerf1.frame1.ra_hex
+	grid $tmpInnerf1.frame1.ra_hex
 
-        grid remove $tmpInnerf1.en_obj1
-        grid $tmpInnerf1.co_obj1
+	$tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidEntryData %P"
+	if { [string match -nocase "A???" $indexId] == 1 } {
+	    grid remove $tmpInnerf1.frame1.ra_dec
+	    grid remove $tmpInnerf1.frame1.ra_hex
+	    set widgetState disabled
+	    set comboState disabled
+	} else {
+	    set widgetState normal
+	    set comboState normal
+	}
 
-        grid remove $tmpInnerf1.en_data1
-	    grid $tmpInnerf1.co_data1
-        #configure the modifycmd of data combobox with object type
-        $tmpInnerf1.co_data1 configure -modifycmd "NoteBookManager::ChangeValidation $tmpInnerf0 $tmpInnerf1 $tmpInnerf1.co_data1 [lindex $IndexProp 1]"
+	#make the save button disabled
+	$indexSaveBtn configure -state $widgetState
+	$subindexSaveBtn configure -state $widgetState
 
-	    grid remove $tmpInnerf1.en_access1
-	    grid $tmpInnerf1.co_access1
+	$tmpInnerf1.en_value1 configure -state disabled
+	#$tmpInnerf1.en_lower1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
+	#$tmpInnerf1.en_upper1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
 
-	    grid remove $tmpInnerf1.en_pdo1
-	    grid $tmpInnerf1.co_pdo1
-
-	    $tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidEntryData %P"
-	    if { [string match -nocase "A???" $indexId] == 1 } {
-            grid remove $tmpInnerf1.frame1.ra_dec
-            grid remove $tmpInnerf1.frame1.ra_hex
-
-	    	set widgetState disabled
-	    	set comboState disabled
-	    } else {
-	        set widgetState normal
-            set comboState normal
-	    }
-		    #make the save button disabled
-		    $indexSaveBtn configure -state $widgetState
-		    $subindexSaveBtn configure -state $widgetState
-
-		    $tmpInnerf0.en_nam1 configure -state $widgetState
-            #default entry always disabled
-            $tmpInnerf1.en_default1 configure -state disabled
-		    $tmpInnerf1.en_value1 configure -state $widgetState
-		    $tmpInnerf1.en_lower1 configure -state $widgetState -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
-		    $tmpInnerf1.en_upper1 configure -state $widgetState -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
-            $tmpInnerf1.co_data1 configure -state $comboState
-		    $tmpInnerf1.co_obj1 configure -state $comboState
-		    $tmpInnerf1.co_access1 configure -state $comboState
-		    $tmpInnerf1.co_pdo1 configure -state $comboState
-        #fields are editable only for VAR type and acess type other than ro const
+	#fields are editable only for VAR type and acess type other than ro const
         #it is also mot editable for index starting with "A"
         #NOTE: also refer to the if part above
         if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
             || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 \
             || [string match -nocase "A???" $indexId] == 1} {
 		    #the field is non editable
-		    $tmpInnerf1.en_value1 configure -state "disabled"
-	    } else {
-		    $tmpInnerf1.en_value1 configure -state "normal"
-	    }
+	    $tmpInnerf1.en_value1 configure -state "disabled"
+	} else {
+	    $tmpInnerf1.en_value1 configure -state "normal"
+	}
     }
     # disable the object type combobox of sub objects
     if { [string match "*SubIndex*" $node] && ([expr 0x$indexId > 0x1fff]) } {
-        $tmpInnerf1.co_obj1 configure -state disabled
+
         #subobjects of index greater than 1fff exists only for index of type
         #ARRAY datatype is not editable
 	#API for GetIndexAttributesbyPositions
@@ -2278,36 +2171,21 @@ proc Operations::SingleClickNode {node} {
 	} else {
 		set IndexObjtype []
 	}
-	if { [ string match -nocase "RECORD" $IndexObjtype ] } {
-		$tmpInnerf1.co_data1 configure -state normal
-	} else {
-		$tmpInnerf1.co_data1 configure -state disabled
-	}
-
+	
 	if { ($subIndexId == "00") } {
-	    $tmpInnerf0.en_nam1 configure -state disabled
-	    #default entry always disabled
-	    $tmpInnerf1.en_default1 configure -state disabled
-	    $tmpInnerf1.en_lower1 configure -state disabled
-	    $tmpInnerf1.en_upper1 configure -state disabled
-	    $tmpInnerf1.co_data1 configure -state disabled
-	    #$tmpInnerf1.co_obj1 configure -state disabled
+	    #$tmpInnerf1.en_lower1 configure -state disabled
+	    #$tmpInnerf1.en_upper1 configure -state disabled
 
 	    if { [ string match -nocase "ARRAY" $IndexObjtype ] } {
 		$tmpInnerf1.en_value1 configure -state normal
-		$tmpInnerf1.co_access1 configure -state normal
-		$tmpInnerf1.co_pdo1 configure -state normal
 		$subindexSaveBtn configure -state normal
 	    } else {
 		$tmpInnerf1.en_value1 configure -state disabled
-		$tmpInnerf1.co_access1 configure -state disabled
-		$tmpInnerf1.co_pdo1 configure -state disabled
 		$subindexSaveBtn configure -state disabled
 	    }
 	}
     }
 
-#puts "\n###### singclick datatype->[lindex $IndexProp 2]####\n"
     if { [lindex $IndexProp 2] == "IP_ADDRESS" } {
         set lastConv ""
         grid remove $tmpInnerf1.frame1.ra_dec
@@ -2362,72 +2240,21 @@ proc Operations::SingleClickNode {node} {
         set schRes [lsearch $userPrefList [list $nodeSelect *]]
         if { $schRes != -1 } {
             if { [lindex [lindex $userPrefList $schRes] 1] == "dec" } {
-            #    if {[string match -nocase "0x*" [lindex $IndexProp 5]]} {
-            #        set valueState [$tmpInnerf1.en_value1 cget -state]
-            #        $tmpInnerf1.en_value1 configure -state normal -validate none
-            #        NoteBookManager::InsertDecimal $tmpInnerf1.en_value1 [lindex $IndexProp 2]
-            #        $tmpInnerf1.en_value1 configure -state $valueState -validate key -vcmd "Validation::IsDec %P $tmpInnerf1.en_value1 %d %i [lindex $IndexProp 2]" -bg $savedBg
-            #    } else {
-            #    # actual value already in decimal
-            #    }
-            #	if {[string match -nocase "0x*" [lindex $IndexProp 4]]} {
-            #        set defaultState [$tmpInnerf1.en_default1 cget -state]
-            #        $tmpInnerf1.en_default1 configure -state normal
-            #        NoteBookManager::InsertDecimal $tmpInnerf1.en_default1 [lindex $IndexProp 2]
-            #        $tmpInnerf1.en_default1 configure -state $defaultState
-            #	} else {
-            #        # default value already in decimal
-            #    }
                 set lastConv dec
                 $tmpInnerf1.frame1.ra_dec select
             } elseif { [lindex [lindex $userPrefList $schRes] 1] == "hex" } {
-                #if {[string match -nocase "0x*" [lindex $IndexProp 5]]} {
-                #    # actual already in hexadecimal
-                #} else {
-                #            set valueState [$tmpInnerf1.en_value1 cget -state]
-                #    $tmpInnerf1.en_value1 configure -state normal -validate none
-                #    NoteBookManager::InsertHex $tmpInnerf1.en_value1 [lindex $IndexProp 2]
-                #    $tmpInnerf1.en_value1 configure -state $valueState -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_value1 %d %i [lindex $IndexProp 2]" -bg $savedBg
-                #}
-                #    if {[string match -nocase "0x*" [lindex $IndexProp 4]]} {
-                #    # default is in hexadecimal
-                #} else {
-                #    set defaultState [$tmpInnerf1.en_default1 cget -state]
-                #    $tmpInnerf1.en_default1 configure -state normal
-                #    NoteBookManager::InsertHex $tmpInnerf1.en_default1 [lindex $IndexProp 2]
-                #    $tmpInnerf1.en_default1 configure -state $defaultState
-                #}
-                    set lastConv hex
-                    $tmpInnerf1.frame1.ra_hex select
+		set lastConv hex
+		$tmpInnerf1.frame1.ra_hex select
             } else {
                 return
             }
         } else {
             if {[string match -nocase "0x*" [lindex $IndexProp 5]]} {
                 set lastConv hex
-                #if {[string match -nocase "0x*" [lindex $IndexProp 4]]} {
-                #    #default value is in hexadecimal
-                #} else {
-                #    set defaultState [$tmpInnerf1.en_default1 cget -state]
-                #    $tmpInnerf1.en_default1 configure -state normal
-                #    NoteBookManager::InsertHex $tmpInnerf1.en_default1 [lindex $IndexProp 2]
-                #    $tmpInnerf1.en_default1 configure -state $defaultState
-                #}
                 $tmpInnerf1.frame1.ra_hex select
-                #$tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_value1 %d %i [lindex $IndexProp 2]" -bg $savedBg
             } else {
                 set lastConv dec
-                #if {[string match -nocase "0x*" [lindex $IndexProp 4]]} {
-                #    #convert default hexadecimal to decimal"
-                #    set defaultState [$tmpInnerf1.en_default1 cget -state]
-                #    $tmpInnerf1.en_default1 configure -state normal
-                #    NoteBookManager::InsertDecimal $tmpInnerf1.en_default1 [lindex $IndexProp 2]
-                #    $tmpInnerf1.en_default1 configure -state $defaultState
-                #} else {
-                #    #default value is in decimal
-                #}
                 $tmpInnerf1.frame1.ra_dec select
-                #$tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsDec %P $tmpInnerf1.en_value1 %d %i [lindex $IndexProp 2]" -bg $savedBg
             }
         }
         Operations::CheckConvertValue $tmpInnerf1.en_lower1 [lindex $IndexProp 2] $lastConv
@@ -2438,7 +2265,6 @@ proc Operations::SingleClickNode {node} {
         set lastConv ""
         grid remove $tmpInnerf1.frame1.ra_dec
         grid remove $tmpInnerf1.frame1.ra_hex
-        #$tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidStr %P" -bg $savedBg
 	$tmpInnerf1.en_value1 configure -validate key -vcmd { return 0 } -bg $savedBg
     }
     return
@@ -2790,37 +2616,7 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
 		lappend CNDatalist [list presponseCycleTimeDatatype $presponseCycleTimeDatatype]
 	    }
 	}
-
-
-
-        #set schRes [lsearch $userPrefList [list $nodeSelect *]]
-        #if { $schRes != -1 } {
-        #    if { [lindex [lindex $userPrefList $schRes] 1] == "dec" } {
-        #        set lastConv dec
-        #        $tmpInnerf0.formatframe1.ra_dec select
-        #    } elseif { [lindex [lindex $userPrefList $schRes] 1] == "hex" } {
-        #        set lastConv hex
-        #        $tmpInnerf0.formatframe1.ra_hex select
-        #    } else {
-        #        return
-        #    }
-        #} else {
-        #    if {[string match -nocase "0x*" $presponseCycleTimeValue]} {
-        #        set lastConv hex
-        #        $tmpInnerf0.formatframe1.ra_hex select
-        #        $tmpInnerf0.en_time configure -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf0.en_time %d %i $presponseCycleTimeDatatype"
-        #    } else {
-        #        set lastConv dec
-        #        $tmpInnerf0.formatframe1.ra_dec select
-        #        $tmpInnerf0.en_time configure -validate key -vcmd "Validation::IsDec %P $tmpInnerf0.en_time %d %i $presponseCycleTimeDatatype"
-        #    }
-		#
-        #}
     } else {
-        #fail occured
-        #$tmpInnerf0.cycleframe.en_time configure -state normal -validate none
-        #$tmpInnerf0.cycleframe.en_time delete 0 end
-        #$tmpInnerf0.cycleframe.en_time configure -state disabled
     }
 
    $tmpInnerf2.ch_adv deselect
@@ -2891,14 +2687,6 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
         #even if the features are available. The value of force cycle list starts from 1 and lists
         #upto the multiplex prescaler value
 
-        #set mnNodeId 240
-        #set mnNodeType 0
-        #set mnNodePos [new_intp]
-        #set mnExistfFlag [new_boolp]
-        #set catchErrCode [IfNodeExists $mnNodeId $mnNodeType $mnNodePos $mnExistfFlag]
-        #set mnNodePos [intp_value $mnNodePos]
-        #set mnExistfFlag [boolp_value $mnExistfFlag]
-        #set mnErrCode [ocfmRetCode_code_get $catchErrCode]
         if { $mnErrCode == 0 && $mnExistfFlag == 1 } {
             #the node exist continue
 
@@ -3328,32 +3116,7 @@ proc Operations::ResetGlobalData {} {
 #  Description : Deletes all the node in current project
 #---------------------------------------------------------------------------------------------------
 proc Operations::DeleteAllNode {} {
-#    global nodeIdList
-#
-#    set count [new_intp]
-#    set catchErrCode [GetNodeCount 240 $count]
-#    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-#    if { $ErrCode == 0 } {
-#	    set nodeCount [intp_value $count]
-#	    for {set inc 0} {$inc < $nodeCount} {incr inc} {
-#		    #API for getting node attributes based on node position
-#		    set tmp_nodeId [new_intp]
-#		    set catchErrCode [GetNodeAttributesbyNodePos $inc $tmp_nodeId]
-#		    set ErrCode [ocfmRetCode_code_get [lindex $catchErrCode 0]]
-#		    if { $ErrCode == 0 } {
-#			    set nodeId [intp_value $tmp_nodeId]
-#			    if {$nodeId == 240} {
-#				    set nodeType 0
-#			    } else {
-#				    set nodeType 1
-#			    }
-#                DeleteNode $nodeId $nodeType
-#		    } else {
-#		    }
-#	    }
-#    } else {
-#    }
-
+    ##### API call #####
     FreeProjectMemory
 }
 
@@ -3376,22 +3139,21 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
     global status_save
     global image_dir
 
-	#Check XDC for schema compliance if existing
-	if {$tmpImpDir != ""} {
-		set catchErrCode [ValidateXDDFile $tmpImpDir]
-		set ErrCode [ocfmRetCode_code_get $catchErrCode]
-		if { $ErrCode != 0 } {
-			if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-				Console::DisplayErrMsg "XDD/XDC validation error: [ocfmRetCode_errorString_get $catchErrCode]"
-				tk_messageBox -message "The imported XDD/XDC is not compliant to XDD schema version 0.13: [ocfmRetCode_errorString_get $catchErrCode]" -title "XDD/XDC import validation error" -icon error -type ok
-	    } else {
-		    tk_messageBox -message "Unknown Error" -title Error -icon error
-	    }
-	    return 
-		}
+    #Check XDC for schema compliance if existing
+    if {$tmpImpDir != ""} {
+	    set catchErrCode [ValidateXDDFile $tmpImpDir]
+	    set ErrCode [ocfmRetCode_code_get $catchErrCode]
+	    if { $ErrCode != 0 } {
+		    if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
+			    Console::DisplayErrMsg "XDD/XDC validation error: [ocfmRetCode_errorString_get $catchErrCode]"
+			    tk_messageBox -message "The imported XDD/XDC is not compliant to XDD schema version 0.13: [ocfmRetCode_errorString_get $catchErrCode]" -title "XDD/XDC import validation error" -icon error -type ok
+	} else {
+		tk_messageBox -message "Unknown Error" -title Error -icon error
 	}
-	
-	
+	return 
+	    }
+    }
+
     incr cnCount
     set catchErrCode [Operations::NodeCreate $nodeId 1 $cnName]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
@@ -4798,7 +4560,9 @@ proc Operations::DeleteTreeNode {} {
 	    }
 
 	    if {$nodeType == 0} {
-		    set catchErrCode [DeleteNodeObjDict $nodeId $nodeType]
+		### node object dict cannot be deleted.
+		    tk_messageBox -message "MN object dictionary cannot be deleted." -title "info" -icon info -parent .
+		    return
 	    } elseif {$nodeType == 1} {
 		    #it is a CN so delete the node entirely
 		    set catchErrCode [DeleteNode $nodeId $nodeType]
@@ -4883,36 +4647,7 @@ proc Operations::DeleteTreeNode {} {
 	    Operations::CleanList $node 0
 	    Operations::CleanList $node 1
     } else {
-
-	    set res []
-	    set idxNode [$treePath selection get]
-	    if {[string match "*SubIndexValue*" $node]} {
-		    #gets SubIndexId of selected node
-		    set sidx [string range [$treePath itemcget $node -text] end-2 end-1 ]
-		    if { $sidx == "00" } {
-			    tk_messageBox -message "SubIndex 00 cannot be deleted" -parent . -icon error
-			    return
-		    }
-
-		    #gets the IndexId of selected SubIndex
-		    set idxNode [$treePath parent $node]
-		    set idx [string range [$treePath itemcget $idxNode -text] end-4 end-1 ]
-		    set catchErrCode [DeleteSubIndex $nodeId $nodeType $idx $sidx]
-	    } elseif {[string match "*IndexValue*" $node]} {
-		    set idx [string range [$treePath itemcget $idxNode -text] end-4 end-1 ]
-		    set compareIdx [ string toupper $idx]
-		    set safeObjectList [list 1006 1020 1300 1C02 1C09 1F26 1F27 1F84 1F89 1F8A 1F8B 1F8D 1F92]
-		    if { [lsearch -exact $safeObjectList $compareIdx] != -1 } {
-			    set result [tk_messageBox -type yesno -message "$idx is a special Index\nDeleting it lead to unexpected cdc generation\nDo you want to delete?" ]
-			    switch -- $result {
-				    yes {#continue with process}
-				    no {return}
-			    }
-		    }
-		    set catchErrCode [DeleteIndex $nodeId $nodeType $idx]
-	    } else {
-		    return
-	    }
+	return
     }
 
     #clear the savedValueList of the deleted node
