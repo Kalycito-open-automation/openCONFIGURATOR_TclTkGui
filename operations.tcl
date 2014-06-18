@@ -2000,8 +2000,6 @@ proc Operations::SingleClickNode {node} {
 		    } else {
 			    lappend IndexProp []
 		    }
-           # puts "Index properties ErrCode->$ErrCode"
-
 	    }
 	    $tmpInnerf0.en_idx1 configure -state normal
 	    $tmpInnerf0.en_idx1 delete 0 end
@@ -2043,14 +2041,12 @@ proc Operations::SingleClickNode {node} {
         }
     }
 
-
-
     #for index less than 2000 only name and value can be edited
     $tmpInnerf0.en_nam1 configure -validate none -state normal
     $tmpInnerf0.en_nam1 delete 0 end
     $tmpInnerf0.en_nam1 insert 0 [lindex $IndexProp 0]
     $tmpInnerf0.en_nam1 configure -bg $savedBg -validate key
-    #$tmpInnerf1.en_nam1 configure -state disabled -bg white
+    $tmpInnerf0.en_nam1 configure -state disabled -bg white
 
     # default value will always be disabled
     $tmpInnerf1.en_default1 configure -state normal -validate none
@@ -2081,28 +2077,25 @@ proc Operations::SingleClickNode {node} {
     $tmpInnerf1.en_obj1 delete 0 end
     $tmpInnerf1.en_obj1 insert 0 [lindex $IndexProp 1]
     $tmpInnerf1.en_obj1 configure -state disabled
-    NoteBookManager::SetComboValue $tmpInnerf1.co_obj1  [lindex $IndexProp 1]
     $tmpInnerf1.en_obj1 configure -state disabled -bg white
 
     $tmpInnerf1.en_data1 configure -state normal
     $tmpInnerf1.en_data1 delete 0 end
     $tmpInnerf1.en_data1 insert 0 [lindex $IndexProp 2]
     $tmpInnerf1.en_data1 configure -state disabled -bg white
-    NoteBookManager::SetComboValue $tmpInnerf1.co_data1 [ string toupper [lindex $IndexProp 2]]
     $tmpInnerf1.en_data1 configure -state disabled -bg white
 
     $tmpInnerf1.en_access1 configure -state normal
     $tmpInnerf1.en_access1 delete 0 end
     $tmpInnerf1.en_access1 insert 0 [lindex $IndexProp 3]
     $tmpInnerf1.en_access1 configure -state disabled
-    NoteBookManager::SetComboValue $tmpInnerf1.co_access1 [lindex $IndexProp 3]
+    #NoteBookManager::SetComboValue $tmpInnerf1.co_access1 [lindex $IndexProp 3]
     $tmpInnerf1.en_access1 configure -state disabled -bg white
 
     $tmpInnerf1.en_pdo1 configure -state normal
     $tmpInnerf1.en_pdo1 delete 0 end
     $tmpInnerf1.en_pdo1 insert 0 [lindex $IndexProp 6]
     $tmpInnerf1.en_pdo1 configure -state disabled
-    NoteBookManager::SetComboValue $tmpInnerf1.co_pdo1 [lindex $IndexProp 6]
     $tmpInnerf1.en_pdo1 configure -state disabled -bg white
 
     #The object less than 1FFF and object greater than 1FFF having object type
@@ -2113,33 +2106,13 @@ proc Operations::SingleClickNode {node} {
     set exp3 [expr 0x$indexId > 0x1fff]
     set exp4 [lindex $IndexProp 1]
 
-    #Do not enable the combo box for object type
-    grid remove $tmpInnerf1.co_obj1
     grid $tmpInnerf1.en_obj1
-    #grid remove $tmpInnerf1.en_obj1
-    #grid $tmpInnerf1.co_obj1
-    #$tmpInnerf1.co_obj1 configure -state disabled
-    
+    grid $tmpInnerf1.en_data1
+    grid $tmpInnerf1.en_access1    
+    grid $tmpInnerf1.en_pdo1    
+
     if {  ( $exp1 != 1 ) && ( ( $exp2 == 1) || ( ($exp3 == 1) && !($exp4 == "VAR" || $exp4 == "") ) ) } {
-        grid remove $tmpInnerf1.co_data1
-        grid $tmpInnerf1.en_data1
-	if {( [expr 0x$indexId > 0x1fff] ) } {
-            #for objects greater than 1FFF with object type ARRAY datatype can be edited
-            if { ( [lindex $IndexProp 1] == "ARRAY") } {
-                grid remove $tmpInnerf1.en_data1
-                ##configure the modifycmd of data combobox with object type
-                #$tmpInnerf1.co_data1 configure -modifycmd "NoteBookManager::ChangeValidation $tmpInnerf0 $tmpInnerf1 $tmpInnerf1.co_data1 [lindex $IndexProp 1]"
-                grid $tmpInnerf1.co_data1
-            }
-            #configure the modifycmd of data combobox with object type
-            $tmpInnerf1.co_data1 configure -modifycmd "NoteBookManager::ChangeValidation $tmpInnerf0 $tmpInnerf1 $tmpInnerf1.co_data1 [lindex $IndexProp 1]"
-        }
 
-	grid remove $tmpInnerf1.co_access1
-	grid $tmpInnerf1.en_access1
-
-	grid remove $tmpInnerf1.co_pdo1
-	grid $tmpInnerf1.en_pdo1
     #fields are editable only for VAR type and acess type other than ro const or empty
     #NOTE: also refer to the else part below
 	if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
@@ -2153,17 +2126,6 @@ proc Operations::SingleClickNode {node} {
         #these must be objects greater than 1FFF without object type VAR or objects starting with A
         grid $tmpInnerf1.frame1.ra_dec
 	grid $tmpInnerf1.frame1.ra_hex
-
-        grid remove $tmpInnerf1.en_data1
-	grid $tmpInnerf1.co_data1
-        #configure the modifycmd of data combobox with object type
-        $tmpInnerf1.co_data1 configure -modifycmd "NoteBookManager::ChangeValidation $tmpInnerf0 $tmpInnerf1 $tmpInnerf1.co_data1 [lindex $IndexProp 1]"
-
-	grid remove $tmpInnerf1.en_access1
-	grid $tmpInnerf1.co_access1
-
-	grid remove $tmpInnerf1.en_pdo1
-	grid $tmpInnerf1.co_pdo1
 
 	$tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidEntryData %P"
 	if { [string match -nocase "A???" $indexId] == 1 } {
@@ -2180,15 +2142,9 @@ proc Operations::SingleClickNode {node} {
 	$indexSaveBtn configure -state $widgetState
 	$subindexSaveBtn configure -state $widgetState
 
-	$tmpInnerf0.en_nam1 configure -state $widgetState
-	#default entry always disabled
-	$tmpInnerf1.en_default1 configure -state disabled
 	$tmpInnerf1.en_value1 configure -state disabled
-	$tmpInnerf1.en_lower1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
-	$tmpInnerf1.en_upper1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
-	$tmpInnerf1.co_data1 configure -state disabled
-	$tmpInnerf1.co_access1 configure -state disabled
-	$tmpInnerf1.co_pdo1 configure -state disabled
+	#$tmpInnerf1.en_lower1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
+	#$tmpInnerf1.en_upper1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
 
 	#fields are editable only for VAR type and acess type other than ro const
         #it is also mot editable for index starting with "A"
@@ -2205,8 +2161,6 @@ proc Operations::SingleClickNode {node} {
     # disable the object type combobox of sub objects
     if { [string match "*SubIndex*" $node] && ([expr 0x$indexId > 0x1fff]) } {
 
-	$tmpInnerf1.co_data1 configure -state disabled
-	$tmpInnerf0.en_nam1 configure -state disabled
         #subobjects of index greater than 1fff exists only for index of type
         #ARRAY datatype is not editable
 	#API for GetIndexAttributesbyPositions
@@ -2219,10 +2173,8 @@ proc Operations::SingleClickNode {node} {
 	}
 	
 	if { ($subIndexId == "00") } {
-	    #default entry always disabled
-	    $tmpInnerf1.en_default1 configure -state disabled
-	    $tmpInnerf1.en_lower1 configure -state disabled
-	    $tmpInnerf1.en_upper1 configure -state disabled
+	    #$tmpInnerf1.en_lower1 configure -state disabled
+	    #$tmpInnerf1.en_upper1 configure -state disabled
 
 	    if { [ string match -nocase "ARRAY" $IndexObjtype ] } {
 		$tmpInnerf1.en_value1 configure -state normal
@@ -2231,8 +2183,6 @@ proc Operations::SingleClickNode {node} {
 		$tmpInnerf1.en_value1 configure -state disabled
 		$subindexSaveBtn configure -state disabled
 	    }
-	    $tmpInnerf1.co_access1 configure -state disabled
-	    $tmpInnerf1.co_pdo1 configure -state disabled
 	}
     }
 
@@ -2666,37 +2616,7 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
 		lappend CNDatalist [list presponseCycleTimeDatatype $presponseCycleTimeDatatype]
 	    }
 	}
-
-
-
-        #set schRes [lsearch $userPrefList [list $nodeSelect *]]
-        #if { $schRes != -1 } {
-        #    if { [lindex [lindex $userPrefList $schRes] 1] == "dec" } {
-        #        set lastConv dec
-        #        $tmpInnerf0.formatframe1.ra_dec select
-        #    } elseif { [lindex [lindex $userPrefList $schRes] 1] == "hex" } {
-        #        set lastConv hex
-        #        $tmpInnerf0.formatframe1.ra_hex select
-        #    } else {
-        #        return
-        #    }
-        #} else {
-        #    if {[string match -nocase "0x*" $presponseCycleTimeValue]} {
-        #        set lastConv hex
-        #        $tmpInnerf0.formatframe1.ra_hex select
-        #        $tmpInnerf0.en_time configure -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf0.en_time %d %i $presponseCycleTimeDatatype"
-        #    } else {
-        #        set lastConv dec
-        #        $tmpInnerf0.formatframe1.ra_dec select
-        #        $tmpInnerf0.en_time configure -validate key -vcmd "Validation::IsDec %P $tmpInnerf0.en_time %d %i $presponseCycleTimeDatatype"
-        #    }
-		#
-        #}
     } else {
-        #fail occured
-        #$tmpInnerf0.cycleframe.en_time configure -state normal -validate none
-        #$tmpInnerf0.cycleframe.en_time delete 0 end
-        #$tmpInnerf0.cycleframe.en_time configure -state disabled
     }
 
    $tmpInnerf2.ch_adv deselect
@@ -2767,14 +2687,6 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
         #even if the features are available. The value of force cycle list starts from 1 and lists
         #upto the multiplex prescaler value
 
-        #set mnNodeId 240
-        #set mnNodeType 0
-        #set mnNodePos [new_intp]
-        #set mnExistfFlag [new_boolp]
-        #set catchErrCode [IfNodeExists $mnNodeId $mnNodeType $mnNodePos $mnExistfFlag]
-        #set mnNodePos [intp_value $mnNodePos]
-        #set mnExistfFlag [boolp_value $mnExistfFlag]
-        #set mnErrCode [ocfmRetCode_code_get $catchErrCode]
         if { $mnErrCode == 0 && $mnExistfFlag == 1 } {
             #the node exist continue
 
