@@ -10,9 +10,9 @@
 #  Copyright :(c) Kalycito Infotech Private Limited
 #
 #***************************************************************************************************
-#  COPYRIGHT NOTICE: 
+#  COPYRIGHT NOTICE:
 #
-#  Project:      openCONFIGURATOR 
+#  Project:      openCONFIGURATOR
 #
 #  License:
 #
@@ -27,7 +27,7 @@
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
 #
-#    3. Neither the name of Kalycito Infotech Private Limited nor the names of 
+#    3. Neither the name of Kalycito Infotech Private Limited nor the names of
 #       its contributors may be used to endorse or promote products derived
 #       from this software without prior written permission. For written
 #       permission, please contact info@kalycito.com.
@@ -57,7 +57,7 @@
 #***************************************************************************************************
 #
 #  REVISION HISTORY:
-#  
+#
 ####################################################################################################
 #---------------------------------------------------------------------------------------------------
 #  NameSpace Declaration
@@ -65,10 +65,10 @@
 #  namespace : Console
 #---------------------------------------------------------------------------------------------------
 namespace eval Console {
-	
+
 }
 #-------------------------
-#	Global variables
+#   Global variables
 #-------------------------
 global infoWindow
 global warWindow
@@ -76,9 +76,9 @@ global errWindow
 
 #---------------------------------------------------------------------------------------------------
 #  Console::InitInfoWindow
-# 
+#
 #  Arguments : win - path of the window where the text widget is created
-# 	           width  - width of the text widget
+#              width  - width of the text widget
 #              height - height of the text widget
 #
 #  Results : textwidget - path of the text widget
@@ -90,10 +90,10 @@ proc Console::InitInfoWindow {win {width 60} {height 5}} {
     set promptChar $
 
     if {$windowPath == "."} {
-	    set windowPath ""
+        set windowPath ""
     }
 
-    text $windowPath.t -width $width -height $height -bg white 
+    text $windowPath.t -width $width -height $height -bg white
 
     $windowPath.t tag configure output -foreground blue
     $windowPath.t tag configure promptChar -foreground grey40
@@ -108,30 +108,29 @@ proc Console::InitInfoWindow {win {width 60} {height 5}} {
 
 #---------------------------------------------------------------------------------------------------
 #  Console::DisplayInfo
-# 
+#
 #  Arguments : var - string to be displayed
-# 	       	   tag - tag binded with text widget
+#              tag - tag binded with text widget
 #              win - path of text widget
-#              see - to view the inserted text 
+#              see - to view the inserted text
 #
 #  Results : -
 #
 #  Description : Display the information message
-#---------------------------------------------------------------------------------------------------	
+#---------------------------------------------------------------------------------------------------
 proc Console::DisplayInfo {var {tag output} {win {}} {see 1}} {
-	
     global infoWindow
-        
+
     set promptChar $
-        
+
     if {$win == {}} {
-	    set win [lindex $infoWindow 0]
+        set win [lindex $infoWindow 0]
     }
     $win configure -state normal
     $win mark gravity promptChar right
     $win insert end $var $tag
     if {[string index $var [expr [string length $var]-1]] != "\n"} {
-	    $win insert end "\n"
+        $win insert end "\n"
     }
 
     $win insert end "$promptChar " promptChar
@@ -145,9 +144,9 @@ proc Console::DisplayInfo {var {tag output} {win {}} {see 1}} {
 
 #---------------------------------------------------------------------------------------------------
 #  Console::InitErrorWindow
-# 
+#
 #  Arguments : win - path of the window where the text widget is created
-# 	       	   width - width of the text widget
+#              width - width of the text widget
 #              height - height of the text widget
 #
 #  Results : textwidget - path of the text widget
@@ -159,12 +158,12 @@ proc Console::InitErrorWindow {win {width 60} {height 5}} {
     set promptChar $
 
     if {$windowPath == "."} {
-	    set windowPath ""
+        set windowPath ""
     }
 
     text $windowPath.t -width $width -height $height -bg white
 
-    $windowPath.t tag configure output -foreground blue 
+    $windowPath.t tag configure output -foreground blue
     $windowPath.t tag configure promptChar -foreground grey40
     $windowPath.t tag configure error -foreground red
     $windowPath.t insert end "$promptChar " promptChar
@@ -178,11 +177,11 @@ proc Console::InitErrorWindow {win {width 60} {height 5}} {
 
 #---------------------------------------------------------------------------------------------------
 #  Console::DisplayErrMsg
-# 
+#
 #  Arguments : var - string to be displayed
-# 	     	   tag - tag binded with text widget
+#              tag - tag binded with text widget
 #              win - path of text widget
-#              see - to view the inserted text 
+#              see - to view the inserted text
 #
 #  Results : -
 #
@@ -192,15 +191,15 @@ proc Console::DisplayErrMsg {var {tag output} {win {}} {see 1}} {
     global errWindow
 
     set promptChar $
-        
+
     if {$win == {}} {
-	    set win [lindex $errWindow 0]
+        set win [lindex $errWindow 0]
     }
     $win configure -state normal
     $win mark gravity promptChar right
     $win insert end $var $tag
     if {[string index $var [expr [string length $var]-1]] != "\n"} {
-	    $win insert end "\n"
+        $win insert end "\n"
     }
 
     $win insert end "$promptChar " promptChar
@@ -214,9 +213,9 @@ proc Console::DisplayErrMsg {var {tag output} {win {}} {see 1}} {
 
 #---------------------------------------------------------------------------------------------------
 #  Console::InitWarnWindow
-# 
+#
 #  Arguments : win - path of the window where the text widget is created
-# 	       	   width  - width of the text widget
+#              width  - width of the text widget
 #              height - height of the text widget
 #
 #  Results : textwidget - path of the text widget
@@ -228,12 +227,12 @@ proc Console::InitWarnWindow {win {width 60} {height 5}} {
     set promptChar $
 
     if {$windowPath == "."} {
-	    set windowPath ""
+        set windowPath ""
     }
 
     text $windowPath.t -width $width -height $height -bg white
-	
-	$windowPath.t configure -foreground blue
+
+    $windowPath.t configure -foreground blue
     $windowPath.t tag configure output -foreground blue
     $windowPath.t tag configure promptChar -foreground grey40
     $windowPath.t tag configure error -foreground red
@@ -248,11 +247,11 @@ proc Console::InitWarnWindow {win {width 60} {height 5}} {
 
 #---------------------------------------------------------------------------------------------------
 #  Console::DisplayWarning
-# 
+#
 #  Arguments : var - string to be displayed
-# 	       	   tag - tag binded with text widget
+#              tag - tag binded with text widget
 #              win - path of text widget
-#              see - to view the inserted text 
+#              see - to view the inserted text
 #
 #  Results : -
 #
@@ -264,31 +263,29 @@ proc Console::DisplayWarning {var {tag output} {win {}} {see 1}} {
 
     set promptChar $
     if {$win == {}} {
-	    set win [lindex $warWindow 0]
+        set win [lindex $warWindow 0]
     }
     $win configure -state normal
     $win mark gravity promptChar right
-	#$win tag delete $tag
-	#$win tag configure output -foreground blue
     $win insert end $var $tag
     if {[string index $var [expr [string length $var]-1]] != "\n"} {
-	    $win insert end "\n"
+        $win insert end "\n"
     }
 
     $win insert end "$promptChar " promptChar
     $win mark gravity promptChar left
-	[lindex $warWindow 1] raise [lindex $warWindow 2]
+    [lindex $warWindow 1] raise [lindex $warWindow 2]
     if $see {$win see insert}
     update
-	#Console::BlinkText $win $tag
+
     $win configure -state disabled
-    
+
     return
 }
 
 #---------------------------------------------------------------------------------------------------
 #  Console::ClearMsgs
-# 
+#
 #  Arguments : -
 #
 #  Results : -
@@ -296,24 +293,22 @@ proc Console::DisplayWarning {var {tag output} {win {}} {see 1}} {
 #  Description :  Clear information, error and warning message
 #---------------------------------------------------------------------------------------------------
 proc Console::ClearMsgs {} {
-
     global infoWindow
     global warWindow
     global errWindow
 
     set promptChar $
     foreach windowPath [list [lindex $infoWindow 0] [lindex $warWindow 0]  [lindex $errWindow 0] ] {
-	    $windowPath configure -state normal
-	    $windowPath delete 1.0 end
-	    $windowPath insert end "$promptChar " promptChar
-	    $windowPath configure -state disabled
+        $windowPath configure -state normal
+        $windowPath delete 1.0 end
+        $windowPath insert end "$promptChar " promptChar
+        $windowPath configure -state disabled
     }
-	
 }
 
 #---------------------------------------------------------------------------------------------------
 #  Console::BlinkText
-# 
+#
 #  Arguments : -
 #
 #  Results : -
@@ -321,18 +316,17 @@ proc Console::ClearMsgs {} {
 #  Description :  Clear information, error and warning message
 #---------------------------------------------------------------------------------------------------
 proc Console::BlinkText {{win {}} {tag {}} } {
-	if {$win == ""} {
-		return
-	}
+    if {$win == ""} {
+        return
+    }
 
-	set fg [$win cget -foreground]
-	for {set blinkcount 0} { $blinkcount < 3 } { incr blinkcount} {
-			$win tag configure $tag -foreground [$win cget -background]
-			update idletasks
-			after 500
-			$win tag configure $tag -foreground $fg
-			update idletasks
-			after 500
-	}
-	
+    set fg [$win cget -foreground]
+    for {set blinkcount 0} { $blinkcount < 3 } { incr blinkcount} {
+        $win tag configure $tag -foreground [$win cget -background]
+        update idletasks
+        after 500
+        $win tag configure $tag -foreground $fg
+        update idletasks
+        after 500
+    }
 }

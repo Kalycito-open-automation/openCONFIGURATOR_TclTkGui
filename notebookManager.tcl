@@ -140,9 +140,7 @@ proc NoteBookManager::create_tab { nbpath choice } {
     entry $tabInnerf1.en_data1 -state disabled -width 20
     entry $tabInnerf1.en_access1 -state disabled -width 20
     entry $tabInnerf1.en_upper1 -state disabled -width 20
-    #bind $tabInnerf1.en_upper1 <FocusOut> "NoteBookManager::LimitFocusChanged $tabInnerf1 $tabInnerf1.en_upper1"
     entry $tabInnerf1.en_lower1 -state disabled -width 20
-    #bind $tabInnerf1.en_lower1 <FocusOut> "NoteBookManager::LimitFocusChanged $tabInnerf1 $tabInnerf1.en_lower1"
     entry $tabInnerf1.en_pdo1 -state disabled -width 20
     entry $tabInnerf1.en_default1 -state disabled -width 20
     entry $tabInnerf1.en_value1 -width 20 -textvariable tmpValue$_pageCounter  -relief ridge -bg white
@@ -258,7 +256,7 @@ proc NoteBookManager::create_tab { nbpath choice } {
 #              choice  - choice for pdo to create frame
 #
 #  Results : basic frame on which all widgets are created
-#	         tablelist widget path
+#            tablelist widget path
 #
 #  Description : Creates the tablelist for TPDO and RPDO
 #---------------------------------------------------------------------------------------------------
@@ -294,7 +292,6 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
     $uf configure -height 20
     set tabTitlef0 [TitleFrame $uf.tabTitlef0 -text "Properties" ]
     set tabInnerf0 [$tabTitlef0 getframe]
-    #$tabInnerf0 configure -width 150
     set tabTitlef1 [TitleFrame $tabInnerf0.tabTitlef1 -text "" ]
     set tabInnerf1 [$tabTitlef1 getframe]
     set tabInnerf0_1 [frame $tabInnerf0.frame1 ]
@@ -302,8 +299,8 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
 
     label $tabInnerf0.la_nodeName     -text "Node name"
     label $tabInnerf0.la_empty1       -text ""
-    label $tabInnerf0.la_align1	      -text ""
-    label $tabInnerf0.la_align2	      -text ""
+    label $tabInnerf0.la_align1       -text ""
+    label $tabInnerf0.la_align2       -text ""
     label $tabInnerf0.la_nodeNo       -text "Node number"
     label $tabInnerf0.la_empty2       -text ""
     label $tabInnerf0.la_time         -text ""
@@ -333,16 +330,11 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
     entry $tabInnerf1.en_advOption4 -state disabled -width 20
 
     set frame1 [frame $tabInnerf0.formatframe1]
-    #set ra_dec [radiobutton $frame1.ra_dec -text "Dec" -variable ra_nodeDataType -value "dec" -command ""]
-    #set ra_hex [radiobutton $frame1.ra_hex -text "Hex" -variable ra_nodeDataType -value "hex" -command ""]
     set ra_StNormal [radiobutton $tabInnerf1.ra_StNormal -text "Normal station"      -variable ra_statType$_pageCounter -value "StNormal" ]
     set ra_StMulti  [radiobutton $tabInnerf1.ra_StMulti  -text "Multiplexed station" -variable ra_statType$_pageCounter -value "StMulti" ]
     set ra_StChain  [radiobutton $tabInnerf1.ra_StChain  -text "Chained station"     -variable ra_statType$_pageCounter -value "StChain" ]
 
-    grid config $tabTitlef0 -row 0 -column 0 -sticky ew -ipady 7 ;# -ipadx 10
-    #label $uf.la_empty -text ""
-    #grid config $uf.la_empty -row 1 -column 0
-    #grid config $tabTitlef1 -row 2 -column 0 -sticky ew
+    grid config $tabTitlef0 -row 0 -column 0 -sticky ew -ipady 7 ;
 
     grid config $tabInnerf0.la_align1    -row 0 -column 0 -padx 5
     grid config $tabInnerf0.la_nodeNo    -row 2 -column 1 -sticky w
@@ -353,32 +345,28 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
     grid config $tabInnerf0.en_nodeName  -row 0 -column 2 -sticky w -padx 5
     grid config $tabInnerf0.la_empty2    -row 3 -column 1
     grid config $tabInnerf0.la_time      -row 4 -column 1 -sticky w
-	grid config $tabInnerf0.cycleframe   -row 4 -column 2 -columnspan 2 -sticky w
+    grid config $tabInnerf0.cycleframe   -row 4 -column 2 -columnspan 2 -sticky w
     grid config $tabInnerf0.cycleframe.en_time      -row 0 -column 0 -sticky w -padx 5
-	grid config $tabInnerf0.cycleframe.la_ms      -row 0 -column 1 -sticky w
+    grid config $tabInnerf0.cycleframe.la_ms      -row 0 -column 1 -sticky w
     grid config $tabInnerf0.la_empty3    -row 5 -column 1
     grid config $frame1                  -row 6 -column 2 -padx 5
-
-    #grid config $ra_dec -row 0 -column 0 -sticky w
-    #grid config $ra_hex -row 0 -column 1 -sticky w
-
 
     if { $choice == "mn" } {
         $tabInnerf0.la_time  configure -text "Cycle Time"
 
         $tabInnerf0.tabTitlef1 configure -text "Advanced"
         $tabInnerf0.en_nodeNo configure -state disabled
-	$tabInnerf1.la_advOption4 configure  -text "Loss of SoC Tolerance"
-	$tabInnerf1.la_advOptionUnit4 configure -text "µs"
+        $tabInnerf1.la_advOption4 configure  -text "Loss of SoC Tolerance"
+        $tabInnerf1.la_advOptionUnit4 configure -text "µs"
         $tabInnerf1.la_advOption1 configure -text "Asynchronous MTU size"
         $tabInnerf1.la_advOptionUnit1 configure -text "Byte"
         $tabInnerf1.la_advOption2 configure -text "Asynchronous Timeout"
         $tabInnerf1.la_advOptionUnit2 configure -text "ns"
         $tabInnerf1.la_advOption3 configure -text "Multiplexing prescaler"
 
-	grid config $tabInnerf1.la_advOption4 -row 0 -column 1 -sticky w
-	grid config $tabInnerf1.en_advOption4 -row 0 -column 2 -padx 5
-	grid config $tabInnerf1.la_advOptionUnit4 -row 0 -column 3 -sticky w
+        grid config $tabInnerf1.la_advOption4 -row 0 -column 1 -sticky w
+        grid config $tabInnerf1.en_advOption4 -row 0 -column 2 -padx 5
+        grid config $tabInnerf1.la_advOptionUnit4 -row 0 -column 3 -sticky w
         grid config $tabInnerf1.la_empty8     -row 1 -column 1
         grid config $tabInnerf1.la_advOption1 -row 2 -column 1 -sticky w
         grid config $tabInnerf1.en_advOption1 -row 2 -column 2 -padx 5
@@ -393,8 +381,6 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
         grid config $tabInnerf1.la_advOptionUnit3 -row 6 -column 3 -sticky w
         grid config $tabInnerf1.la_empty6     -row 7 -column 1
 
-        #$ra_dec configure -command "NoteBookManager::ConvertMNDec $tabInnerf0 $tabInnerf1"
-        #$ra_hex configure -command "NoteBookManager::ConvertMNHex $tabInnerf0 $tabInnerf1"
     } elseif { $choice == "cn" } {
         if {"$tcl_platform(platform)" == "windows"} {
             set spinWidth 19
@@ -409,7 +395,6 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
         grid forget $tabInnerf0.en_nodeNo
         grid config $tabInnerf0.sp_nodeNo    -row 2 -column 2 -sticky w -padx 5
         $tabInnerf0.la_time  configure -text "PollResponse Timeout"
-        #1#grid config $tabInnerf0.la_ms      -row 4 -column 3 -sticky w
         $tabInnerf0.tabTitlef1 configure -text "Type of station"
 
         set tabTitlef2 [TitleFrame $tabInnerf1.tabTitlef2 -text "Advanced" ]
@@ -424,15 +409,12 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
         grid config $ra_StChain           -row 2 -column 0 -sticky w -padx 5
         grid config $tabInnerf1.la_empty5 -row 3 -column 0
         grid config $ra_StMulti           -row 4 -column 0 -sticky w -padx 5
-        #grid config $tabInnerf1.la_empty6 -row 5 -column 0 -columnspan 2
         grid config $tabTitlef2           -row 5 -column 0 -sticky e -columnspan 2 -padx 20;# -ipadx 10
         grid config $tabInnerf1.la_empty7 -row 7 -column 0
 
         grid config $ch_adv                -row 0 -column 0
         grid config $tabInnerf2.sp_cycleNo -row 0 -column 1
 
-	#$ra_dec configure -command "NoteBookManager::ConvertCNDec $tabInnerf0 $tabInnerf1"
-    #    $ra_hex configure -command "NoteBookManager::ConvertCNHex $tabInnerf0 $tabInnerf1"
         $ra_StNormal configure -command "NoteBookManager::StationRadioChanged $tabInnerf2 StNormal"
         $ra_StMulti configure -command "NoteBookManager::StationRadioChanged $tabInnerf2 StMulti"
         $ra_StChain configure -command "NoteBookManager::StationRadioChanged $tabInnerf2 StChain"
@@ -466,7 +448,7 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
 #              choice  - choice for pdo to create frame
 #
 #  Results : basic frame on which all widgets are created
-#	         tablelist widget path
+#            tablelist widget path
 #
 #  Description : Creates the tablelist for TPDO and RPDO
 #---------------------------------------------------------------------------------------------------
@@ -489,40 +471,40 @@ proc NoteBookManager::create_table {nbpath choice} {
     font create custom1 -size 9 -family TkDefaultFont
 
     if {$choice == "pdo"} {
-            set st [tablelist::tablelist $st \
-                -columns {0 "No" left
-                0 "Node Id" center
-                0 "Index" center
-                0 "Sub Index" center
-		0 "Length" center
-		0 "Offset" center} \
-                -setgrid 0 -width 0 \
-                -stripebackground gray98 \
-                -resizable 1 -movablecolumns 0 -movablerows 0 \
-                -showseparators 1 -spacing 10 -font custom1 \
-                -editstartcommand NoteBookManager::StartEdit -editendcommand NoteBookManager::EndEdit ]
+        set st [tablelist::tablelist $st \
+            -columns {0 "No" left
+            0 "Node Id" center
+            0 "Index" center
+            0 "Sub Index" center
+            0 "Length" center
+            0 "Offset" center} \
+            -setgrid 0 -width 0 \
+            -stripebackground gray98 \
+            -resizable 1 -movablecolumns 0 -movablerows 0 \
+            -showseparators 1 -spacing 10 -font custom1 \
+            -editstartcommand NoteBookManager::StartEdit -editendcommand NoteBookManager::EndEdit ]
 
-            $st columnconfigure 0 -editable no
-            $st columnconfigure 1 -editable no
-            $st columnconfigure 2 -editable yes -editwindow entry
-            $st columnconfigure 3 -editable yes -editwindow entry
-            $st columnconfigure 4 -editable yes -editwindow entry
-            $st columnconfigure 5 -editable yes -editwindow entry
+        $st columnconfigure 0 -editable no
+        $st columnconfigure 1 -editable no
+        $st columnconfigure 2 -editable yes -editwindow entry
+        $st columnconfigure 3 -editable yes -editwindow entry
+        $st columnconfigure 4 -editable yes -editwindow entry
+        $st columnconfigure 5 -editable yes -editwindow entry
 
     } elseif {$choice == "AUTOpdo"} {
-	    set st [tablelist::tablelist $st \
-                -columns {0 "S.No" left
-			0 "Target Node Id" center
-			0 "Index" center
-			0 "Sub Index" center
-			0 "Length" center
-			0 "Offset" center} \
-                -setgrid 0 -width 0 \
-                -stripebackground gray98 \
-                -resizable 1 -movablecolumns 0 -movablerows 0 \
-                -showseparators 1 -spacing 10 -font custom1 \
-                -editstartcommand NoteBookManager::StartEditCombo \
-		-editendcommand NoteBookManager::EndEdit]
+        set st [tablelist::tablelist $st \
+            -columns {0 "S.No" left
+            0 "Target Node Id" center
+            0 "Index" center
+            0 "Sub Index" center
+            0 "Length" center
+            0 "Offset" center} \
+            -setgrid 0 -width 0 \
+            -stripebackground gray98 \
+            -resizable 1 -movablecolumns 0 -movablerows 0 \
+            -showseparators 1 -spacing 10 -font custom1 \
+            -editstartcommand NoteBookManager::StartEditCombo \
+            -editendcommand NoteBookManager::EndEdit]
 
             $st columnconfigure 0 -editable no
             $st columnconfigure 1 -editable no -editwindow ComboBox
@@ -534,7 +516,7 @@ proc NoteBookManager::create_table {nbpath choice} {
         #invalid choice
         return
     }
-    #puts "scrollWin:$scrollWin st: $st"
+
     $scrollWin setwidget $st
     pack $st -fill both -expand true
     $st configure -height 4 -width 40 -stretch all
@@ -569,7 +551,7 @@ proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
     global warWindow
     global errWindow
     global image_dir
-    
+
     variable _consoleCounter
     incr _consoleCounter
 
@@ -616,7 +598,7 @@ proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
 #  Arguments : nbpath  - path of the notebook
 #
 #  Results : path of the inserted frame in notebook
-#	     	 path of the tree widget
+#            path of the tree widget
 #
 #  Description : Creates the tree widget in notebook
 #---------------------------------------------------------------------------------------------------
@@ -624,7 +606,7 @@ proc NoteBookManager::create_treeBrowserWindow {nbpath } {
     global treeFrame
     global treePath
     global image_dir
-    
+
     set nbname objectTree
     set frmPath [$nbpath insert end $nbname -text "Network Browser"]
 
@@ -729,7 +711,7 @@ proc NoteBookManager::ConvertDec {framePath0 framePath1} {
 proc NoteBookManager::InsertDecimal {entryPath dataType} {
     set entryValue [$entryPath get]
     if { [string match -nocase "0x*" $entryValue] } {
-    	set entryValue [string range $entryValue 2 end]
+        set entryValue [string range $entryValue 2 end]
     }
 
     $entryPath delete 0 end
@@ -820,7 +802,6 @@ proc NoteBookManager::InsertHex {entryPath dataType} {
     }
 }
 
-
 #---------------------------------------------------------------------------------------------------
 #  NoteBookManager::AppendZero
 #
@@ -905,7 +886,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $nodeSelect]
     if {$result != "" } {
-	set nodeId [lindex $result 0]
+        set nodeId [lindex $result 0]
         set nodeType [lindex $result 1]
     } else {
             #must be some other node this condition should never reach
@@ -916,20 +897,16 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
     global $tmpVar0
     set newName [subst $[subst $tmpVar0]]
     if { $newName == "" } {
-        #set newName []
         tk_messageBox -message "Name field is empty\nValues not saved" -parent .
         Validation::ResetPromptFlag
         return
     }
 
     if { [expr 0x$indexId > 0x1fff] } {
-	set lastFocus [focus]
-	if { $lastFocus == "$frame1.en_lower1" || $lastFocus == "$frame1.en_upper1" } {
-	    #event generate $lastFocus <FocusOut>
-	    #this is the function binded to both the upper limit and lower limit entry boxes
-	    NoteBookManager::LimitFocusChanged $frame1 $lastFocus
-	}
-
+        set lastFocus [focus]
+        if { $lastFocus == "$frame1.en_lower1" || $lastFocus == "$frame1.en_upper1" } {
+            NoteBookManager::LimitFocusChanged $frame1 $lastFocus
+        }
     }
 
     set state [$frame1.en_value1 cget -state]
@@ -1020,7 +997,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
         #continue
     } elseif { [string match -nocase "Octet_String" $dataType] } {
         #continue
-		set value [subst $[subst $tmpVar1]]
+        set value [subst $[subst $tmpVar1]]
     }
     if { $value == "" || $dataType == "" || $value == "-" } {
         #no need to check
@@ -1038,24 +1015,22 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
         }
     } else {
         #value and datatype is not empty continue
-
     }
+
     if {[expr 0x$indexId > 0x1fff] } {
-	set limitResult [Validation::validateValueandLimit $tempValidateValue $lowerLimit $upperLimit]
-	if { [lindex $limitResult 0] == 0 } {
-	    Console::DisplayWarning "[lindex $limitResult 1].\nValues not saved"
-	    tk_messageBox -message "[lindex $limitResult 1].\nValues not saved" -title Warning -icon warning -parent .
-	    Validation::ResetPromptFlag
-	    return
-	}
+        set limitResult [Validation::validateValueandLimit $tempValidateValue $lowerLimit $upperLimit]
+        if { [lindex $limitResult 0] == 0 } {
+            Console::DisplayWarning "[lindex $limitResult 1].\nValues not saved"
+            tk_messageBox -message "[lindex $limitResult 1].\nValues not saved" -title Warning -icon warning -parent .
+            Validation::ResetPromptFlag
+            return
+        }
     }
     set chkGen [$frame0.frame1.ch_gen cget -variable]
     global $chkGen
 
     if {[string match "*SubIndexValue*" $nodeSelect]} {
-        #if { ([expr 0x$indexId > 0x1fff]) && ( ($objectType == "ARRAY") || ($objectType == "VAR") ) } {}
         if { ([expr 0x$indexId > 0x1fff]) } {
-	#puts "$nodeId $nodeType $indexId $subIndexId $value $newName $accessType $dataType $pdoType $default $upperLimit $lowerLimit $objectType"
             set catchErrCode [SetAllSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $newName $accessType $dataType $pdoType $default $upperLimit $lowerLimit $objectType [subst $[subst $chkGen]] ]
             set reloadView 1
         } else {
@@ -1064,7 +1039,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
                     if { $value == "" || [expr $value > 0xfe] || [expr $value < 0x0] } {
                         tk_messageBox -message "Value should be in range 0x0 to 0xFE\nFor subindex 01 in index $indexId\nValues not saved" -title Warning -icon warning -parent .
                         Validation::ResetPromptFlag
-	             		return
+                        return
                     }
                 }
             }
@@ -1074,7 +1049,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
                     if { $value == "" || [string length $value] != 18 } {
                         tk_messageBox -message "Value should be a 16 digit hexadecimal\nFor subindex $subIndexId in index $indexId\nValues not saved" -title Warning -icon warning -parent .
                         Validation::ResetPromptFlag
-		             	return
+                        return
                     }
                 }
             }
@@ -1083,22 +1058,19 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
 
         if { [expr 0x$indexId > 0x1fff] } {
             # if the index is greater than 1fff and the object type is not ARRAY or RECORD the delete all subobjects if present
-            #puts "llength $treePath nodes $nodeSelect ------>[llength [$treePath nodes $nodeSelect] ]"
             if { [expr 0x$indexId > 0x1fff] && (($objectType != "ARRAY") && ($objectType != "RECORD")) && ([llength [$treePath nodes $nodeSelect] ] > 0) } {
-                #puts "entered index save checking indexId->$indexId objectType->$objectType nodeSelect->$nodeSelect"
                 set result [tk_messageBox -message "Only the Object Type ARRAY or RECORD can have subindexes.\nThe subindexes of [string toupper $indexId] will be deleted.\nDo you want to continue?" -type okcancel -icon question -title "Question" -parent .]
                 switch -- $result {
-        		    ok {
+                    ok {
                         #continue
-        		    }
-        		    cancel {
+                    }
+                    cancel {
                         Validation::ResetPromptFlag
-        			    return
-        		    }
-        	    }
+                        return
+                    }
+                }
                 #delete the subindex
                 foreach sidxTreeNode [$treePath nodes $nodeSelect] {
-                    #puts "sidxTreeNode->$sidxTreeNode"
                     set sidx [string range [$treePath itemcget $sidxTreeNode -text] end-2 end-1 ]
                     set catchErrCode [DeleteSubIndex $nodeId $nodeType $indexId $sidx]
                     #need to check the result
@@ -1163,7 +1135,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
 #  NoteBookManager::DiscardValue
 #
 #  Arguments : frame0 - frame containing widgets describing the object (index id, Object name, subindex id )
-#	           frame1 - frame containing widgets describing properties of object
+#              frame1 - frame containing widgets describing properties of object
 #
 #  Results : -
 #
@@ -1211,7 +1183,7 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
         set nodeType [lindex $result 1]
     } else {
             #must be some other node this condition should never reach
-			Validation::ResetPromptFlag
+            Validation::ResetPromptFlag
             return
     }
 
@@ -1232,13 +1204,9 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
     #reconfiguring the tree
     $treePath itemconfigure $nodeSelect -text "$newNodeName\($nodeId\)"
 
-    #set radioSel [$frame0.formatframe1.ra_dec cget -variable]
-    #global $radioSel
-    #set radioSel [subst $[subst $radioSel]]
-
     set MNDatatypeObjectPathList [list \
         [list cycleTimeDatatype $Operations::CYCLE_TIME_OBJ $frame0.cycleframe.en_time] \
-	[list lossSoCToleranceDatatype $Operations::LOSS_SOC_TOLERANCE $frame1.en_advOption4] \
+        [list lossSoCToleranceDatatype $Operations::LOSS_SOC_TOLERANCE $frame1.en_advOption4] \
         [list asynMTUSizeDatatype $Operations::ASYNC_MTU_SIZE_OBJ $frame1.en_advOption1] \
         [list asynTimeoutDatatype $Operations::ASYNC_TIMEOUT_OBJ $frame1.en_advOption2] \
         [list multiPrescalerDatatype $Operations::MULTI_PRESCAL_OBJ $frame1.en_advOption3] ]
@@ -1268,12 +1236,12 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
                     continue
                 }
 
-		if { [ lindex $tempDatatype 0 ] == "lossSoCToleranceDatatype" } {
-		    if { [ catch { set validValue [expr $validValue * 1000] } ] } {
-			#error in conversion
-			continue
-		    }
-		}
+            if { [ lindex $tempDatatype 0 ] == "lossSoCToleranceDatatype" } {
+                if { [ catch { set validValue [expr $validValue * 1000] } ] } {
+                    #error in conversion
+                    continue
+                }
+            }
                 set reqFieldResult [Operations::GetObjectValueData $nodePos $nodeId $nodeType [list 0 9] [lindex $objectList 0] [lindex $objectList 1] ]
                 if { [lindex $reqFieldResult 0] == "pass" } {
                     set objName [lindex $reqFieldResult 1]
@@ -1301,7 +1269,6 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
                     #value for MN porpety is edited need to change
                     set status_save 1
                     Validation::ResetPromptFlag
-                    #$entryPath configure -bg #fdfdd4
                 } else {
                     continue
                 }
@@ -1313,11 +1280,7 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
     if { $dispMsg == 1 } {
         Console::DisplayWarning "Empty values in MN properties are not saved"
     }
-	Validation::ResetPromptFlag
-    #if { [lsearch $savedValueList $nodeSelect] == -1 } {
-    #    lappend savedValueList $nodeSelect
-    #}
-    #$frame0.en_nodeName configure -bg #fdfdd4
+    Validation::ResetPromptFlag
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -1365,37 +1328,34 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     set validateResult [$frame0.cycleframe.en_time validate]
     switch -- $validateResult {
         0 {
-				#NOTE:: the minimum value is got from vcmd
-   				set minimumvalue [ lindex [$frame0.cycleframe.en_time cget -vcmd] end-2]
-				tk_messageBox -message "The Entered value should not be less than the minimum value $minimumvalue" -parent . -icon warning -title "Error"
-   				Validation::ResetPromptFlag
+            #NOTE:: the minimum value is got from vcmd
+            set minimumvalue [ lindex [$frame0.cycleframe.en_time cget -vcmd] end-2]
+            tk_messageBox -message "The Entered value should not be less than the minimum value $minimumvalue" -parent . -icon warning -title "Error"
+            Validation::ResetPromptFlag
         }
         1 {
-				set validateResultConfirm [$frame0.cycleframe.en_time validate]
+            set validateResultConfirm [$frame0.cycleframe.en_time validate]
 
-				switch -- $validateResultConfirm {
-					0 {
- 				        set minimumvalue [ lindex [$frame0.cycleframe.en_time cget -vcmd] end-3]
-						set answer [tk_messageBox -message "The Entered value is less than the Set latency value $minimumvalue, Do you wish to continue? " -parent . -type yesno -icon question -title "Warning"]
-						switch -- $answer {
-
-							yes {
-									#continue
-							}
-							no	{
-									tk_messageBox -message "The Poll Response Timeout values are unchanged" -type ok
-									Validation::ResetPromptFlag
-            						return
-							}
-						}
-					}
-					1 {
-						#continue
-					}
-				}
-
+            switch -- $validateResultConfirm {
+                0 {
+                    set minimumvalue [ lindex [$frame0.cycleframe.en_time cget -vcmd] end-3]
+                    set answer [tk_messageBox -message "The Entered value is less than the Set latency value $minimumvalue, Do you wish to continue? " -parent . -type yesno -icon question -title "Warning"]
+                    switch -- $answer {
+                        yes {
+                                #continue
+                        }
+                        no  {
+                                tk_messageBox -message "The Poll Response Timeout values are unchanged" -type ok
+                                Validation::ResetPromptFlag
+                                return
+                        }
+                    }
+                }
+                1 {
+                    #continue
+                }
+            }
         }
-
     }
     set newNodeName [$frame0.en_nodeName get]
     set stationType [NoteBookManager::RetStationEnumValue]
@@ -1424,10 +1384,6 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
         }
     }
 
-    #set radioSel [$frame0.formatframe1.ra_dec cget -variable]
-    #global $radioSel
-    #set radioSel [subst $[subst $radioSel]]
-
     set CNDatatypeObjectPathList [list \
         [list presponseCycleTimeDatatype $Operations::PRES_TIMEOUT_OBJ $frame0.cycleframe.en_time] ]
 
@@ -1450,15 +1406,14 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
             if { [lindex $result 0] == "pass" } {
                 #get the flag and name of the object
                 set validValue [lindex $result 1]
-		if { $validValue != "" } {
-		    if { [ catch { set validValue [expr $validValue * 1000] } ] } {
-			set validValue ""
-		    }
-		}
+                if { $validValue != "" } {
+                    if { [ catch { set validValue [expr $validValue * 1000] } ] } {
+                    set validValue ""
+                    }
+                }
             } else {
                 set validValue ""
             }
-
         }
     }
 
@@ -1483,7 +1438,7 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     set ObdTreeNode OBD$tmpNode-1
     catch {$treePath delete $ObdTreeNode}
     #insert the OBD ico only for expert view mode
-    
+
     image create photo img_pdo -file "$image_dir/pdo.gif"
     if { [string match "EXPERT" $Operations::viewType ] == 1 } {
         $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
@@ -1506,55 +1461,50 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodePos $nodeId $nodeType $frame0 $frame1 $frame2 $multiPrescalDatatype"
     $treePath itemconfigure $nodeSelect -text "$newNodeName\($nodeId\)"
     Validation::ResetPromptFlag
-    #operations based on station type
-    #if { [lsearch $savedValueList $nodeSelect] == -1 } {
-    #    lappend savedValueList $nodeSelect
-    #}
-    #$frame0.en_nodeName configure -bg #fdfdd4
 }
 
 #---------------------------------------------------------------------------------------------------
 #  NoteBookManager::StartEdit
 #
 #  Arguments : tablePath   - path of the tablelist widget
-#	           rowIndex    - row of the edited cell
-#			   columnIndex - column of the edited cell
-#			   text        - entered value
+#              rowIndex    - row of the edited cell
+#              columnIndex - column of the edited cell
+#              text        - entered value
 #
 #  Results : text - to be displayed in tablelist
 #
 #  Description : to validate the entered value
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
-        set win [$tablePath editwinpath]
-        switch -- $columnIndex {
-			1 {
-                $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 2 $tablePath $rowIndex $columnIndex $win"
-            }
-            2 {
-                $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
-            }
-            3 {
-                $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 2 $tablePath $rowIndex $columnIndex $win"
-            }
-            4 {
-                $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
-            }
-            5 {
-                $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
-            }
+
+    set win [$tablePath editwinpath]
+    switch -- $columnIndex {
+        1 {
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 2 $tablePath $rowIndex $columnIndex $win"
         }
+        2 {
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
+        }
+        3 {
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 2 $tablePath $rowIndex $columnIndex $win"
+        }
+        4 {
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
+        }
+        5 {
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
+        }
+    }
     return $text
 }
-
 
 #---------------------------------------------------------------------------------------------------
 #  NoteBookManager::StartEditCombo
 #
-#  Arguments :	tablePath   - path of the tablelist widget
-#		rowIndex    - row of the edited cell
-#		columnIndex - column of the edited cell
-#		text        - entered value
+#  Arguments :  tablePath   - path of the tablelist widget
+#       rowIndex    - row of the edited cell
+#       columnIndex - column of the edited cell
+#       text        - entered value
 #
 #  Results : text - to be displayed in tablelist
 #
@@ -1576,7 +1526,6 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     set selectedNode [$treePath selection get]
     set pdoType ""
     set pdoType "[$treePath itemcget $selectedNode -text ]"
-    #puts "$pdoType"
 
     set result [Operations::GetNodeIdType $selectedNode]
     set nodeidVal [lindex $result 0]
@@ -1585,64 +1534,58 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     set win [$tablePath editwinpath]
     $win configure -editable no
     switch -- $columnIndex {
-	1 {
+        1 {
             set nodeIdListHex ""
-	    set nodeIdListHex "0x0"
+            set nodeIdListHex "0x0"
 
-	    if { $nodeTypeVal == 1 && [string match -nocase "TPDO*" $pdoType] } {
-		    #node id should be = 0 for a CN TPDO
-	    } else {
-
-		    #puts "nodeTypeVal:$nodeTypeVal  pdoType:$pdoType"
-		    foreach tempnodeId $nodeIdList {
-			set hexnodeid 0x[string toupper [format %x $tempnodeId]]
-			lappend nodeIdListHex "$hexnodeid"
-		    }
-	    }
-	    set nodeIdListHex [lsort $nodeIdListHex]
-	    $win configure -values "$nodeIdListHex"
-	    $win configure -invalidcommand bell -validate key -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
-	}
-	2 {
-	    set idxList [Operations::FuncIndexlist $nodeidVal $nodeTypeVal $pdoType]
-	    #puts "INdex cell: $idxList"
-	    set idxList [lappend idxList "0x0000"]
-	    set idxList [lsort $idxList]
-	    $win configure -values "$idxList"
-	    $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
-	}
-	3 {
-	    set sidxList [Operations::FuncSubIndexlist $nodeidVal $idxidVal $pdoType]
-	    #puts "SUBINdex cell: $sidxList"
-	    set sidxList [lappend sidxList "0x00"]
-	    set sidxList [lsort $sidxList]
-	    $win configure -values "$sidxList"
-	    $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
-    	}
-	4 {
-	    set sidxLength [Operations::FuncSubIndexLength $nodeidVal $idxidVal $sidxVal]
-	    #puts "SINdex length cell: $sidxLength"
-	    set sidxLength [lappend sidxLength "0x0000"]
-	    set sidxLength [lsort $sidxLength]
-	    $win configure -values "$sidxLength"
-	    $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
-	}
-	5 {
-	    #puts "Offset Loading"
-	    #Nothing to do for offset. Entry greyed out.
-	}
+            if { $nodeTypeVal == 1 && [string match -nocase "TPDO*" $pdoType] } {
+                #node id should be = 0 for a CN TPDO
+            } else {
+                foreach tempnodeId $nodeIdList {
+                    set hexnodeid 0x[string toupper [format %x $tempnodeId]]
+                    lappend nodeIdListHex "$hexnodeid"
+                }
+            }
+            set nodeIdListHex [lsort $nodeIdListHex]
+            $win configure -values "$nodeIdListHex"
+            $win configure -invalidcommand bell -validate key -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
+        }
+        2 {
+            set idxList [Operations::FuncIndexlist $nodeidVal $nodeTypeVal $pdoType]
+            set idxList [lappend idxList "0x0000"]
+            set idxList [lsort $idxList]
+            $win configure -values "$idxList"
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
+        }
+        3 {
+            set sidxList [Operations::FuncSubIndexlist $nodeidVal $idxidVal $pdoType]
+            set sidxList [lappend sidxList "0x00"]
+            set sidxList [lsort $sidxList]
+            $win configure -values "$sidxList"
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
+            }
+        4 {
+            set sidxLength [Operations::FuncSubIndexLength $nodeidVal $idxidVal $sidxVal]
+            set sidxLength [lappend sidxLength "0x0000"]
+            set sidxLength [lsort $sidxLength]
+            $win configure -values "$sidxLength"
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
+        }
+        5 {
+            #puts "Offset Loading"
+            #Nothing to do for offset. Entry greyed out.
+        }
     }
-
-        return $text
+    return $text
 }
 
 #---------------------------------------------------------------------------------------------------
 #  NoteBookManager::EndEdit
 #
 #  Arguments : tablePath   - path of the tablelist widget
-#	           rowIndex    - row of the edited cell
-#			   columnIndex - column of the edited cell
-#			   text        - entered value
+#              rowIndex    - row of the edited cell
+#              columnIndex - column of the edited cell
+#              text        - entered value
 #
 #  Results : text - to be displayed in tablelist
 #
@@ -1655,42 +1598,42 @@ proc NoteBookManager::EndEdit {tablePath rowIndex columnIndex text} {
     } else {
         $tablePath rejectinput
     }
-  	switch -- $columnIndex {
-            1 {
-                if {[string length $text] < 1 || [string length $text] > 2} {
-	                bell
-                    $tablePath rejectinput
-                } else {
-                }
+    switch -- $columnIndex {
+        1 {
+            if {[string length $text] < 1 || [string length $text] > 2} {
+                bell
+                $tablePath rejectinput
+            } else {
             }
-        	2 {
-                if {[string length $text] != 4} {
-				    bell
-                    $tablePath rejectinput
-                } else {
-                }
+        }
+        2 {
+            if {[string length $text] != 4} {
+                bell
+                $tablePath rejectinput
+            } else {
             }
-            3 {
-                if {[string length $text] != 2} {
-                    bell
-                    $tablePath rejectinput
-                } else {
-                }
+        }
+        3 {
+            if {[string length $text] != 2} {
+                bell
+                $tablePath rejectinput
+            } else {
             }
-            4 {
-                if {[string length $text] != 4} {
-                    bell
-                    $tablePath rejectinput
-                } else {
-                }
+        }
+        4 {
+            if {[string length $text] != 4} {
+                bell
+                $tablePath rejectinput
+            } else {
             }
-            5 {
-                if {[string length $text] != 4} {
-	                bell
-                    $tablePath rejectinput
-                } else {
-                }
+        }
+        5 {
+            if {[string length $text] != 4} {
+                bell
+                $tablePath rejectinput
+            } else {
             }
+        }
     }
     if { $text == "" } {
         return $text
@@ -1736,25 +1679,25 @@ proc NoteBookManager::SaveTable {tableWid} {
     set ExistfFlag [boolp_value $ExistfFlag]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
     if { $ErrCode == 0 && $ExistfFlag == 1 } {
-	    #the node exist continue
+        #the node exist continue
     } else {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-	    tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]\nValues not saved" -parent . -title Error -icon error
+            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]\nValues not saved" -parent . -title Error -icon error
         } else {
-	    tk_messageBox -message "Unknown Error\nValues not saved" -parent . -title Error -icon error
+            tk_messageBox -message "Unknown Error\nValues not saved" -parent . -title Error -icon error
         }
         Validation::ResetPromptFlag
         return
     }
-	#sort the tablelist based on the No column
-	$tableWid sortbycolumn 0 -increasing
-	update
-	foreach childIndex $populatedPDOList {
+    #sort the tablelist based on the No column
+    $tableWid sortbycolumn 0 -increasing
+    update
+    foreach childIndex $populatedPDOList {
         set indexId [string range [$treePath itemcget $childIndex -text] end-4 end-1]
         foreach childSubIndex [$treePath nodes $childIndex] {
             set subIndexId [string range [$treePath itemcget $childSubIndex -text] end-2 end-1]
             if {[string match "00" $subIndexId]} {
-		SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId "0x0" "NumberOfEntries" 1
+                SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId "0x0" "NumberOfEntries" 1
             } else {
                 set name [string range [$treePath itemcget $childSubIndex -text] 0 end-6]
                 set offset [string range [$tableWid cellcget $rowCount,5 -text] 2 end]
@@ -1779,40 +1722,40 @@ proc NoteBookManager::SaveTable {tableWid} {
                     set subIndexPos [intp_value $subIndexPos]
                     #to get include subindex in cdc generation
                     set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 9 ]
-		    set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-		    if {$ErrCode == 0} {
-			    set incFlag [lindex $tempIndexProp 1]
-		    } else {
-			    set incFlag 0
-		    }
+            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
+            if {$ErrCode == 0} {
+                set incFlag [lindex $tempIndexProp 1]
+            } else {
+                set incFlag 0
+            }
                 } else {
                     set incFlag 0
                 }
-		if { [expr [expr 0x$index > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
-		    SetBasicSubIndexAttributes $nodeId $nodeType $indexId "00" "0x$subIndexId" "NumberOfEntries" 1
-		}
+        if { [expr [expr 0x$index > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
+            SetBasicSubIndexAttributes $nodeId $nodeType $indexId "00" "0x$subIndexId" "NumberOfEntries" 1
+        }
                 SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $name $incFlag
                 incr rowCount
             }
         }
     }
 
-	#saving the nodeid to communication parameter subindex 01
-	foreach childIndex $populatedCommParamList {
-		set treeNode [lindex $childIndex 1]
-		if {[$treePath exists $treeNode] == 0} {
-			continue;
-		}
+    #saving the nodeid to communication parameter subindex 01
+    foreach childIndex $populatedCommParamList {
+        set treeNode [lindex $childIndex 1]
+        if {[$treePath exists $treeNode] == 0} {
+            continue;
+        }
         set indexId [string range [$treePath itemcget $treeNode -text] end-4 end-1]
         foreach childSubIndex [$treePath nodes $treeNode] {
             set subIndexId [string range [$treePath itemcget $childSubIndex -text] end-2 end-1]
-			set name [string range [$treePath itemcget $childSubIndex -text] 0 end-6]
-			set rowCount [lindex [lindex $childIndex 2] 0]
+            set name [string range [$treePath itemcget $childSubIndex -text] 0 end-6]
+            set rowCount [lindex [lindex $childIndex 2] 0]
             if { [string match "01" $subIndexId] } {
-				#
-				if { $rowCount == ""} {
-					break
-				}
+                #
+                if { $rowCount == ""} {
+                    break
+                }
                 set enteredNodeId [string range [$tableWid cellcget $rowCount,1 -text] 2 end]
                 set value $enteredNodeId
                 #0x is appended when saving value to indicate it is a hexa decimal number
@@ -1830,18 +1773,18 @@ proc NoteBookManager::SaveTable {tableWid} {
                     set subIndexPos [intp_value $subIndexPos]
                     #to get include subindex in cdc generation
                     set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 9 ]
-		    set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-		    if {$ErrCode == 0} {
-			    set incFlag [lindex $tempIndexProp 1]
-		    } else {
-			    set incFlag 0
-		    }
+            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
+            if {$ErrCode == 0} {
+                set incFlag [lindex $tempIndexProp 1]
+            } else {
+                set incFlag 0
+            }
                 } else {
                     set incFlag 0
                 }
                 SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $name $incFlag
                 #incr rowCount
-				break
+                break
             }
         }
     }
@@ -1958,26 +1901,23 @@ proc NoteBookManager::GenerateCnNodeList {} {
 #  Description : enables or disasbles the spinbox based on the check button selection
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::StationRadioChanged {framePath radioVal } {
-	global lastRadioVal
-	if { $lastRadioVal != $radioVal } {
-		Validation::SetPromptFlag
-	}
-	set lastRadioVal $radioVal
+    global lastRadioVal
+    if { $lastRadioVal != $radioVal } {
+        Validation::SetPromptFlag
+    }
+    set lastRadioVal $radioVal
     set spinVar [$framePath.sp_cycleNo cget -textvariable]
     global $spinVar
     if { $radioVal == "StNormal" } {
-        #set $spinVar ""
         $framePath.ch_adv deselect
         $framePath.ch_adv configure -state disabled
-    	$framePath.sp_cycleNo configure  -state disabled
+        $framePath.sp_cycleNo configure  -state disabled
     } elseif { $radioVal == "StMulti" } {
         $framePath.ch_adv configure -state normal
-    	#$framePath.sp_cycleNo configure  -state normal -validate key
     } elseif { $radioVal == "StChain" } {
-        #set $spinVar ""
         $framePath.ch_adv deselect
-    	$framePath.ch_adv configure -state disabled
-    	$framePath.sp_cycleNo configure  -state disabled
+        $framePath.ch_adv configure -state disabled
+        $framePath.sp_cycleNo configure  -state disabled
     } else {
 
     }
@@ -1995,7 +1935,7 @@ proc NoteBookManager::StationRadioChanged {framePath radioVal } {
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::forceCycleChecked { framePath check_var } {
     global $check_var
-	Validation::SetPromptFlag
+    Validation::SetPromptFlag
     set check_value [subst $[subst $check_var]]
     if { $check_value == 1 } {
         $framePath.sp_cycleNo configure -state normal -bg white
@@ -2054,12 +1994,8 @@ proc NoteBookManager::LimitFocusChanged {framePath entryPath} {
         set dontCompareValue 0
         set valueState [$framePath.en_value1 cget -state]
         set valueInput [$framePath.en_value1 get]
-        #puts "LimitFocusChanged UPPER_LIMIT->$UPPER_LIMIT LOWER_LIMIT->$LOWER_LIMIT"
-        #puts "LimitFocusChanged valueState->$valueState valueInput->$valueInput"
         if { $valueState != "normal" || $valueInput == "" || $valueInput == "-" || [string match -nocase "0x" $valueInput] } {
-
             set dontCompareValue 1
-            #puts "LimitFocusChanged dontCompareValue->$dontCompareValue"
         }
 
         set msg ""
@@ -2074,41 +2010,37 @@ proc NoteBookManager::LimitFocusChanged {framePath entryPath} {
             if { $lowervalueState != "normal" } {
                 return 1
             }
-            #puts "@@@@ lowervalueInput->$lowervalueInput"
+
             if { $lowervalueInput != "" && $UPPER_LIMIT != ""} {
                 if { [ catch { set lowerlimitResult [expr $lowervalueInput <= $UPPER_LIMIT] } ] } {
                     SetEntryValue $framePath.en_lower1 ""
                     set LOWER_LIMIT ""
                     set msg "Error in comparing lowerlimit($lowervalueInput) and upperlimit($UPPER_LIMIT). lowerlimit is made empty"
-                    #puts "$msg"
                 }
                 if { $lowerlimitResult == 0 } {
                     SetEntryValue $framePath.en_lower1 ""
                     set LOWER_LIMIT ""
                     set msg "The entered lowerlimit($lowervalueInput) is greater than upperlimit($UPPER_LIMIT). lowerlimit is made empty"
                 }
+
                 if {$msg != ""} {
-                    #tk_messageBox -message "$msg" -parent . -title "Warning" -icon warning
                     Console::DisplayWarning $msg
                     return 0
                 }
             }
+
             set LOWER_LIMIT $lowervalueInput
-            #puts "@@@@@ LOWER_LIMIT->$LOWER_LIMIT"
+
             if { $LOWER_LIMIT != "" && $dontCompareValue == 0} {
                 if { [ catch { set lowerlimitResult [expr $valueInput >= $LOWER_LIMIT] } ] } {
-                    #SetEntryValue $framePath.en_value1 $LOWER_LIMIT
-		    set msg "Error in comparing input($valueInput) and lowerlimit($lowervalueInput)."
-		    #tk_messageBox -message "$msg" -parent . -title "Warning" -icon warning
-		    Console::DisplayWarning $msg
+                    set msg "Error in comparing input($valueInput) and lowerlimit($lowervalueInput)."
+                    Console::DisplayWarning $msg
                     return 1
                 }
-                #puts "lowerlimitResult->$lowerlimitResult"
                 if { $lowerlimitResult == 0 } {
                     SetEntryValue $framePath.en_value1 $LOWER_LIMIT
-		    set msg "The entered input($valueInput) is lesser than lowerlimit($LOWER_LIMIT).lower limit is copied into the value"
-		    #tk_messageBox -message "$msg" -parent . -title "Warning" -icon warning
-		    Console::DisplayWarning $msg
+                    set msg "The entered input($valueInput) is lesser than lowerlimit($LOWER_LIMIT).lower limit is copied into the value"
+                    Console::DisplayWarning $msg
                     return 1
                 }
             }
@@ -2123,41 +2055,36 @@ proc NoteBookManager::LimitFocusChanged {framePath entryPath} {
             if { $uppervalueState != "normal" } {
                 return 1
             }
-            #puts "@@@@ uppervalueInput->$uppervalueInput"
+
             if { $uppervalueInput != "" && $LOWER_LIMIT != "" } {
                 if { [ catch { set upperlimitResult [expr $uppervalueInput >= $LOWER_LIMIT] } ] } {
                     SetEntryValue $framePath.en_upper1 ""
                     set UPPER_LIMIT ""
                     set msg "Error in comparing upperlimit($uppervalueInput) and lowerlimit($LOWER_LIMIT). upperlimit is made empty"
-                    #puts "$msg"
                 }
-                #puts "upperlimitResult->$upperlimitResult"
+
                 if { $upperlimitResult == 0 } {
                     SetEntryValue $framePath.en_upper1 ""
                     set UPPER_LIMIT ""
                     set msg "The entered upperlimit($uppervalueInput) is lesser than lowerlimit($LOWER_LIMIT). upperlimit is made empty"
                 }
                 if {$msg != ""} {
-                    #tk_messageBox -message "$msg" -parent . -title "Warning" -icon warning
-		    Console::DisplayWarning $msg
+                    Console::DisplayWarning $msg
                     return 0
                 }
             }
             set UPPER_LIMIT $uppervalueInput
-            #puts "@@@@@ UPPER_LIMIT->$UPPER_LIMIT"
+
             if { $UPPER_LIMIT != "" && $dontCompareValue == 0} {
                 if { [ catch { set upperlimitResult [expr $valueInput <= $UPPER_LIMIT] } ] } {
-                    #SetEntryValue $framePath.en_value1 $UPPER_LIMIT
-		    set msg "Error in comparing input($valueInput) and upperlimit($UPPER_LIMIT)."
-		    #tk_messageBox -message "$msg" -parent . -title "Warning" -icon warning
-		    Console::DisplayWarning $msg
+                    set msg "Error in comparing input($valueInput) and upperlimit($UPPER_LIMIT)."
+                    Console::DisplayWarning $msg
                     return 1
                 }
                 if { $upperlimitResult == 0 } {
                     SetEntryValue $framePath.en_value1 $UPPER_LIMIT
-    		    set msg "The entered input($valueInput) is greater than upperlimit($UPPER_LIMIT). upperlimit is copied into the value"
-		    #tk_messageBox -message "$msg" -parent . -title "Warning" -icon warning
-		    Console::DisplayWarning $msg
+                    set msg "The entered input($valueInput) is greater than upperlimit($UPPER_LIMIT). upperlimit is copied into the value"
+                    Console::DisplayWarning $msg
                     return 1
                 }
             }
@@ -2175,11 +2102,10 @@ proc NoteBookManager::ValueFocusChanged {framePath entryPath} {
         if { [string match "*.en_value1" $entryPath] } {
             set limitResult [Validation::CheckAgainstLimits $entryPath $valueInput ]
             if { [lindex $limitResult 0] == 0 } {
-		Console::DisplayWarning [lindex $limitResult 1]
-		#tk_messageBox -message "[lindex $limitResult 1]" -title "Warning" -icon warning
+                Console::DisplayWarning [lindex $limitResult 1]
                 return 0
             }
         }
-            return 1
+        return 1
     }
 }
