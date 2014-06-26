@@ -622,19 +622,15 @@ proc Operations::exit_app {} {
 proc Operations::OpenProjectWindow { } {
     global projectDir
     global projectName
-    global treePath
-    global nodeIdList
-    global mnCount
-    global cnCount
     global status_save
     global lastOpenPjt
     global defaultProjectDir
+    global resourcesDir
 
-    global rootDir
-    set odXML [file join $rootDir od.xml]
+    set odXML [file join $resourcesDir od.xml]
     if {![file isfile $odXML] } {
-    tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
-    return
+		tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
+		return
     } else {
         #od.xml is present continue
     }
@@ -663,11 +659,9 @@ proc Operations::OpenProjectWindow { } {
         }
     }
 
-
     set types {
         {"All Project Files"     {*.oct } }
     }
-
 
     if { ![file isdirectory $lastOpenPjt] && [file exists $lastOpenPjt] } {
         set lastOpenFile [file tail $lastOpenPjt]
@@ -826,12 +820,12 @@ proc Operations::RePopulate { projectDir projectName } {
     set cnCount 1
 
     catch {$treePath delete ProjectNode}
-    
+
     image create photo img_network -file "$image_dir/network.gif"
     image create photo img_mn -file "$image_dir/mn.gif"
     image create photo img_pdo -file "$image_dir/pdo.gif"
     image create photo img_cn -file "$image_dir/cn.gif"
-    
+
     $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
     #API GetNodeCount
     set count [new_intp]
@@ -915,7 +909,7 @@ proc Operations::BasicFrames { } {
     global LastTableFocus
     global lastVideoModeSel
     global image_dir
-    
+
     variable bb_connect
     variable mainframe
     variable notebook
@@ -938,7 +932,7 @@ proc Operations::BasicFrames { } {
     variable sidxMenu
 
     set image_dir "$rootDir/images"
- 
+
     set progressmsg "Please wait while loading ..."
     set prgressindicator -1
     set ImageKalycito Splash
@@ -1049,7 +1043,7 @@ proc Operations::BasicFrames { } {
     set toolbar  [MainFrame::addtoolbar $mainframe]
     pack $toolbar -expand yes -fill x
 
-    
+
     image create photo img_page_white -file "$image_dir/page_white.gif"
     image create photo img_disk -file "$image_dir/disk.gif"
     image create photo img_disk_multiple -file "$image_dir/disk_multiple.gif"
@@ -1060,7 +1054,7 @@ proc Operations::BasicFrames { } {
     image create photo img_transfer -file "$image_dir/transfer.gif"
     image create photo img_kalycito_icon -file "$image_dir/kalycito_icon.gif"
     #image create photo clean -file "$image_dir/clean.gif"
-    
+
     set bbox [ButtonBox::create $toolbar.bbox1 -spacing 0 -padx 1 -pady 1]
     set Buttons(new) [ButtonBox::add $bbox -image img_page_white \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
@@ -2064,7 +2058,7 @@ proc Operations::SingleClickNode {node} {
     $tmpInnerf1.en_lower1 configure -state $entryState -bg white -validate key
     set LOWER_LIMIT [lindex $IndexProp 7]
     $tmpInnerf1.en_lower1 configure -state disabled -bg white
-    
+
     $tmpInnerf1.en_upper1 configure -state normal -validate none
     $tmpInnerf1.en_upper1 delete 0 end
     $tmpInnerf1.en_upper1 insert 0 [lindex $IndexProp 8]
@@ -2107,8 +2101,8 @@ proc Operations::SingleClickNode {node} {
 
     grid $tmpInnerf1.en_obj1
     grid $tmpInnerf1.en_data1
-    grid $tmpInnerf1.en_access1    
-    grid $tmpInnerf1.en_pdo1    
+    grid $tmpInnerf1.en_access1
+    grid $tmpInnerf1.en_pdo1
 
     if {  ( $exp1 != 1 ) && ( ( $exp2 == 1) || ( ($exp3 == 1) && !($exp4 == "VAR" || $exp4 == "") ) ) } {
 
@@ -2170,7 +2164,7 @@ proc Operations::SingleClickNode {node} {
     } else {
         set IndexObjtype []
     }
-    
+
     if { ($subIndexId == "00") } {
         #$tmpInnerf1.en_lower1 configure -state disabled
         #$tmpInnerf1.en_upper1 configure -state disabled
@@ -2952,11 +2946,12 @@ proc Operations::Saveproject {} {
 #  Description : Save the current project and creates new project
 #---------------------------------------------------------------------------------------------------
 proc Operations::InitiateNewProject {} {
-    global rootDir
-    set odXML [file join $rootDir od.xml]
+    global resourcesDir
+
+    set odXML [file join $resourcesDir od.xml]
     if {![file isfile $odXML] } {
-    tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
-    return
+		tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
+		return
     } else {
         #od.xml is present continue
     }
@@ -2965,7 +2960,6 @@ proc Operations::InitiateNewProject {} {
     if { $result != "cancel"} {
        ChildWindows::NewProjectWindow
     }
-
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -3149,7 +3143,7 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
     } else {
         tk_messageBox -message "Unknown Error" -title Error -icon error
     }
-    return 
+    return
         }
     }
 
@@ -3195,7 +3189,8 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
         } else {
             Console::DisplayInfo "Imported $tmpImpDir for Node ID: $nodeId"
         }
-            thread::send  [tsv::set application importProgress] "StartProgress"
+
+        thread::send  [tsv::set application importProgress] "StartProgress"
         set result [WrapperInteractions::Import $treeNodeCN 1 $nodeId]
         #rebuild the mn tree
         set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
@@ -3241,7 +3236,7 @@ proc Operations::InsertTree { } {
     incr cnCount
     incr mnCount
     global image_dir
-    
+
     image create photo img_network -file "$image_dir/network.gif"
     $treePath insert end root ProjectNode -text "POWERLINK Network" -open 1 -image img_network
 }
@@ -4432,7 +4427,7 @@ proc Operations::ReImport {} {
                return
              }
         }
-        
+
         #Check XDC for schema compliance if existing
         if {$tmpImpDir != ""} {
         set catchErrCode [ValidateXDDFile $tmpImpDir]
@@ -4444,10 +4439,10 @@ proc Operations::ReImport {} {
         } else {
             tk_messageBox -message "Unknown Error" -title Error -icon error
         }
-        return 
+        return
         }
         }
-        
+
         set catchErrCode [ReImportXML $tmpImpDir $nodeId $nodeType]
         set ErrCode [ocfmRetCode_code_get $catchErrCode]
         if { $ErrCode != 0 } {
