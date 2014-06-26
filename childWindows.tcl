@@ -466,8 +466,8 @@ proc ChildWindows::AddCNWindow {} {
             set chk [Operations::AddCN $cnName $tmpImpCnDir $nodeId]
         } else {
             #import the default cn xdd file
-            global rootDir
-            set tmpImpCnDir [file join $rootDir openPOWERLINK_CN.xdd]
+            global resourcesDir
+            set tmpImpCnDir [file join $resourcesDir openPOWERLINK_CN.xdd]
             if {[file exists $tmpImpCnDir]} {
                     catch { destroy .addCN }
                 set chk [Operations::AddCN $cnName $tmpImpCnDir $nodeId]
@@ -777,8 +777,8 @@ proc ChildWindows::NewProjectWindow {} {
             }
             set lastXD $tmpImpDir
         } else {
-            global rootDir
-            set tmpImpDir [file join $rootDir openPOWERLINK_MN.xdd]
+            global resourcesDir
+            set tmpImpDir [file join $resourcesDir openPOWERLINK_MN.xdd]
             if {![file isfile $tmpImpDir]} {
                 tk_messageBox -message "Default xdd file for MN is not found" -icon warning -parent .newprj
                 focus .newprj
@@ -1365,9 +1365,9 @@ proc ChildWindows::CopyScript { pjtFldr } {
     } elseif {"$tcl_platform(platform)" == "unix"} {
         set sptFile Transfer.sh
     }
-	
+
     set scriptFile [file join $rootDir $sptFile]
-	
+
     if { [file exists $scriptFile] && [file isfile $scriptFile] } {
         #file exists
         catch {file copy -force $scriptFile [file join $pjtFldr scripts]}
