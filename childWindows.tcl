@@ -180,21 +180,21 @@ proc ChildWindows::StartUpText {t_desc choice} {
 proc ChildWindows::ProjectSettingWindow {} {
     global projectName
     global projectDir
-    global ra_proj
-    global ra_auto
-    global viewChgFlg
+    global st_save
+    global st_autogen
+    global st_viewType
     global nodeSelect
 
     if {$projectDir == "" || $projectName == "" } {
         return
     }
 
-    set ra_autop [new_AutoGeneratep]
-    set ra_projp [new_AutoSavep]
+    set st_autogenp [new_AutoGeneratep]
+    set st_savep [new_AutoSavep]
     set videoMode [new_ViewModep]
-    set viewChgFlg [new_boolp]
+    set st_viewType [new_boolp]
 
-    set catchErrCode [GetProjectSettings $ra_autop $ra_projp $videoMode $viewChgFlg]
+    set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
     if { $ErrCode != 0 } {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
@@ -202,15 +202,15 @@ proc ChildWindows::ProjectSettingWindow {} {
         } else {
             tk_messageBox -message "Unknown Error\nAuto generate is set to \"Yes\" and project Setting set to \"Prompt\" " -title Error -icon error
         }
-        set ra_auto 1
-        set ra_proj 1
+        set st_autogen 1
+        set st_save 1
         set videoMode 0
-        set viewChgFlg 0
+        set st_viewType 0
     } else {
-        set ra_auto [AutoGeneratep_value $ra_autop]
-        set ra_proj [AutoSavep_value $ra_projp]
+        set st_autogen [AutoGeneratep_value $st_autogenp]
+        set st_save [AutoSavep_value $st_savep]
         set videoMode [ViewModep_value $videoMode]
-        set viewChgFlg [boolp_value $viewChgFlg]
+        set st_viewType [boolp_value $st_viewType]
     }
 
     set winProjSett .projSett
@@ -236,12 +236,12 @@ proc ChildWindows::ProjectSettingWindow {} {
 
     text $winProjSett.t_desc -height 4 -width 40 -state disabled -background white
 
-    radiobutton $frame1.ra_autoSave -variable ra_proj -value 0 -text "Auto Save" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
-    radiobutton $frame1.ra_prompt -variable ra_proj -value 1 -text "Prompt" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
-    radiobutton $frame1.ra_discard -variable ra_proj -value 2 -text "Discard" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame1.st_autogenSave -variable st_save -value 0 -text "Auto Save" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame1.ra_prompt -variable st_save -value 1 -text "Prompt" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame1.ra_discard -variable st_save -value 2 -text "Discard" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
 
-    radiobutton $frame2.ra_genYes -variable ra_auto -value 1 -text Yes -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
-    radiobutton $frame2.ra_genNo -variable ra_auto -value 0 -text No -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame2.ra_genYes -variable st_autogen -value 1 -text Yes -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame2.ra_genNo -variable st_autogen -value 0 -text No -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
 
     ChildWindows::ProjectSettText $winProjSett.t_desc
 
@@ -252,7 +252,7 @@ proc ChildWindows::ProjectSettingWindow {} {
         } else {
             set viewType 0
         }
-        set catchErrCode [SetProjectSettings $ra_auto $ra_proj $viewType $viewChgFlg]
+        set catchErrCode [SetProjectSettings $st_autogen $st_save $viewType $st_viewType]
         set ErrCode [ocfmRetCode_code_get $catchErrCode]
         if { $ErrCode != 0 } {
             if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
@@ -266,25 +266,25 @@ proc ChildWindows::ProjectSettingWindow {} {
 
     button $frame3.bt_cancel -width 8 -text "Cancel" -command {
         #if cancel is called project settings for existing project is called
-        global ra_proj
-        global ra_auto
-        global viewChgFlg
-        set ra_autop [new_AutoGeneratep]
-        set ra_projp [new_AutoSavep]
+        global st_save
+        global st_autogen
+        global st_viewType
+        set st_autogenp [new_AutoGeneratep]
+        set st_savep [new_AutoSavep]
         set videoMode [new_ViewModep]
-        set viewChgFlg [new_boolp]
-        set catchErrCode [GetProjectSettings $ra_autop $ra_projp $videoMode $viewChgFlg]
+        set st_viewType [new_boolp]
+        set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
         set ErrCode [ocfmRetCode_code_get $catchErrCode]
         if { $ErrCode != 0 } {
-            set ra_auto 1
-            set ra_proj 1
+            set st_autogen 1
+            set st_save 1
             set videoMode 0
-            set viewChgFlg 0
+            set st_viewType 0
         } else {
-            set ra_auto [AutoGeneratep_value $ra_autop]
-            set ra_proj [AutoSavep_value $ra_projp]
+            set st_autogen [AutoGeneratep_value $st_autogenp]
+            set st_save [AutoSavep_value $st_savep]
             set videoMode [ViewModep_value $videoMode]
-            set viewChgFlg [boolp_value $viewChgFlg]
+            set st_viewType [boolp_value $st_viewType]
         }
         destroy .projSett
     }
@@ -292,7 +292,7 @@ proc ChildWindows::ProjectSettingWindow {} {
     grid config $framea -row 0 -column 0 -sticky w -padx 10 -pady 10
     grid config $framea.la_save -row 0 -column 0 -sticky w
     grid config $frame1 -row 1 -column 0 -padx 10 -sticky w
-    grid config $frame1.ra_autoSave -row 0 -column 0
+    grid config $frame1.st_autogenSave -row 0 -column 0
     grid config $frame1.ra_prompt -row 0 -column 1 -padx 5
     grid config $frame1.ra_discard -row 0 -column 2
 
@@ -324,10 +324,10 @@ proc ChildWindows::ProjectSettingWindow {} {
 #  Description : Displays description message for project settings
 #---------------------------------------------------------------------------------------------------
 proc ChildWindows::ProjectSettText {t_desc} {
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
 
-    switch -- $ra_proj {
+    switch -- $st_save {
         0 {
             set msg1 "Edited data are saved automatically"
         }
@@ -339,7 +339,7 @@ proc ChildWindows::ProjectSettText {t_desc} {
         }
     }
 
-    if { $ra_auto == 1 } {
+    if { $st_autogen == 1 } {
         set msg2 "Autogenerates MN object dictionary during build"
     } else {
         set msg2 "User imported xdd or xdc file will be build"
@@ -661,8 +661,8 @@ proc ChildWindows::NewProjectWindow {} {
     global tmpPjtDir
     global tmpImpDir
     global winNewProj
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
     global newProjectFrame2
     global frame1_1
     global frame1_4
@@ -689,10 +689,8 @@ proc ChildWindows::NewProjectWindow {} {
     wm minsize   $winNewProj 50 200
     grab $winNewProj
 
-
     set newProjectFrame2 [frame $winNewProj.frame2 -width 650 -height 470 ]
     grid configure $newProjectFrame2 -row 0 -column 0 -sticky news -sticky news -padx 15 -pady 15
-
 
     set frame2_1 [frame $newProjectFrame2.frame2_1]
     set frame2_2 [frame $newProjectFrame2.frame2_2]
@@ -731,9 +729,9 @@ proc ChildWindows::NewProjectWindow {} {
     }
     $frame2_1.ra_def select
 
-    set ra_auto 1
-    radiobutton $frame2_1.ra_yes -text "Yes" -variable ra_auto -value 1 -command "ChildWindows::NewProjectMNText  $frame2_1.t_desc"
-    radiobutton $frame2_1.ra_no -text "No" -variable ra_auto -value 0 -command "ChildWindows::NewProjectMNText  $frame2_1.t_desc"
+    set st_autogen 1
+    radiobutton $frame2_1.ra_yes -text "Yes" -variable st_autogen -value 1 -command "ChildWindows::NewProjectMNText  $frame2_1.t_desc"
+    radiobutton $frame2_1.ra_no -text "No" -variable st_autogen -value 0 -command "ChildWindows::NewProjectMNText  $frame2_1.t_desc"
     $frame2_1.ra_yes select
     ChildWindows::NewProjectMNText $frame2_1.t_desc
 
@@ -789,7 +787,7 @@ proc ChildWindows::NewProjectWindow {} {
         catch { destroy .newprj }
         #all new projects have "SIMPLE" type
         set Operations::viewType "SIMPLE"
-        ChildWindows::NewProjectCreate $tmpPjtDir $tmpPjtName $tmpImpDir $conf $ra_proj $ra_auto
+        ChildWindows::NewProjectCreate $tmpPjtDir $tmpPjtName $tmpImpDir $conf $st_save $st_autogen
         catch {
             unset tmpPjtName
             unset tmpPjtDir
@@ -856,9 +854,9 @@ proc ChildWindows::NewProjectWindow {} {
 
     text $frame1_1.t_desc -height 5 -width 40 -state disabled -background white
 
-    radiobutton $frame1_1.ra_save -text "Auto Save" -variable ra_proj -value 0 -command "ChildWindows::NewProjectText $frame1_1.t_desc 0"
-    radiobutton $frame1_1.ra_prompt -text "Prompt" -variable ra_proj -value 1 -command "ChildWindows::NewProjectText $frame1_1.t_desc 1"
-    radiobutton $frame1_1.ra_discard -text "Discard" -variable ra_proj -value 2 -command "ChildWindows::NewProjectText $frame1_1.t_desc 2"
+    radiobutton $frame1_1.ra_save -text "Auto Save" -variable st_save -value 0 -command "ChildWindows::NewProjectText $frame1_1.t_desc 0"
+    radiobutton $frame1_1.ra_prompt -text "Prompt" -variable st_save -value 1 -command "ChildWindows::NewProjectText $frame1_1.t_desc 1"
+    radiobutton $frame1_1.ra_discard -text "Discard" -variable st_save -value 2 -command "ChildWindows::NewProjectText $frame1_1.t_desc 2"
     $frame1_1.ra_prompt select
     ChildWindows::NewProjectText $frame1_1.t_desc 1
 
@@ -908,27 +906,27 @@ proc ChildWindows::NewProjectWindow {} {
     button $frame1_4.bt_cancel -width 8 -text Cancel -command {
         global projectName
         global projectDir
-        global ra_proj
-        global ra_auto
-        global viewChgFlg
+        global st_save
+        global st_autogen
+        global st_viewType
         catch {
         if { $projectDir != "" && $projectName != "" } {
-            set ra_autop [new_AutoGeneratep]
-            set ra_projp [new_AutoSavep]
+            set st_autogenp [new_AutoGeneratep]
+            set st_savep [new_AutoSavep]
             set videoMode [new_ViewModep]
-            set viewChgFlg [new_boolp]
-            set catchErrCode [GetProjectSettings $ra_autop $ra_projp $videoMode $viewChgFlg]
+            set st_viewType [new_boolp]
+            set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
             set ErrCode [ocfmRetCode_code_get $catchErrCode]
             if { $ErrCode == 0 } {
-                set ra_auto [AutoGeneratep_value $ra_autop]
-                set ra_proj [AutoSavep_value $ra_projp]
+                set st_autogen [AutoGeneratep_value $st_autogenp]
+                set st_save [AutoSavep_value $st_savep]
             Operations::SetVideoType [ViewModep_value $videoMode]
-            set viewChgFlg [boolp_value $viewChgFlg]
+            set st_viewType [boolp_value $st_viewType]
             } else {
-                set ra_auto 1
-                set ra_proj 1
+                set st_autogen 1
+                set st_save 1
             Operations::SetVideoType 0
-            set viewChgFlg 0
+            set st_viewType 0
             }
         }
             #puts "ChildWindows::NewProjectWindow videoMode->$videoMode"
@@ -1015,7 +1013,7 @@ proc ChildWindows::NewProjectText {t_desc choice} {
 #---------------------------------------------------------------------------------------------------
 proc ChildWindows::NewProjectMNText {t_desc} {
     global conf
-    global ra_auto
+    global st_autogen
 
     if { $conf == "on" } {
         set msg1 "Imports default xdd file designed by Kalycito for openPOWERLINK MN"
@@ -1023,7 +1021,7 @@ proc ChildWindows::NewProjectMNText {t_desc} {
         set msg1 "Imports user selected xdd or xdc file for openPOWERLINK MN"
     }
 
-    if { $ra_auto == 1 } {
+    if { $st_autogen == 1 } {
         set msg2 "Autogenerates MN object dictionary during build"
     } else {
         set msg2 "User imported xdd or xdc file will be build"
@@ -1042,73 +1040,95 @@ proc ChildWindows::NewProjectMNText {t_desc} {
 #              tmpPjtName  - project name
 #              tmpImpDir   - file to be imported
 #              conf        - choice based on which file is imported
-#              tempRa_proj - project settings
-#              tempRa_auto - auto generate
+#              tempSt_save - project settings
+#              tempSt_autogen - auto generate
 #
 #  Results : -
 #
 #  Description : creates the new project
 #---------------------------------------------------------------------------------------------------
-proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempRa_proj tempRa_auto} {
-    global tcl_platform
+proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempSt_save tempSt_autogen} {
     global rootDir
-    global ra_proj
-    global ra_auto
     global treePath
     global mnCount
     global projectName
     global projectDir
     global nodeIdList
     global status_save
-    global viewChgFlg
+    global st_save
+    global st_autogen
+    global st_viewType
     global image_dir
+    global lastVideoModeSel
 
     #CloseProject is called to delete node and insert tree
     Operations::CloseProject
 
     set projectName $tmpPjtName
     set pjtName [string range $projectName 0 end-[string length [file extension $projectName]] ]
-    set projectDir [file join $tmpPjtDir  $pjtName]
+    set projectDir [file join $tmpPjtDir $pjtName]
 
     $treePath itemconfigure ProjectNode -text $tmpPjtName
+
+    set mnName "openPOWERLINK_MN"
+    set mnNodeId 240
+    image create photo img_mn -file "$image_dir/mn.gif"
+
+    thread::send [tsv::get application importProgress] "StartProgress"
+
+    $treePath insert end ProjectNode MN-$mnCount -text "openPOWERLINK_MN($mnNodeId)" -open 1 -image img_mn
+    lappend nodeIdList $mnNodeId
+
+    set result [openConfLib::NewProject $pjtName $projectDir $tmpImpDir]
+    if { [Result_IsSuccessful $result] != 1 } {
+        thread::send  [tsv::set application importProgress] "StopProgress"
+        return
+    }
+
+puts "importing wrapper $Operations::viewType"
+
+    set result [WrapperInteractions::Import OBD-$mnCount-1 0 $mnNodeId]
+    thread::send  [tsv::set application importProgress] "StopProgress"
+    if { $result == "fail" } {
+        return
+    }
 
     #New project is created need to save
     set status_save 1
 
-    image create photo img_mn -file "$image_dir/mn.gif"
-    $treePath insert end ProjectNode MN-$mnCount -text "openPOWERLINK_MN(240)" -open 1 -image img_mn
-    lappend nodeIdList 240
+    Console::DisplayInfo "Imported file $tmpImpDir for MN"
+
+    file mkdir [file join $projectDir ]
+
+    #By default {output path is projectdir/output} and {viewtype is "0/SIMPLE"}
+    set outputpath [file join $projectDir output]
+
+    set result [openConfLib::AddViewSetting 0 "default" "SIMPLE"]
+    set result [openConfLib::AddViewSetting 1 "default" "EXPERT"]
+
+    set viewType_p [new_ViewTypep]
+    set s [ViewTypep_assign $viewType_p 0]
+
+    set result [openConfLib::SetActiveView [ViewTypep_value $viewType_p]]
+
+    #By default the autocalculation is all
+    set result [openConfLib::SetActiveAutoCalculationConfig "all"]
+
+    set tempviewStr [new_stringpointer]
+    set m [stringpointer_assign $tempviewStr "empty"]
+    set st_viewType [ViewTypep_value $viewType_p]
+    set res [GetViewSetting $st_viewType "default" $tempviewStr]
+
+    puts "res: [stringpointer_value $tempviewStr]"
+
+    set Operations::viewType [stringpointer_value $tempviewStr]
+
+    set lastVideoModeSel $st_viewType
+    set st_save $tempSt_save
+    set st_autogen 1
+    Console::ClearMsgs
 
     if {$conf == "off" || $conf == "on" } {
-        thread::send [tsv::get application importProgress] "StartProgress"
-        #set catchErrCode [ImportXML "$tmpImpDir" 240 0]
-        set catchErrCode [NewProjectNode 240 0 openPOWERLINK_MN "$tmpImpDir"]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
-            thread::send  [tsv::set application importProgress] "StopProgress"
-            return
-        }
-        #All the nw project has view type SIMPLE do not insert OBD icon
-
-        set result [WrapperInteractions::Import OBD-$mnCount-1 0 240]
-        thread::send  [tsv::set application importProgress] "StopProgress"
-        if { $result == "fail" } {
-            return
-        }
-        Console::DisplayInfo "Imported file $tmpImpDir for MN"
-
-        file mkdir [file join $projectDir ]
-        file mkdir [file join $projectDir cdc_xap]
-        file mkdir [file join $projectDir octx]
-        file mkdir [file join $projectDir scripts]
-
-        ChildWindows::CopyScript $projectDir
-
         if { [$Operations::projMenu index 2] != "2" } {
             $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
         }
@@ -1116,24 +1136,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempRa_
             $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
         }
     }
-    #set the view type as simple for all new project
-    set Operations::viewType "SIMPLE"
-    set viewType 0
-    global lastVideoModeSel
-    set lastVideoModeSel 0
-    set viewChgFlg 0
-    set catchErrCode [SetProjectSettings $tempRa_auto $tempRa_proj $viewType $viewChgFlg]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-    }
-    set ra_proj $tempRa_proj
-    set ra_auto $tempRa_auto
-    Console::ClearMsgs
+    puts "$Operations::viewType :: viwe: $st_viewType ::::: $viewType_p adfsf::"
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -1201,11 +1204,8 @@ proc ImportProgress {stat} {
         catch { .prog stop }
         wm withdraw .
     } else {
-
     }
-
 }
-
 
 #---------------------------------------------------------------------------------------------------
 #  ChildWindows::PropertiesWindow

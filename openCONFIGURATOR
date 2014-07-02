@@ -133,6 +133,7 @@ set toolsDir $rootDir
 
 
 tsv::set application rootDir $rootDir
+source [file join $tclSrcDir openConfAPI.tcl]
 source [file join $tclSrcDir console.tcl]
 source [file join $tclSrcDir notebookManager.tcl]
 source [file join $tclSrcDir wrapperInteractions.tcl]
