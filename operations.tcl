@@ -119,6 +119,7 @@ tsv::set application importProgress [thread::create -joinable {
     wm title . "progress"
     BWidget::place . 0 0 center
     update idletasks
+
     if {"$tcl_platform(platform)" == "unix"} {
     catch {
         set element [image create photo -file [file join $rootDir openConfig.gif] ]
@@ -723,10 +724,10 @@ proc Operations::OpenProjectWindow { } {
 proc Operations::openProject {projectfilename} {
     global projectDir
     global projectName
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
     global lastVideoModeSel
-    global viewChgFlg
+    global st_viewType
 
     #Operations::CloseProject is called to delete node and insert tree
     Operations::CloseProject
@@ -752,11 +753,11 @@ proc Operations::openProject {projectfilename} {
     set projectName [string range $tempPjtName 0 end-[string length [file extension $tempPjtName]]]
 
     # API to get project settings
-    set ra_autop [new_AutoGeneratep]
-    set ra_projp [new_AutoSavep]
+    set st_autogenp [new_AutoGeneratep]
+    set st_savep [new_AutoSavep]
     set videoMode [new_ViewModep]
-    set viewChgFlg [new_boolp]
-    set catchErrCode [GetProjectSettings $ra_autop $ra_projp $videoMode $viewChgFlg]
+    set st_viewType [new_boolp]
+    set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
     if { $ErrCode != 0 } {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
@@ -764,17 +765,17 @@ proc Operations::openProject {projectfilename} {
         } else {
              tk_messageBox -message "Unknown Error\nAuto generate is set to \"Yes\" and project Setting set to \"Prompt\" " -title Error -icon error
         }
-        set ra_auto 1
-        set ra_proj 1
+        set st_autogen 1
+        set st_save 1
         set Operations::viewType "SIMPLE"
         set lastVideoModeSel 0
-        set viewChgFlg 0
+        set st_viewType 0
     } else {
-        set ra_auto [AutoGeneratep_value $ra_autop]
-        set ra_proj [AutoSavep_value $ra_projp]
+        set st_autogen [AutoGeneratep_value $st_autogenp]
+        set st_save [AutoSavep_value $st_savep]
         Operations::SetVideoType [ViewModep_value $videoMode]
         set lastVideoModeSel $videoMode
-        set viewChgFlg [boolp_value $viewChgFlg]
+        set st_viewType [boolp_value $st_viewType]
     }
 
     set result [ Operations::RePopulate $projectDir $projectName ]
@@ -1434,7 +1435,6 @@ proc Operations::BasicFrames { } {
 #  Description : Displays image during launching of application
 #---------------------------------------------------------------------------------------------------
 proc Operations::_tool_intro {ImageName} {
-    global tcl_platform
     global rootDir
 
 
@@ -1541,8 +1541,8 @@ proc Operations::SingleClickNode {node} {
     global userPrefList
     global LastTableFocus
     global chkPrompt
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
     global indexSaveBtn
     global subindexSaveBtn
     global tableSaveBtn
@@ -1554,7 +1554,7 @@ proc Operations::SingleClickNode {node} {
     if { $nodeSelect == "" || ![$treePath exists $nodeSelect] || [string match "root" $nodeSelect] || [string match "ProjectNode" $nodeSelect] || [string match "OBD-*" $nodeSelect] || [string match "PDO-*" $nodeSelect] } {
         #should not check for project settings option
     } else {
-        if { $ra_proj == "0"} {
+        if { $st_save == "0"} {
             if { $chkPrompt == 1 } {
                 if { [string match "TPDO-*" $nodeSelect] || [string match "RPDO-*" $nodeSelect] } {
                     $tableSaveBtn invoke
@@ -1571,7 +1571,7 @@ proc Operations::SingleClickNode {node} {
                 }
             }
             Validation::ResetPromptFlag
-        } elseif { $ra_proj == "1" } {
+        } elseif { $st_save == "1" } {
             if { $chkPrompt == 1 } {
                 set result [tk_messageBox -message "Do you want to save?" -parent . -type yesno -icon question]
                 switch -- $result {
@@ -1595,7 +1595,7 @@ proc Operations::SingleClickNode {node} {
                 }
             }
             Validation::ResetPromptFlag
-        } elseif { $ra_proj == "2" } {
+        } elseif { $st_save == "2" } {
 
         } else {
             Validation::ResetPromptFlag
@@ -1720,7 +1720,7 @@ proc Operations::SingleClickNode {node} {
 
         #puts "F2:: $f2"
         #puts "F5:: $f5"
-        if {$ra_auto == 1 } {
+        if {$st_autogen == 1 } {
         [lindex $f2 1] configure -state disabled
         [lindex $f5 1] configure -state normal
         [lindex $f5 1] delete 0 end
@@ -1789,7 +1789,7 @@ proc Operations::SingleClickNode {node} {
                     #API for GetSubIndexAttributesbyPositions
                     set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 3 ]
                     if {$ErrCode != 0} {
-                    if {$ra_auto == 1 } {
+                    if {$st_autogen == 1 } {
                         [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
                         foreach col [list 2 3 4 5 ] {
                             [lindex $f5 1] cellconfigure $popCount,$col -editable no
@@ -1809,7 +1809,7 @@ proc Operations::SingleClickNode {node} {
                     set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 5 ]
                     set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0] ]
                     if {$ErrCode != 0} {
-                    if {$ra_auto == 1 } {
+                    if {$st_autogen == 1 } {
                         [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
                         foreach col [list 2 3 4 5 ] {
                         [lindex $f5 1] cellconfigure $popCount,$col -editable no
@@ -1843,7 +1843,7 @@ proc Operations::SingleClickNode {node} {
                                         }
                                     }
 
-                    if {$ra_auto == 1 } {
+                    if {$st_autogen == 1 } {
                     [lindex $f5 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
                     } else {
                     [lindex $f2 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
@@ -1853,7 +1853,7 @@ proc Operations::SingleClickNode {node} {
 
                     if { $accessType == "ro" || $accessType == "const" } {
                         foreach col [list 2 3 4 5 ] {
-                        if {$ra_auto == 1 } {
+                        if {$st_autogen == 1 } {
                             [lindex $f5 1] cellconfigure $popCount,$col -editable no
                         } else {
                             [lindex $f2 1] cellconfigure $popCount,$col -editable no
@@ -1861,7 +1861,7 @@ proc Operations::SingleClickNode {node} {
                         }
                     } else {
                     # as a default the first cell is always non editable, adding it to the list only when made editable
-                        if {$ra_auto == 1 } {
+                        if {$st_autogen == 1 } {
                         foreach col [list 2 3 4 ] {
                             [lindex $f5 1] cellconfigure $popCount,$col -editable yes
                         }
@@ -1889,7 +1889,7 @@ proc Operations::SingleClickNode {node} {
        # puts "lindexxx:  [lindex $f2 0]"
         pack forget [lindex $f0 0]
         pack forget [lindex $f1 0]
-        if {$ra_auto == 1 } {
+        if {$st_autogen == 1 } {
         pack forget [lindex $f2 0]
         pack [lindex $f5 0] -expand yes -fill both -padx 2 -pady 4
         } else {
@@ -2898,7 +2898,6 @@ proc Operations::DoubleClickNode {node} {
 #  Description : Calls the API to save projext
 #---------------------------------------------------------------------------------------------------
 proc Operations::Saveproject {} {
-    global tcl_platform
     global projectName
     global projectDir
     global status_save
@@ -2907,28 +2906,23 @@ proc Operations::Saveproject {} {
         #there is no project directory or project name no need to save
         return
     } else {
-            foreach filePath [glob -nocomplain [file join $projectDir octx "*"]] {
-                catch { file delete -force -- $filePath }
-            }
-        set savePjtName [string range $projectName 0 end-[ string length [file extension $projectName] ]]
-        set savePjtDir [string range $projectDir 0 end-[string length $savePjtName] ]
-            thread::send  [tsv::set application importProgress] "StartProgress"
-        #API for SaveProject
-        set catchErrCode [SaveProject $savePjtDir $savePjtName]
+		#foreach filePath [glob -nocomplain [file join $projectDir octx "*"]] {
+		#	catch { file delete -force -- $filePath }
+		#}
+        #set savePjtName [string range $projectName 0 end-[ string length [file extension $projectName] ]]
+        #set savePjtDir [string range $projectDir 0 end-[string length $savePjtName] ]
+        thread::send  [tsv::set application importProgress] "StartProgress"
+        set result [SaveProject]
+		if { [Result_IsSuccessful $result] != 1 } {
+			if { [ string is ascii [Result_GetErrorString $result] ] } {
+				tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:[Result_GetErrorString $result]" -title Error -icon error -parent .
+			} else {
+				tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error" -title Error -icon error -parent .
+			}
+			thread::send  [tsv::set application importProgress] "StopProgress"
+			return
+		}
         thread::send  [tsv::set application importProgress] "StopProgress"
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -parent . -title Error -icon error
-            } else {
-                tk_messageBox -message "Unknown Error" -parent . -title Error -icon error
-            }
-            Console::DisplayErrMsg "Project $projectName at location $projectDir not saved" error
-            return
-        }
-
-
     }
     #project is saved so change status to zero
     set status_save 0
@@ -3064,8 +3058,8 @@ proc Operations::ResetGlobalData {} {
     global lastConv
     global LastTableFocus
     global chkPrompt
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
     global lastRadioVal
 
     #reset all the globaly maintained values
@@ -3082,8 +3076,8 @@ proc Operations::ResetGlobalData {} {
     set lastConv ""
     set LastTableFocus ""
     Validation::ResetPromptFlag
-    set ra_proj 2
-    set ra_auto 1
+    set st_save 2
+    set st_autogen 1
     set lastRadioVal ""
     #no need to reset lastOpenPjt, lastXD, tableSaveBtn, indexSaveBtn and subindexSaveBtn
 
@@ -3109,8 +3103,10 @@ proc Operations::ResetGlobalData {} {
 #  Description : Deletes all the node in current project
 #---------------------------------------------------------------------------------------------------
 proc Operations::DeleteAllNode {} {
-    ##### API call #####
-    FreeProjectMemory
+
+    set result openCONFIGURATOR::Library::API::CloseProject
+
+	#TODO Handle the result
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -3140,10 +3136,10 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
             if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
                 Console::DisplayErrMsg "XDD/XDC validation error: [ocfmRetCode_errorString_get $catchErrCode]"
                 tk_messageBox -message "The imported XDD/XDC is not compliant to XDD schema version 0.13: [ocfmRetCode_errorString_get $catchErrCode]" -title "XDD/XDC import validation error" -icon error -type ok
-    } else {
-        tk_messageBox -message "Unknown Error" -title Error -icon error
-    }
-    return
+			} else {
+				tk_messageBox -message "Unknown Error" -title Error -icon error
+			}
+			return
         }
     }
 
@@ -4018,8 +4014,8 @@ proc FindSpace::Next {} {
 proc Operations::BuildProject {} {
     global projectDir
     global projectName
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
     global nodeIdList
     global savedValueList
     global populatedPDOList
@@ -4045,7 +4041,7 @@ proc Operations::BuildProject {} {
     }
 
     if { $chkPrompt == 1 && [$treePath exists $nodeSelect] && ([string match "MN*" $nodeSelect] || [string match "CN*" $nodeSelect]) } {
-        if { $ra_proj == "0"} {
+        if { $st_save == "0"} {
             if { $chkPrompt == 1 } {
                 if { [string match "MN*" $nodeSelect] } {
                     $mnPropSaveBtn invoke
@@ -4056,7 +4052,7 @@ proc Operations::BuildProject {} {
                 }
             }
             Validation::ResetPromptFlag
-        } elseif { $ra_proj == "1" } {
+        } elseif { $st_save == "1" } {
             if { $chkPrompt == 1 } {
                 set result [tk_messageBox -message "Do you want to save [$treePath itemcget $nodeSelect -text ]?" -parent . -type yesno -icon question]
                 switch -- $result {
@@ -4074,7 +4070,7 @@ proc Operations::BuildProject {} {
                 }
             }
             Validation::ResetPromptFlag
-        } elseif { $ra_proj == "2" } {
+        } elseif { $st_save == "2" } {
 
         } else {
             Validation::ResetPromptFlag
@@ -4159,7 +4155,7 @@ proc Operations::BuildProject {} {
         }
     }
 
-    if { $ra_auto == 1 } {
+    if { $st_autogen == 1 } {
         set result [tk_messageBox -message "Auto Generate is set to yes in project settings\nUser edited values for MN will be lost\nDo you want to Build Project?" -type yesno -icon question -title "Question" -parent .]
         switch -- $result {
             yes {
@@ -4227,13 +4223,13 @@ proc Operations::BuildProject {} {
 
         set tempPjtDir $projectDir
         set tempPjtName $projectName
-        set tempRa_proj $ra_proj
-        set tempRa_auto $ra_auto
+        set tempSt_save $st_save
+        set tempSt_autogen $st_autogen
         Operations::ResetGlobalData
         set projectDir $tempPjtDir
         set projectName $tempPjtName
-        set ra_proj $tempRa_proj
-        set ra_auto $tempRa_auto
+        set st_save $tempSt_save
+        set st_autogen $tempSt_autogen
 
         Operations::RePopulate  $projectDir [string range $projectName 0 end-[string length [file extension $projectName] ] ]
         set catchErrCode [GenerateXAP [file join $projectDir cdc_xap xap] ]
@@ -5233,15 +5229,14 @@ proc Operations::Sleep { ms } {
 proc Operations::ViewModeChanged {} {
     global projectDir
     global projectName
-    global ra_proj
-    global ra_auto
+    global st_save
+    global st_autogen
     global lastVideoModeSel
-    global viewChgFlg
+    global st_viewType
 
     if { $projectDir == "" || $projectName == "" } {
         return
     }
-
 
     if { $Operations::viewType == "EXPERT" } {
         set viewType 1
@@ -5254,12 +5249,12 @@ proc Operations::ViewModeChanged {} {
     }
 
 
-    if { ($viewChgFlg == 0) && ($viewType == 1) } {
+    if { ($st_viewType == 0) && ($viewType == 1) } {
         set result [ tk_messageBox -message "Internal know-how of POWERLINK is recommended when using advanced mode.\
         \nAre you sure you want to change view?" -type yesno -icon info -title "Information" -parent . ]
         switch -- $result {
             yes {
-                set viewChgFlg 1
+                set st_viewType 1
             }
             no {
                 set Operations::viewType "SIMPLE"
@@ -5270,7 +5265,7 @@ proc Operations::ViewModeChanged {} {
     set lastVideoModeSel $viewType
 
     #save the project setting
-    set catchErrCode [SetProjectSettings $ra_auto $ra_proj $viewType $viewChgFlg]
+    set catchErrCode [SetProjectSettings $st_autogen $st_save $viewType $st_viewType]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
     if { $ErrCode != 0 } {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
