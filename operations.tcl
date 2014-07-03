@@ -630,8 +630,8 @@ proc Operations::OpenProjectWindow { } {
 
     set odXML [file join $resourcesDir od.xml]
     if {![file isfile $odXML] } {
-		tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
-		return
+        tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
+        return
     } else {
         #od.xml is present continue
     }
@@ -828,64 +828,54 @@ proc Operations::RePopulate { projectDir projectName } {
     image create photo img_cn -file "$image_dir/cn.gif"
 
     $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
-    #API GetNodeCount
-    set count [new_intp]
-    set catchErrCode [GetNodeCount 240 $count]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode == 0 } {
-        set nodeCount [intp_value $count]
-        for {set inc 0} {$inc < $nodeCount} {incr inc} {
-            #API for getting node attributes based on node position
-            set tmp_nodeId [new_intp]
-            set tmp_stationType [new_StationTypep]
-            set tmp_forceCycleFlag [new_boolp]
-            set catchErrCode [GetNodeAttributesbyNodePos $inc $tmp_nodeId $tmp_stationType $tmp_forceCycleFlag]
-            set ErrCode [ocfmRetCode_code_get [lindex $catchErrCode 0]]
-            if { $ErrCode == 0 } {
-                set nodeId [intp_value $tmp_nodeId]
-                set nodeName [lindex $catchErrCode 1]
-                if {$nodeId == 240} {
-                    set nodeType 0
-                    $treePath insert end ProjectNode MN-$mnCount -text "$nodeName\(240\)" -open 1 -image img_mn
-                    set treeNode OBD-$mnCount-1
-                #insert the OBD icon only if the view is in EXPERT mode
-                    if {[string match "EXPERT" $Operations::viewType ] == 1} {
-                        $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
-                    }
 
-                } else {
-                    set nodeType 1
-                    set treeNode CN-$mnCount-$cnCount
-                    set child [$treePath insert end MN-$mnCount $treeNode -text "$nodeName\($nodeId\)" -open 0 -image img_cn]
-                }
-                if { [ catch { set result [WrapperInteractions::Import $treeNode $nodeType $nodeId] } ] } {
-                    # error has occured
-                    Operations::CloseProject
-                    return 0
-                }
-                if { $result == "fail" } {
-                    return 0
-                }
-                incr cnCount
-                lappend nodeIdList $nodeId
-            } else {
-                # error has occured
-                Operations::CloseProject
-                return 0
+# TODO Parse using the list of nodeId's inserted.
+    for {set inc 240} {$inc > 0} {incr [expr {-$inc}]} {
+
+#For Safety check if the node exists?
+        set result [openConfLib::IsExistingNode $inc]
+        if { [lindex $result 1] == 0 } {
+            continue
+        }
+        set l_NodeId $inc
+        # 0 for nodename
+        set aResult [openConfLib::GetNodeParameter $l_NodeId 0]
+# TODO handle result and report error message.
+        set l_NodeName [lindex $aResult 1]
+
+        if {$l_NodeId == 240} {
+            set nodeType 0
+            $treePath insert end ProjectNode MN-$mnCount -text "$l_NodeName\($l_NodeId\)" -open 1 -image img_mn
+            set treeNode OBD-$mnCount-1
+        #insert the OBD icon only if the view is in EXPERT mode
+            if {[string match "EXPERT" $Operations::viewType ] == 1} {
+                $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
             }
+        } else {
+            set nodeType 1
+            set treeNode CN-$mnCount-$cnCount
+            set child [$treePath insert end MN-$mnCount $treeNode -text "$l_NodeName\($l_NodeId\)" -open 0 -image img_cn]
         }
-
-        if { [$Operations::projMenu index 2] != "2" } {
-            $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
+        if { [ catch { set result [WrapperInteractions::Import $treeNode $l_NodeId] } errormessage ] } {
+            # error has occured
+            Console::DisplayErrMsg "$l_NodeId.$l_NodeName Internal error occurred\n Err: $errormessage" error
+            Operations::CloseProject
+            return 0
         }
-        if { [$Operations::projMenu index 3] != "3" } {
-            $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
+        if { $result == "fail" } {
+            return 0
         }
-
-    } else {
-        Operations::CloseProject
-        Console::DisplayErrMsg "MN node not found" error
+        incr cnCount
+        lappend nodeIdList $l_NodeId
     }
+
+    if { [$Operations::projMenu index 2] != "2" } {
+        $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
+    }
+    if { [$Operations::projMenu index 3] != "3" } {
+        $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
+    }
+
     return 1
 }
 
@@ -2906,22 +2896,22 @@ proc Operations::Saveproject {} {
         #there is no project directory or project name no need to save
         return
     } else {
-		#foreach filePath [glob -nocomplain [file join $projectDir octx "*"]] {
-		#	catch { file delete -force -- $filePath }
-		#}
+        #foreach filePath [glob -nocomplain [file join $projectDir octx "*"]] {
+        #   catch { file delete -force -- $filePath }
+        #}
         #set savePjtName [string range $projectName 0 end-[ string length [file extension $projectName] ]]
         #set savePjtDir [string range $projectDir 0 end-[string length $savePjtName] ]
         thread::send  [tsv::set application importProgress] "StartProgress"
         set result [SaveProject]
-		if { [Result_IsSuccessful $result] != 1 } {
-			if { [ string is ascii [Result_GetErrorString $result] ] } {
-				tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:[Result_GetErrorString $result]" -title Error -icon error -parent .
-			} else {
-				tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error" -title Error -icon error -parent .
-			}
-			thread::send  [tsv::set application importProgress] "StopProgress"
-			return
-		}
+        if { [Result_IsSuccessful $result] != 1 } {
+            if { [ string is ascii [Result_GetErrorString $result] ] } {
+                tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:[Result_GetErrorString $result]" -title Error -icon error -parent .
+            } else {
+                tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error" -title Error -icon error -parent .
+            }
+            thread::send  [tsv::set application importProgress] "StopProgress"
+            return
+        }
         thread::send  [tsv::set application importProgress] "StopProgress"
     }
     #project is saved so change status to zero
@@ -2944,8 +2934,8 @@ proc Operations::InitiateNewProject {} {
 
     set odXML [file join $resourcesDir od.xml]
     if {![file isfile $odXML] } {
-		tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
-		return
+        tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
+        return
     } else {
         #od.xml is present continue
     }
@@ -3106,7 +3096,7 @@ proc Operations::DeleteAllNode {} {
 
     set result openCONFIGURATOR::Library::API::CloseProject
 
-	#TODO Handle the result
+    #TODO Handle the result
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -3136,10 +3126,10 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
             if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
                 Console::DisplayErrMsg "XDD/XDC validation error: [ocfmRetCode_errorString_get $catchErrCode]"
                 tk_messageBox -message "The imported XDD/XDC is not compliant to XDD schema version 0.13: [ocfmRetCode_errorString_get $catchErrCode]" -title "XDD/XDC import validation error" -icon error -type ok
-			} else {
-				tk_messageBox -message "Unknown Error" -title Error -icon error
-			}
-			return
+            } else {
+                tk_messageBox -message "Unknown Error" -title Error -icon error
+            }
+            return
         }
     }
 
@@ -3187,7 +3177,7 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
         }
 
         thread::send  [tsv::set application importProgress] "StartProgress"
-        set result [WrapperInteractions::Import $treeNodeCN 1 $nodeId]
+        set result [WrapperInteractions::Import $treeNodeCN $nodeId]
         #rebuild the mn tree
         set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
         set tmpNode [string range $MnTreeNode 2 end]
@@ -3198,9 +3188,8 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
         if { [string match "EXPERT" $Operations::viewType ] == 1 } {
         $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
         }
-        set mnNodeType 0
         set mnNodeId 240
-        if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeType $mnNodeId] } ] } {
+        if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
         # error has occured
         thread::send  [tsv::set application importProgress] "StopProgress"
         Operations::CloseProject
@@ -4473,7 +4462,7 @@ proc Operations::ReImport {} {
         catch {$treePath itemconfigure $node -open 0}
 
         thread::send  [tsv::set application importProgress] "StartProgress"
-        set result [WrapperInteractions::Import $node $nodeType $nodeId]
+        set result [WrapperInteractions::Import $node $nodeId]
         thread::send  [tsv::set application importProgress] "StopProgress"
 
     }
@@ -4621,10 +4610,9 @@ proc Operations::DeleteTreeNode {} {
             image create photo img_pdo -file "$image_dir/pdo.gif"
             $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
             }
-            set mnNodeType 0
             set mnNodeId 240
             thread::send [tsv::get application importProgress] "StartProgress"
-            if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeType $mnNodeId] } ] } {
+            if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
             # error has occured
             thread::send  [tsv::set application importProgress] "StopProgress"
             Operations::CloseProject
@@ -5132,7 +5120,7 @@ proc Operations::AutoGenerateMNOBD {} {
         catch {$treePath itemconfigure $node -open 0}
 
         thread::send  [tsv::set application importProgress] "StartProgress"
-        set result [WrapperInteractions::Import $node $nodeType $nodeId]
+        set result [WrapperInteractions::Import $node $nodeId]
         thread::send  [tsv::set application importProgress] "StopProgress"
         if { $result == "fail" } {
             return
@@ -5229,10 +5217,10 @@ proc Operations::Sleep { ms } {
 proc Operations::ViewModeChanged {} {
     global projectDir
     global projectName
-    global st_save
-    global st_autogen
     global lastVideoModeSel
     global st_viewType
+
+    puts "projectDir:$projectDir projectName:$projectName lastVideoModeSel:$lastVideoModeSel st_viewType:$st_viewType"
 
     if { $projectDir == "" || $projectName == "" } {
         return
@@ -5254,6 +5242,7 @@ proc Operations::ViewModeChanged {} {
         \nAre you sure you want to change view?" -type yesno -icon info -title "Information" -parent . ]
         switch -- $result {
             yes {
+                set Operations::viewType "EXPERT"
                 set st_viewType 1
             }
             no {
@@ -5264,16 +5253,9 @@ proc Operations::ViewModeChanged {} {
     }
     set lastVideoModeSel $viewType
 
-    #save the project setting
-    set catchErrCode [SetProjectSettings $st_autogen $st_save $viewType $st_viewType]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-    }
+    set result [openConfLib::SetActiveView $st_viewType]
+    openConfLib::ShowErrorMessage $result
+#TODO if error:     set Operations::viewType "SIMPLE" and return
 
     #remove all the frames
     Operations::RemoveAllFrames

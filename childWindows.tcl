@@ -1080,6 +1080,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempSt_
     lappend nodeIdList $mnNodeId
 
     set result [openConfLib::NewProject $pjtName $projectDir $tmpImpDir]
+    openConfLib::ShowErrorMessage $result
     if { [Result_IsSuccessful $result] != 1 } {
         thread::send  [tsv::set application importProgress] "StopProgress"
         return
@@ -1087,7 +1088,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempSt_
 
 puts "importing wrapper $Operations::viewType"
 
-    set result [WrapperInteractions::Import OBD-$mnCount-1 0 $mnNodeId]
+    set result [WrapperInteractions::Import OBD-$mnCount-1 $mnNodeId]
     thread::send  [tsv::set application importProgress] "StopProgress"
     if { $result == "fail" } {
         return
@@ -1106,24 +1107,19 @@ puts "importing wrapper $Operations::viewType"
     set result [openConfLib::AddViewSetting 0 "default" "SIMPLE"]
     set result [openConfLib::AddViewSetting 1 "default" "EXPERT"]
 
-    set viewType_p [new_ViewTypep]
-    set s [ViewTypep_assign $viewType_p 0]
+    set viewType 0
 
-    set result [openConfLib::SetActiveView [ViewTypep_value $viewType_p]]
+    set result [openConfLib::SetActiveView $viewType]
 
     #By default the autocalculation is all
     set result [openConfLib::SetActiveAutoCalculationConfig "all"]
 
-    set tempviewStr [new_stringpointer]
-    set m [stringpointer_assign $tempviewStr "empty"]
-    set st_viewType [ViewTypep_value $viewType_p]
-    set res [GetViewSetting $st_viewType "default" $tempviewStr]
+    set result [openConfLib::GetViewSetting $viewType "default"]
+    set returnedViewType [lindex $result 1]
 
-    puts "res: [stringpointer_value $tempviewStr]"
-
-    set Operations::viewType [stringpointer_value $tempviewStr]
-
-    set lastVideoModeSel $st_viewType
+    set st_viewType $viewType
+    set Operations::viewType $returnedViewType
+    set lastVideoModeSel $viewType
     set st_save $tempSt_save
     set st_autogen 1
     Console::ClearMsgs
@@ -1136,7 +1132,7 @@ puts "importing wrapper $Operations::viewType"
             $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
         }
     }
-    puts "$Operations::viewType :: viwe: $st_viewType ::::: $viewType_p adfsf::"
+    puts "$Operations::viewType :: viwe: $st_viewType"
 }
 
 #---------------------------------------------------------------------------------------------------

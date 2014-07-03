@@ -72,7 +72,7 @@ namespace eval WrapperInteractions {
 #---------------------------------------------------------------------------------------------------
 #  WrapperInteractions::SortNode
 #
-#  Arguments : nodeType - indicates MN or CN
+#  Arguments :
 #              nodeID   - id of the nodes
 #              nodePos  - node position in the object created
 #              choice   - sorts based on the given choice
@@ -82,18 +82,18 @@ namespace eval WrapperInteractions {
 #
 #  Description : Sorts the index and sub index of the objects
 #---------------------------------------------------------------------------------------------------
-proc WrapperInteractions::SortNode {nodeType nodeID nodePos choice {indexPos ""} {indexId ""}} {
+proc WrapperInteractions::SortNode {nodeID nodePos choice {indexPos ""} {indexId ""}} {
     global treePath
 
     set errorString []
     if { $choice == "ind" } {
         set count [new_intp]
-        set catchErrCode [GetIndexCount $nodeID $nodeType $count]
+        set catchErrCode [GetIndexCount $nodeID $count]
         set count [intp_value $count]
         set sortRange 4
     } elseif { $choice == "sub" } {
         set count [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $nodeType $indexId $count]
+        set catchErrCode [GetSubIndexCount $nodeID $indexId $count]
         set count [intp_value $count]
         set sortRange 2
     } else {
@@ -188,14 +188,13 @@ proc WrapperInteractions::SortNode {nodeType nodeID nodePos choice {indexPos ""}
 #  WrapperInteractions::Import
 #
 #  Arguments : parentNode - parent node in tree window
-#              nodeType   - indicates the type as MN or CN
 #              nodeID     - id of the node
 #
 #  Results : pass or fail
 #
 #  Description : Populates the node on to the tree window
 #---------------------------------------------------------------------------------------------------
-proc WrapperInteractions::Import {parentNode nodeType nodeID } {
+proc WrapperInteractions::Import {parentNode nodeID } {
     global treePath
     global cnCount
     global image_dir
@@ -212,7 +211,7 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
 
     #TODO waiting for new so then implement it
     set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeID $nodeType $nodePos $ExistfFlag]
+    set catchErrCode [IfNodeExists $nodeID $nodePos $ExistfFlag]
     set nodePos [intp_value $nodePos]
     set ExistfFlag [boolp_value $ExistfFlag]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
@@ -242,13 +241,13 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
     $treePath insert end PDO-$parentId RPDO-$parentId -text "RPDO" -open 0 -image img_pdo
 
     set count [new_intp]
-    set catchErrCode [GetIndexCount $nodeID $nodeType $count]
+    set catchErrCode [GetIndexCount $nodeID $count]
     set count [intp_value $count]
     if {$count == 0} {
             return
     }
 
-    set returnList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos ind]
+    set returnList [WrapperInteractions::SortNode $nodeID $nodePos ind]
     set corrList [lindex $returnList 0]
     set count [llength $corrList]
     for { set inc 0 } { $inc < $count } { incr inc } {
@@ -277,10 +276,10 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
         }
 
         $treePath insert $inc $parentNode IndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
-        set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $sortedIndexPos $IndexValue]
+        set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $sortedIndexPos $IndexValue]
 
         set SIdxCount [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $nodeType $IndexValue $SIdxCount]
+        set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
         set SIdxCount [intp_value $SIdxCount]
         for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
             set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
@@ -340,9 +339,9 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
         }
 
         $treePath insert $inc TPDO-$parentId TPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
-        set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $sortedIndexPos $IndexValue]
+        set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $sortedIndexPos $IndexValue]
         set SIdxCount [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $nodeType $IndexValue $SIdxCount]
+        set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
         set SIdxCount [intp_value $SIdxCount]
         for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
             set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
@@ -401,9 +400,9 @@ proc WrapperInteractions::Import {parentNode nodeType nodeID } {
             return fail
         }
         $treePath insert $inc RPDO-$parentId RPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
-        set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $sortedIndexPos $IndexValue]
+        set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $sortedIndexPos $IndexValue]
         set SIdxCount [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $nodeType $IndexValue $SIdxCount]
+        set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
         set SIdxCount [intp_value $SIdxCount]
         for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
             set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
@@ -463,7 +462,6 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
     set result [Operations::GetNodeIdType $Node]
     if {$result != "" } {
         set nodeID [lindex $result 0]
-        set nodeType [lindex $result 1]
     } else {
         return
     }
@@ -473,7 +471,7 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
 
     set nodePos [new_intp]
     set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeID $nodeType $nodePos $ExistfFlag]
+    set catchErrCode [IfNodeExists $nodeID $nodePos $ExistfFlag]
     set nodePos [intp_value $nodePos]
     set ExistfFlag [boolp_value $ExistfFlag]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
@@ -491,7 +489,7 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
     set IndexValue [string range [$treePath itemcget $Node -text] end-4 end-1]
 
     set indexPos [new_intp]
-    set catchErrCode [IfIndexExists $nodeID $nodeType $IndexValue $indexPos]
+    set catchErrCode [IfIndexExists $nodeID $IndexValue $indexPos]
     if { [ocfmRetCode_code_get $catchErrCode] != 0 } {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
             tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
@@ -510,10 +508,10 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
         $treePath delete $childNode
     }
 
-    set sidxCorrList [WrapperInteractions::SortNode $nodeType $nodeID $nodePos sub $indexPos $IndexValue]
+    set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $indexPos $IndexValue]
 
     set SIdxCount [new_intp]
-    set catchErrCode [GetSubIndexCount $nodeID $nodeType $IndexValue $SIdxCount]
+    set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
     set SIdxCount [intp_value $SIdxCount]
     for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
         set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
