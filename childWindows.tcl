@@ -725,6 +725,7 @@ proc ChildWindows::NewProjectWindow {} {
     $frame2_1.ra_def select
 
     set st_autogen 1
+
     radiobutton $frame2_1.ra_yes -text "Yes" -variable st_autogen -value 1 -command "ChildWindows::NewProjectMNText  $frame2_1.t_desc"
     radiobutton $frame2_1.ra_no -text "No" -variable st_autogen -value 0 -command "ChildWindows::NewProjectMNText  $frame2_1.t_desc"
     $frame2_1.ra_yes select
@@ -782,7 +783,8 @@ proc ChildWindows::NewProjectWindow {} {
         catch { destroy .newprj }
         #all new projects have "SIMPLE" type
         set Operations::viewType "SIMPLE"
-        ChildWindows::NewProjectCreate $tmpPjtDir $tmpPjtName $tmpImpDir $conf $st_save $st_autogen
+        set ::st_save $temp_st_save
+        ChildWindows::NewProjectCreate $tmpPjtDir $tmpPjtName $tmpImpDir $st_autogen
         catch {
             unset tmpPjtName
             unset tmpPjtDir
@@ -798,6 +800,7 @@ proc ChildWindows::NewProjectWindow {} {
     }
 
     button $frame2_2.bt_cancel -width 8 -text "Cancel" -command {
+        set st_autogen 1
         catch { $frame1_4.bt_cancel invoke }
     }
 
@@ -849,9 +852,10 @@ proc ChildWindows::NewProjectWindow {} {
 
     text $frame1_1.t_desc -height 5 -width 40 -state disabled -background white
 
-    radiobutton $frame1_1.ra_save -text "Auto Save" -variable st_save -value 0 -command "ChildWindows::NewProjectText $frame1_1.t_desc 0"
-    radiobutton $frame1_1.ra_prompt -text "Prompt" -variable st_save -value 1 -command "ChildWindows::NewProjectText $frame1_1.t_desc 1"
-    radiobutton $frame1_1.ra_discard -text "Discard" -variable st_save -value 2 -command "ChildWindows::NewProjectText $frame1_1.t_desc 2"
+    set st_save 1
+    radiobutton $frame1_1.ra_save -text "Auto Save" -variable temp_st_save -value 0 -command "ChildWindows::NewProjectText $frame1_1.t_desc 0"
+    radiobutton $frame1_1.ra_prompt -text "Prompt" -variable temp_st_save -value 1 -command "ChildWindows::NewProjectText $frame1_1.t_desc 1"
+    radiobutton $frame1_1.ra_discard -text "Discard" -variable temp_st_save -value 2 -command "ChildWindows::NewProjectText $frame1_1.t_desc 2"
     $frame1_1.ra_prompt select
     ChildWindows::NewProjectText $frame1_1.t_desc 1
 
@@ -904,27 +908,20 @@ proc ChildWindows::NewProjectWindow {} {
         global st_save
         global st_autogen
         global st_viewType
+        set st_save 1
         catch {
-        if { $projectDir != "" && $projectName != "" } {
-            set st_autogenp [new_AutoGeneratep]
-            set st_savep [new_AutoSavep]
-            set videoMode [new_ViewModep]
-            set st_viewType [new_boolp]
-            set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
-            set ErrCode [ocfmRetCode_code_get $catchErrCode]
-            if { $ErrCode == 0 } {
-                set st_autogen [AutoGeneratep_value $st_autogenp]
-                set st_save [AutoSavep_value $st_savep]
-            Operations::SetVideoType [ViewModep_value $videoMode]
-            set st_viewType [boolp_value $st_viewType]
-            } else {
-                set st_autogen 1
-                set st_save 1
-            Operations::SetVideoType 0
-            set st_viewType 0
+            if { $projectDir != "" && $projectName != "" } {
+
+                set result [openConfLib::GetActiveView]
+                set st_viewType [lindex $result 1]
+
+                set result [openConfLib::GetActiveAutoCalculationConfig]
+                if { [lindex $result 1] == 1 } {
+                    set st_autogen "all"
+                } else {
+                    set st_autogen "none"
+                }
             }
-        }
-            #puts "ChildWindows::NewProjectWindow videoMode->$videoMode"
         }
 
         catch {
@@ -1034,15 +1031,12 @@ proc ChildWindows::NewProjectMNText {t_desc} {
 #  Arguments : tmpPjtDir   - project location
 #              tmpPjtName  - project name
 #              tmpImpDir   - file to be imported
-#              conf        - choice based on which file is imported
-#              tempSt_save - project settings
-#              tempSt_autogen - auto generate
-#
+#              tempst_autogen - Auto generate ?(1 - all or 0 - none)
 #  Results : -
 #
 #  Description : creates the new project
 #---------------------------------------------------------------------------------------------------
-proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir conf tempSt_save tempSt_autogen} {
+proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autogen} {
     global rootDir
     global treePath
     global mnCount
@@ -1106,8 +1100,13 @@ puts "importing wrapper $Operations::viewType"
 
     set result [openConfLib::SetActiveView $viewType]
 
+    set st_autogen $tempst_autogen
     #By default the autocalculation is all
-    set result [openConfLib::SetActiveAutoCalculationConfig "all"]
+    if { $st_autogen == 1 } {
+        set result [openConfLib::SetActiveAutoCalculationConfig "all"]
+    } else {
+        set result [openConfLib::SetActiveAutoCalculationConfig "none"]
+    }
 
     set result [openConfLib::GetViewSetting $viewType "default"]
     set returnedViewType [lindex $result 1]
@@ -1115,18 +1114,16 @@ puts "importing wrapper $Operations::viewType"
     set st_viewType $viewType
     set Operations::viewType $returnedViewType
     set lastVideoModeSel $viewType
-    set st_save $tempSt_save
-    set st_autogen 1
+
     Console::ClearMsgs
 
-    if {$conf == "off" || $conf == "on" } {
-        if { [$Operations::projMenu index 2] != "2" } {
-            $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
-        }
-        if { [$Operations::projMenu index 3] != "3" } {
-            $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
-        }
+    if { [$Operations::projMenu index 2] != "2" } {
+        $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
     }
+    if { [$Operations::projMenu index 3] != "3" } {
+        $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
+    }
+
     puts "$Operations::viewType :: viwe: $st_viewType"
 }
 
