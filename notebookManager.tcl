@@ -1443,10 +1443,9 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     if { [string match "EXPERT" $Operations::viewType ] == 1 } {
         $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
     }
-    set mnNodeType 0
     set mnNodeId 240
     thread::send [tsv::get application importProgress] "StartProgress"
-    if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeType $mnNodeId] } ] } {
+    if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
         # error has occured
         thread::send  [tsv::set application importProgress] "StopProgress"
         Operations::CloseProject
