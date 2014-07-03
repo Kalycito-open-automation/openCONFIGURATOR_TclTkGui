@@ -188,29 +188,22 @@ proc ChildWindows::ProjectSettingWindow {} {
     if {$projectDir == "" || $projectName == "" } {
         return
     }
+# TODO remove viewtype in project settings window. There is no UI for this.
 
-    set st_autogenp [new_AutoGeneratep]
-    set st_savep [new_AutoSavep]
-    set videoMode [new_ViewModep]
-    set st_viewType [new_boolp]
+    set result [openConfLib::GetActiveView]
+    set st_viewType [lindex $result 1]
+# TODO if errror set st_viewtype to 0
 
-    set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]\nAuto generate is set to \"Yes\" and project Setting set to \"Prompt\" " -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error\nAuto generate is set to \"Yes\" and project Setting set to \"Prompt\" " -title Error -icon error
-        }
+    set st_save 1
+
+    set result [openConfLib::GetActiveAutoCalculationConfig]
+    set tempautoGen [lindex $result 1]
+    if { [string match "all" $tempautoGen] } {
         set st_autogen 1
-        set st_save 1
-        set videoMode 0
-        set st_viewType 0
+    } elseif { [string match "none" $tempautoGen] } {
+        set st_autogen 0
     } else {
-        set st_autogen [AutoGeneratep_value $st_autogenp]
-        set st_save [AutoSavep_value $st_savep]
-        set videoMode [ViewModep_value $videoMode]
-        set st_viewType [boolp_value $st_viewType]
+        set st_autogen 2
     }
 
     set winProjSett .projSett
@@ -236,9 +229,9 @@ proc ChildWindows::ProjectSettingWindow {} {
 
     text $winProjSett.t_desc -height 4 -width 40 -state disabled -background white
 
-    radiobutton $frame1.st_autogenSave -variable st_save -value 0 -text "Auto Save" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
-    radiobutton $frame1.ra_prompt -variable st_save -value 1 -text "Prompt" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
-    radiobutton $frame1.ra_discard -variable st_save -value 2 -text "Discard" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame1.st_autogenSave -variable temp_st_save -value 0 -text "Auto Save" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame1.ra_prompt -variable temp_st_save -value 1 -text "Prompt" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
+    radiobutton $frame1.ra_discard -variable temp_st_save -value 2 -text "Discard" -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
 
     radiobutton $frame2.ra_genYes -variable st_autogen -value 1 -text Yes -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
     radiobutton $frame2.ra_genNo -variable st_autogen -value 0 -text No -command "ChildWindows::ProjectSettText $winProjSett.t_desc"
@@ -248,19 +241,24 @@ proc ChildWindows::ProjectSettingWindow {} {
     button $frame3.bt_ok -width 8 -text "Ok" -command {
         if { $Operations::viewType == "EXPERT" } {
             set viewType 1
-        Operations::SingleClickNode $nodeSelect
+            Operations::SingleClickNode $nodeSelect
         } else {
             set viewType 0
         }
-        set catchErrCode [SetProjectSettings $st_autogen $st_save $viewType $st_viewType]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .projSett
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .projSett
-            }
-    }
+        set result [openConfLib::SetActiveView $viewType]
+        set st_viewtype $viewType
+        openConfLib::ShowErrorMessage $result
+
+        if { $st_autogen == 1 } {
+            set autogen "all"
+        } else {
+            set autogen "none"
+        }
+        set result [openConfLib::SetActiveAutoCalculationConfig $autogen]
+        openConfLib::ShowErrorMessage $result
+
+        set st_save $temp_st_save
+
         destroy .projSett
     }
 
@@ -269,23 +267,20 @@ proc ChildWindows::ProjectSettingWindow {} {
         global st_save
         global st_autogen
         global st_viewType
-        set st_autogenp [new_AutoGeneratep]
-        set st_savep [new_AutoSavep]
-        set videoMode [new_ViewModep]
-        set st_viewType [new_boolp]
-        set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
+
+        set result [openConfLib::GetActiveView]
+        set st_viewType [lindex $result 1]
+
+        set result [openConfLib::GetActiveAutoCalculationConfig]
+        set tempautoGen [lindex $result 1]
+        if { [string match "all" $tempautoGen] } {
             set st_autogen 1
-            set st_save 1
-            set videoMode 0
-            set st_viewType 0
+        } elseif { [string match "none" $tempautoGen] } {
+            set st_autogen 0
         } else {
-            set st_autogen [AutoGeneratep_value $st_autogenp]
-            set st_save [AutoSavep_value $st_savep]
-            set videoMode [ViewModep_value $videoMode]
-            set st_viewType [boolp_value $st_viewType]
+            set st_autogen 2
         }
+
         destroy .projSett
     }
 
