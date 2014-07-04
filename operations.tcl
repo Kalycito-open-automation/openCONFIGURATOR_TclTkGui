@@ -590,18 +590,18 @@ proc Operations::exit_app {} {
         set result [tk_messageBox -message "Save Project $projectName?" -type yesnocancel -icon question -title "Question" -parent .]
         switch -- $result {
             yes {
-                     Operations::Saveproject
-                 Console::DisplayInfo "Project $projectName is saved" info
+                Operations::Saveproject
+                Console::DisplayInfo "Project $projectName is saved" info
             }
             no  {
-                    Console::DisplayInfo "Project $projectName not saved" info
-                if { ![file exists [file join $projectDir $projectName].oct] } {
+                Console::DisplayInfo "Project $projectName not saved" info
+                if { ![file exists [file join $projectDir $projectName].xml] } {
                     catch { file delete -force -- $projectDir }
-                    }
+                }
             }
             cancel {
-                 Console::DisplayInfo "Exit Cancelled" info
-                 return
+                Console::DisplayInfo "Exit Cancelled" info
+                return
             }
         }
     }
@@ -628,14 +628,7 @@ proc Operations::OpenProjectWindow { } {
     global defaultProjectDir
     global resourcesDir
 
-    set odXML [file join $resourcesDir od.xml]
-    if {![file isfile $odXML] } {
-        tk_messageBox -message "The file od.xml is missing cannot proceed\nConsult the user manual to troubleshoot" -title Info -icon error
-        return
-    } else {
-        #od.xml is present continue
-    }
-
+# TODO Check for the availability of the dependent files.
     if { $projectDir != "" && $projectName != "" } {
         #check whether project has changed
         if {$status_save} {
@@ -648,7 +641,7 @@ proc Operations::OpenProjectWindow { } {
                 }
                  no  {
                     Console::DisplayInfo "Project $projectName not saved" info
-                                    if { ![file exists [file join $projectDir $projectName].oct ] } {
+                                    if { ![file exists [file join $projectDir $projectName].xml ] } {
                         catch { file delete -force -- $projectDir }
                     }
                 }
@@ -661,7 +654,7 @@ proc Operations::OpenProjectWindow { } {
     }
 
     set types {
-        {"All Project Files"     {*.oct } }
+        {"All Project Files"     {*.xml } }
     }
 
     if { ![file isdirectory $lastOpenPjt] && [file exists $lastOpenPjt] } {
@@ -673,13 +666,13 @@ proc Operations::OpenProjectWindow { } {
     }
 
     # Validate filename
-        if { $projectfilename == "" } {
-                return
-        }
+    if { $projectfilename == "" } {
+            return
+    }
 
     set tempPjtName [file tail $projectfilename]
     set ext [file extension $projectfilename]
-        if {[string compare $ext ".oct"]} {
+        if {[string compare $ext ".xml"]} {
         set projectDir ""
         tk_messageBox -message "Extension $ext not supported" -title "Open Project Error" -icon error -parent .
         return
@@ -698,10 +691,10 @@ proc Operations::OpenProjectWindow { } {
     set SrcDir [ string range $projectfilename 0  [string last "/" $projectfilename ] ]
     Console::ClearMsgs
     if { ![string equal $foldername $filename] } {
-        set SrcDir "$SrcDir$foldername.oct"
+        set SrcDir "$SrcDir$foldername.xml"
         file rename $projectfilename $SrcDir
         set projectfilename $SrcDir
-        Console::DisplayInfo "File $filename.oct is renamed as $foldername.oct"
+        Console::DisplayInfo "File $filename.xml is renamed as $foldername.xml"
     } else {
         # "File & Folder names are same continue"
     }
@@ -736,60 +729,43 @@ proc Operations::openProject {projectfilename} {
     set tempPjtName [file tail $projectfilename]
 
     thread::send [tsv::get application importProgress] "StartProgress"
-    #API for open project
-    set catchErrCodeOpen [OpenProject $tempPjtDir $tempPjtName]
-    set ErrCodeOpen [ocfmRetCode_code_get $catchErrCodeOpen]
-    set tmpErrCodeOpen 59
-    if { ($ErrCodeOpen != 0) && ($ErrCodeOpen != $tmpErrCodeOpen) } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCodeOpen] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCodeOpen]" -parent . -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error" -parent . -title Error -icon error
-        }
+    set result [openConfLib::OpenProject $projectfilename]
+    openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful $result] != 1 } {
         thread::send  [tsv::set application importProgress] "StopProgress"
         return 0
     }
+
     set projectDir $tempPjtDir
     set projectName [string range $tempPjtName 0 end-[string length [file extension $tempPjtName]]]
 
-    # API to get project settings
-    set st_autogenp [new_AutoGeneratep]
-    set st_savep [new_AutoSavep]
-    set videoMode [new_ViewModep]
-    set st_viewType [new_boolp]
-    set catchErrCode [GetProjectSettings $st_autogenp $st_savep $videoMode $st_viewType]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]\nAuto generate is set to \"Yes\" and project Setting set to \"Prompt\" " -title Error -icon error
-        } else {
-             tk_messageBox -message "Unknown Error\nAuto generate is set to \"Yes\" and project Setting set to \"Prompt\" " -title Error -icon error
-        }
+    set st_save 1
+
+    set result [openConfLib::GetActiveAutoCalculationConfig]
+    set tempautoGen [lindex $result 1]
+    if { [string match "all" $tempautoGen] } {
         set st_autogen 1
-        set st_save 1
-        set Operations::viewType "SIMPLE"
-        set lastVideoModeSel 0
-        set st_viewType 0
+    } elseif { [string match "none" $tempautoGen] } {
+        set st_autogen 0
     } else {
-        set st_autogen [AutoGeneratep_value $st_autogenp]
-        set st_save [AutoSavep_value $st_savep]
-        Operations::SetVideoType [ViewModep_value $videoMode]
-        set lastVideoModeSel $videoMode
-        set st_viewType [boolp_value $st_viewType]
+        set st_autogen 2
     }
 
+    set result [openConfLib::GetActiveView]
+    set st_viewType [lindex $result 1]
+    if {$st_viewType} {
+        set Operations::viewType "EXPERT"
+    } else {
+        set Operations::viewType "SIMPLE"
+    }
+# TODO if errror set st_viewtype to 0
+
     set result [ Operations::RePopulate $projectDir $projectName ]
+
     thread::send [tsv::set application importProgress] "StopProgress"
 
     if { $result == 1 } {
-    Console::DisplayInfo "Project $projectName at $projectDir is successfully opened"
-    if { ($ErrCodeOpen == $tmpErrCodeOpen) } {
-        set errmsg [ocfmRetCode_errorString_get $catchErrCodeOpen]
-        if { [ string is ascii $errmsg ] } {
-            tk_messageBox -message "$errmsg" -icon warning -title "Compatibility Warning" -parent .
-            Console::DisplayWarning "$errmsg"
-        }
-    }
+        Console::DisplayInfo "Project $projectName at $projectDir is successfully opened"
     } else {
         Console::DisplayErrMsg "Error in opening project $tempPjtName at $tempPjtDir"
     }
@@ -830,7 +806,7 @@ proc Operations::RePopulate { projectDir projectName } {
     $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
 
 # TODO Parse using the list of nodeId's inserted.
-    for {set inc 240} {$inc > 0} {incr [expr {-$inc}]} {
+    for {set inc 240} {$inc > 0} {incr inc -1} {
 
 #For Safety check if the node exists?
         set result [openConfLib::IsExistingNode $inc]
@@ -1427,11 +1403,9 @@ proc Operations::BasicFrames { } {
 proc Operations::_tool_intro {ImageName} {
     global rootDir
 
-
     set top [toplevel .intro -relief raised -borderwidth 0]
     wm withdraw $top
     wm overrideredirect $top 1
-
 
     set image [image create photo -file [file join $rootDir $ImageName.gif] ]
 
@@ -1448,6 +1422,7 @@ proc Operations::_tool_intro {ImageName} {
     update idletasks
     after 100
 }
+
 #---------------------------------------------------------------------------------------------------
 #  Operations::BindTree
 #
@@ -1641,8 +1616,8 @@ proc Operations::SingleClickNode {node} {
         pack forget [lindex $f2 0]
         [lindex $f2 1] cancelediting
         [lindex $f2 1] configure -state disabled
-    pack forget [lindex $f5 0]
-    [lindex $f5 1] cancelediting
+        pack forget [lindex $f5 0]
+        [lindex $f5 1] cancelediting
         [lindex $f5 1] configure -state disabled
         pack [lindex $f3 0] -expand yes -fill both -padx 2 -pady 4
         pack forget [lindex $f4 0]
@@ -1655,8 +1630,8 @@ proc Operations::SingleClickNode {node} {
         pack forget [lindex $f2 0]
         [lindex $f2 1] cancelediting
         [lindex $f2 1] configure -state disabled
-    pack forget [lindex $f5 0]
-    [lindex $f5 1] cancelediting
+        pack forget [lindex $f5 0]
+        [lindex $f5 1] cancelediting
         [lindex $f5 1] configure -state disabled
         pack forget [lindex $f3 0]
         pack [lindex $f4 0] -expand yes -fill both -padx 2 -pady 4
@@ -2096,77 +2071,77 @@ proc Operations::SingleClickNode {node} {
 
     if {  ( $exp1 != 1 ) && ( ( $exp2 == 1) || ( ($exp3 == 1) && !($exp4 == "VAR" || $exp4 == "") ) ) } {
 
-    #fields are editable only for VAR type and acess type other than ro const or empty
-    #NOTE: also refer to the else part below
-    if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
-    || [lindex $IndexProp 3] == "" || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 } {
-        #the field is non editable
-        $tmpInnerf1.en_value1 configure -state "disabled"
-    } else {
-        $tmpInnerf1.en_value1 configure -state "normal"
-    }
+        #fields are editable only for VAR type and acess type other than ro const or empty
+        #NOTE: also refer to the else part below
+        if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
+        || [lindex $IndexProp 3] == "" || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 } {
+            #the field is non editable
+            $tmpInnerf1.en_value1 configure -state "disabled"
+        } else {
+            $tmpInnerf1.en_value1 configure -state "normal"
+        }
     } else {
         #these must be objects greater than 1FFF without object type VAR or objects starting with A
         grid $tmpInnerf1.frame1.ra_dec
-    grid $tmpInnerf1.frame1.ra_hex
+        grid $tmpInnerf1.frame1.ra_hex
 
-    $tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidEntryData %P"
-    if { [string match -nocase "A???" $indexId] == 1 } {
-        grid remove $tmpInnerf1.frame1.ra_dec
-        grid remove $tmpInnerf1.frame1.ra_hex
-        set widgetState disabled
-        set comboState disabled
-    } else {
-        set widgetState normal
-        set comboState normal
-    }
+        $tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidEntryData %P"
+        if { [string match -nocase "A???" $indexId] == 1 } {
+            grid remove $tmpInnerf1.frame1.ra_dec
+            grid remove $tmpInnerf1.frame1.ra_hex
+            set widgetState disabled
+            set comboState disabled
+        } else {
+            set widgetState normal
+            set comboState normal
+        }
 
-    #make the save button disabled
-    $indexSaveBtn configure -state $widgetState
-    $subindexSaveBtn configure -state $widgetState
+        #make the save button disabled
+        $indexSaveBtn configure -state $widgetState
+        $subindexSaveBtn configure -state $widgetState
 
-    $tmpInnerf1.en_value1 configure -state disabled
-    #$tmpInnerf1.en_lower1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
-    #$tmpInnerf1.en_upper1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
+        $tmpInnerf1.en_value1 configure -state disabled
+        #$tmpInnerf1.en_lower1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
+        #$tmpInnerf1.en_upper1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
 
-    #fields are editable only for VAR type and acess type other than ro const
-        #it is also mot editable for index starting with "A"
-        #NOTE: also refer to the if part above
+        #fields are editable only for VAR type and acess type other than ro const
+            #it is also mot editable for index starting with "A"
+            #NOTE: also refer to the if part above
         if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
             || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 \
             || [string match -nocase "A???" $indexId] == 1} {
-            #the field is non editable
-        $tmpInnerf1.en_value1 configure -state "disabled"
-    } else {
-        $tmpInnerf1.en_value1 configure -state "normal"
-    }
+                #the field is non editable
+            $tmpInnerf1.en_value1 configure -state "disabled"
+        } else {
+            $tmpInnerf1.en_value1 configure -state "normal"
+        }
     }
     # disable the object type combobox of sub objects
     if { [string match "*SubIndex*" $node] && ([expr 0x$indexId > 0x1fff]) } {
 
         #subobjects of index greater than 1fff exists only for index of type
         #ARRAY datatype is not editable
-    #API for GetIndexAttributesbyPositions
-    set tempIndexObjtype [GetIndexAttributesbyPositions $nodePos $indexPos 1 ]
-        set ErrCode [ocfmRetCode_code_get [lindex $tempIndexObjtype 0]]
-    if {$ErrCode == 0} {
-        set IndexObjtype [lindex $tempIndexObjtype 1]
-    } else {
-        set IndexObjtype []
-    }
-
-    if { ($subIndexId == "00") } {
-        #$tmpInnerf1.en_lower1 configure -state disabled
-        #$tmpInnerf1.en_upper1 configure -state disabled
-
-        if { [ string match -nocase "ARRAY" $IndexObjtype ] } {
-        $tmpInnerf1.en_value1 configure -state normal
-        $subindexSaveBtn configure -state normal
+        #API for GetIndexAttributesbyPositions
+        set tempIndexObjtype [GetIndexAttributesbyPositions $nodePos $indexPos 1 ]
+            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexObjtype 0]]
+        if {$ErrCode == 0} {
+            set IndexObjtype [lindex $tempIndexObjtype 1]
         } else {
-        $tmpInnerf1.en_value1 configure -state disabled
-        $subindexSaveBtn configure -state disabled
+            set IndexObjtype []
         }
-    }
+
+        if { ($subIndexId == "00") } {
+            #$tmpInnerf1.en_lower1 configure -state disabled
+            #$tmpInnerf1.en_upper1 configure -state disabled
+
+            if { [ string match -nocase "ARRAY" $IndexObjtype ] } {
+                $tmpInnerf1.en_value1 configure -state normal
+                $subindexSaveBtn configure -state normal
+            } else {
+                $tmpInnerf1.en_value1 configure -state disabled
+                $subindexSaveBtn configure -state disabled
+            }
+        }
     }
 
     if { [lindex $IndexProp 2] == "IP_ADDRESS" } {
@@ -2226,8 +2201,8 @@ proc Operations::SingleClickNode {node} {
                 set lastConv dec
                 $tmpInnerf1.frame1.ra_dec select
             } elseif { [lindex [lindex $userPrefList $schRes] 1] == "hex" } {
-        set lastConv hex
-        $tmpInnerf1.frame1.ra_hex select
+                set lastConv hex
+                $tmpInnerf1.frame1.ra_hex select
             } else {
                 return
             }
@@ -2248,7 +2223,7 @@ proc Operations::SingleClickNode {node} {
         set lastConv ""
         grid remove $tmpInnerf1.frame1.ra_dec
         grid remove $tmpInnerf1.frame1.ra_hex
-    $tmpInnerf1.en_value1 configure -validate key -vcmd { return 0 } -bg $savedBg
+        $tmpInnerf1.en_value1 configure -validate key -vcmd { return 0 } -bg $savedBg
     }
     return
 }
