@@ -1579,6 +1579,7 @@ proc Operations::SingleClickNode {node} {
         return
     }
 
+# TODO remove nodetype usage from here..
     #getting Id and Type of node
     set result [Operations::GetNodeIdType $node]
     if {$result == ""} {
@@ -1591,21 +1592,9 @@ proc Operations::SingleClickNode {node} {
         set nodeType [lindex $result 1]
     }
 
-    #API for IfNodeExists
-    set nodePos [new_intp]
-    set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeId $nodeType $nodePos $ExistfFlag]
-    set nodePos [intp_value $nodePos]
-    set ExistfFlag [boolp_value $ExistfFlag]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode == 0 && $ExistfFlag == 1 } {
-        #the node exist continue
-    } else {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -parent . -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error" -parent . -title Error -icon error
-        }
+    set result [openConfLib::IsExistingNode $nodeId]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [lindex $result 0] == 0 && [Result_IsSuccessful [lindex $result 0]] != 1 } {
         Operations::RemoveAllFrames
         return
     }
@@ -1622,7 +1611,7 @@ proc Operations::SingleClickNode {node} {
         pack [lindex $f3 0] -expand yes -fill both -padx 2 -pady 4
         pack forget [lindex $f4 0]
 
-        Operations::MNProperties $node $nodePos $nodeId $nodeType
+        Operations::MNProperties $node $nodeId
         return
     } elseif {[string match "CN-*" $node]} {
         pack forget [lindex $f0 0]
@@ -1683,15 +1672,13 @@ proc Operations::SingleClickNode {node} {
         set popCountList ""
         set populatedCommParamList ""
 
-        #puts "F2:: $f2"
-        #puts "F5:: $f5"
         if {$st_autogen == 1 } {
-        [lindex $f2 1] configure -state disabled
-        [lindex $f5 1] configure -state normal
-        [lindex $f5 1] delete 0 end
+            [lindex $f2 1] configure -state disabled
+            [lindex $f5 1] configure -state normal
+            [lindex $f5 1] delete 0 end
         } else {
-        [lindex $f2 1] configure -state normal
-        [lindex $f2 1] delete 0 end
+            [lindex $f2 1] configure -state normal
+            [lindex $f2 1] delete 0 end
         }
 
         set commParamValue ""
@@ -2231,15 +2218,13 @@ proc Operations::SingleClickNode {node} {
 #  Operations::MNProperties
 #
 #  Arguments : node       - select tree node path
-#              nodePos    - positoion of node in collection
 #              nodeId     - id of the node
-#              nodeType   - indicates the type as MN or CN
 #
 #  Results :  -
 #
 #  Description : displays the properties of selected MN
 #---------------------------------------------------------------------------------------------------
-proc Operations::MNProperties {node nodePos nodeId nodeType} {
+proc Operations::MNProperties {node nodeId} {
     global f3
     global savedValueList
     global lastConv
@@ -2256,7 +2241,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     set tmp_stationType [new_StationTypep]
     set tmp_forceCycleFlag [new_boolp]
     #API for GetNodeAttributesbyNodePos
-    set catchErrCode [GetNodeAttributesbyNodePos $nodePos $dummyNodeId $tmp_stationType $tmp_forceCycleFlag]
+    set catchErrCode [GetNodeAttributesbyNodePos $dummyNodeId $tmp_stationType $tmp_forceCycleFlag]
     if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
             tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
@@ -2267,7 +2252,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     }
 
     #configure the save button
-    $mnPropSaveBtn configure -command "NoteBookManager::SaveMNValue $nodePos $tmpInnerf0 $tmpInnerf1"
+    $mnPropSaveBtn configure -command "NoteBookManager::SaveMNValue $tmpInnerf0 $tmpInnerf1"
 
     if {[lsearch $savedValueList $node] != -1} {
         set savedBg #fdfdd4
@@ -2289,7 +2274,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     # value from 1006 for Cycle time
     set MNDatalist ""
 
-    set cycleTimeresult [GetObjectValueData $nodePos $nodeId $nodeType [list 2 5] $Operations::CYCLE_TIME_OBJ]
+    set cycleTimeresult [GetObjectValueData $nodeId [list 2 5] $Operations::CYCLE_TIME_OBJ]
     if {[string equal "pass" [lindex $cycleTimeresult 0]] == 1} {
         set cycleTimeValue [lindex $cycleTimeresult 2]
         set cycleTimeDatatype [lindex $cycleTimeresult 1]
@@ -2306,7 +2291,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     }
 
     # value from 0x1C14 for Loss of SoC Tolerance
-    set lossSoCToleranceResult [GetObjectValueData $nodePos $nodeId $nodeType  [list 2 4 5] $Operations::LOSS_SOC_TOLERANCE]
+    set lossSoCToleranceResult [GetObjectValueData $nodeId  [list 2 4 5] $Operations::LOSS_SOC_TOLERANCE]
     if {[string equal "pass" [lindex $lossSoCToleranceResult 0]] == 1} {
         set lossSoCToleranceValue [lindex $lossSoCToleranceResult 3]
     set lossSoCToleranceDefaultValue [lindex $lossSoCToleranceResult 2]
@@ -2347,7 +2332,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     }
 
     # value from 0x1F98/08 for Asynchronous MTU size
-    set asynMTUSizeResult [GetObjectValueData $nodePos $nodeId $nodeType  [list 2 5] [lindex $Operations::ASYNC_MTU_SIZE_OBJ 0] [lindex $Operations::ASYNC_MTU_SIZE_OBJ 1] ]
+    set asynMTUSizeResult [GetObjectValueData $nodeId  [list 2 5] [lindex $Operations::ASYNC_MTU_SIZE_OBJ 0] [lindex $Operations::ASYNC_MTU_SIZE_OBJ 1] ]
     if {[string equal "pass" [lindex $asynMTUSizeResult 0]] == 1} {
         set asynMTUSizeValue [lindex $asynMTUSizeResult 2]
         set asynMTUSizeDatatype [lindex $asynMTUSizeResult 1]
@@ -2365,7 +2350,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     }
 
     # value from 0x1F8A/07 for Asynchronous Timeout
-    set asynTimeoutResult [GetObjectValueData $nodePos $nodeId $nodeType [list 2 5] [lindex $Operations::ASYNC_TIMEOUT_OBJ 0] [lindex $Operations::ASYNC_TIMEOUT_OBJ 1] ]
+    set asynTimeoutResult [GetObjectValueData $nodeId [list 2 5] [lindex $Operations::ASYNC_TIMEOUT_OBJ 0] [lindex $Operations::ASYNC_TIMEOUT_OBJ 1] ]
     if {[string equal "pass" [lindex $asynTimeoutResult 0]] == 1} {
         set asynTimeoutValue [lindex $asynTimeoutResult 2]
         set asynTimeoutDatatype [lindex $asynTimeoutResult 1]
@@ -2385,7 +2370,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     # value from 0x1F98/07 for Multiplexing prescaler
     #* Multiplexing Prescaler (MN parameter)
     #API for GetFeatureValue
-    set catchErrCode [GetFeatureValue $nodeId $nodeType 1 "DLLMNFeatureMultiplex" ]
+    set catchErrCode [GetFeatureValue $nodeId  1 "DLLMNFeatureMultiplex" ]
     if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
         if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
             tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
@@ -2395,7 +2380,7 @@ proc Operations::MNProperties {node nodePos nodeId nodeType} {
     }
     set MNFeatureMultiplexFlag [lindex $catchErrCode 1]
 
-    set multiPrescaler [GetObjectValueData $nodePos $nodeId $nodeType [list 2 5] [lindex $Operations::MULTI_PRESCAL_OBJ 0] [lindex $Operations::MULTI_PRESCAL_OBJ 1] ]
+    set multiPrescaler [GetObjectValueData $nodeId [list 2 5] [lindex $Operations::MULTI_PRESCAL_OBJ 0] [lindex $Operations::MULTI_PRESCAL_OBJ 1] ]
     if {[string equal "pass" [lindex $multiPrescaler 0]] == 1} {
         set multiPrescalerValue [lindex $multiPrescaler 2]
         set multiPrescalerDatatype [lindex $multiPrescaler 1]
@@ -2973,7 +2958,7 @@ proc Operations::CloseProject {} {
     Operations::DeleteAllNode
 
     if { $projectDir != "" && $projectName != "" } {
-        if { ![file exists [file join $projectDir $projectName].oct ] } {
+        if { ![file exists [file join $projectDir $projectName].xml ] } {
             catch { file delete -force -- $projectDir }
         }
     }

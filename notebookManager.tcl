@@ -1165,7 +1165,7 @@ proc NoteBookManager::DiscardValue {frame0 frame1} {
 #
 #  Description : save the entered value for MN property window
 #---------------------------------------------------------------------------------------------------
-proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
+proc NoteBookManager::SaveMNValue {frame0 frame1} {
     global nodeSelect
     global nodeIdList
     global treePath
@@ -1242,7 +1242,7 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
                     continue
                 }
             }
-                set reqFieldResult [Operations::GetObjectValueData $nodePos $nodeId $nodeType [list 0 9] [lindex $objectList 0] [lindex $objectList 1] ]
+                set reqFieldResult [Operations::GetObjectValueData $nodeId $nodeType [list 0 9] [lindex $objectList 0] [lindex $objectList 1] ]
                 if { [lindex $reqFieldResult 0] == "pass" } {
                     set objName [lindex $reqFieldResult 1]
                     set objFlag [lindex $reqFieldResult 2]
