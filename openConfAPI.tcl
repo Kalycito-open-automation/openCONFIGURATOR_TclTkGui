@@ -5,14 +5,14 @@ namespace eval openConfLib {
 }
 
 proc openConfLib::ShowErrorMessage { result } {
-    PrintResult $result
-
     if { [Result_IsSuccessful $result] != 1 } {
         if { [ string is ascii [Result_GetErrorString $result] ] } {
             tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:[Result_GetErrorString $result]" -title Error -icon error -parent .
         } else {
             tk_messageBox -message "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error" -title Error -icon error -parent .
         }
+
+        PrintResult $result
     }
 }
 

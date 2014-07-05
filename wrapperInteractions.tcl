@@ -201,8 +201,6 @@ proc WrapperInteractions::Import {parentNode nodeID } {
     global LocvarProgbar
 
     set LocvarProgbar 0
-    set errorString []
-
     #check for view if simple exit else advanced continue
     if { [string match "SIMPLE" $Operations::viewType ] == 1 } {
         return pass

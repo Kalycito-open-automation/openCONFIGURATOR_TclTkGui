@@ -359,7 +359,7 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
         $tabInnerf1.la_advOption4 configure  -text "Loss of SoC Tolerance"
         $tabInnerf1.la_advOptionUnit4 configure -text "µs"
         $tabInnerf1.la_advOption1 configure -text "Asynchronous MTU size"
-        $tabInnerf1.la_advOptionUnit1 configure -text "Byte"
+        $tabInnerf1.la_advOptionUnit1 configure -text "Bytes"
         $tabInnerf1.la_advOption2 configure -text "Asynchronous Timeout"
         $tabInnerf1.la_advOptionUnit2 configure -text "ns"
         $tabInnerf1.la_advOption3 configure -text "Multiplexing prescaler"
@@ -1143,11 +1143,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::DiscardValue {frame0 frame1} {
     global nodeSelect
-    global nodeIdList
-    global treePath
     global userPrefList
-    global lastConv
-
 
     set userPrefList [Operations::DeleteList $userPrefList $nodeSelect 1]
     Validation::ResetPromptFlag
@@ -1165,22 +1161,16 @@ proc NoteBookManager::DiscardValue {frame0 frame1} {
 #
 #  Description : save the entered value for MN property window
 #---------------------------------------------------------------------------------------------------
-proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
+proc NoteBookManager::SaveMNValue { frame0 frame1 } {
     global nodeSelect
-    global nodeIdList
     global treePath
-    global savedValueList
-    global userPrefList
-    global lastConv
     global status_save
     global MNDatalist
-
 
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $nodeSelect]
     if {$result != "" } {
         set nodeId [lindex $result 0]
-        set nodeType [lindex $result 1]
     } else {
             #must be some other node this condition should never reach
             Validation::ResetPromptFlag
@@ -1188,19 +1178,15 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
     }
 
     set newNodeName [$frame0.en_nodeName get]
-    set stationType 0
-    set catchErrCode [UpdateNodeParams $nodeId $nodeId $nodeType $newNodeName $stationType "" 0 ""]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
+    set result [openConfLib::SetNodeParameter $nodeId $::NODENAME $newNodeName]
+    openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful $result] != 1 } {
         Validation::ResetPromptFlag
         return
     }
+
     set status_save 1
+
     #reconfiguring the tree
     $treePath itemconfigure $nodeSelect -text "$newNodeName\($nodeId\)"
 
@@ -1236,47 +1222,37 @@ proc NoteBookManager::SaveMNValue {nodePos frame0 frame1} {
                     continue
                 }
 
-            if { [ lindex $tempDatatype 0 ] == "lossSoCToleranceDatatype" } {
-                if { [ catch { set validValue [expr $validValue * 1000] } ] } {
-                    #error in conversion
-                    continue
+                if { [ lindex $tempDatatype 0 ] == "lossSoCToleranceDatatype" } {
+                    if { [ catch { set validValue [expr $validValue * 1000] } ] } {
+                        #error in conversion
+                        continue
+                    }
                 }
-            }
-                set reqFieldResult [Operations::GetObjectValueData $nodePos $nodeId $nodeType [list 0 9] [lindex $objectList 0] [lindex $objectList 1] ]
-                if { [lindex $reqFieldResult 0] == "pass" } {
-                    set objName [lindex $reqFieldResult 1]
-                    set objFlag [lindex $reqFieldResult 2]
-                    #check whether the object is index or subindex
-                    if { [lindex $objectList 1] == "" } {
-                        # it is an index
-                        set saveCmd "SetBasicIndexAttributes $nodeId $nodeType [lindex $objectList 0] $validValue $objName $objFlag"
-                    } else {
-                        #it is a subindex
-                        set saveCmd "SetBasicSubIndexAttributes $nodeId $nodeType [lindex $objectList 0] [lindex $objectList 1] $validValue $objName $objFlag"
-                    }
-                    #save the value
-                    set catchErrCode [eval $saveCmd]
-                    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-                    if { $ErrCode != 0 } {
-                        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-                        } else {
-                            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-                        }
-                        Validation::ResetPromptFlag
-                        return
-                    }
-                    #value for MN porpety is edited need to change
-                    set status_save 1
-                    Validation::ResetPromptFlag
+
+                if { [lindex $objectList 1] == "" } {
+                    # it is an index
+                    set saveCmd "openConfLib::SetIndexActualValue $nodeId [lindex $objectList 0] $validValue"
                 } else {
-                    continue
+                    #it is a subindex
+                    set saveCmd "openConfLib::SetSubIndexActualValue $nodeId [lindex $objectList 0] [lindex $objectList 1] $validValue"
                 }
+
+                set result [eval $saveCmd]
+                openConfLib::ShowErrorMessage $result
+                if { [Result_IsSuccessful $result] != 1 } {
+                    Validation::ResetPromptFlag
+                    return
+                }
+
+                #value for MN porpety is edited need to change
+                set status_save 1
+                Validation::ResetPromptFlag
             } else {
                 continue
             }
         }
     }
+
     if { $dispMsg == 1 } {
         Console::DisplayWarning "Empty values in MN properties are not saved"
     }
