@@ -3063,63 +3063,32 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
     global status_save
     global image_dir
 
-    #Check XDC for schema compliance if existing
     if {$tmpImpDir != ""} {
-        set catchErrCode [ValidateXDDFile $tmpImpDir]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                Console::DisplayErrMsg "XDD/XDC validation error: [ocfmRetCode_errorString_get $catchErrCode]"
-                tk_messageBox -message "The imported XDD/XDC is not compliant to XDD schema version 0.13: [ocfmRetCode_errorString_get $catchErrCode]" -title "XDD/XDC import validation error" -icon error -type ok
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error
-            }
+        thread::send  [tsv::set application importProgress] "StartProgress"
+        set result [openConfLib::AddNode $nodeId $cnName $tmpImpDir]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
+            thread::send  [tsv::set application importProgress] "StopProgress"
             return
         }
-    }
+        thread::send  [tsv::set application importProgress] "StopProgress"
+        Console::DisplayInfo "$cnName nodeId: $nodeId has been inserted using the configuration $tmpImpDir"
 
-    incr cnCount
-    set catchErrCode [Operations::NodeCreate $nodeId 1 $cnName]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error
-        }
-        return
-    }
+        #New CN is created need to save
+        incr cnCount
+        set status_save 1
 
-    #New CN is created need to save
-    set status_save 1
+        set node [$treePath selection get]
+        set parentId [lrange [split $node -] 1 end]
+        set parentId [join $parentId -]
+        set treeNodeCN CN-$parentId-$cnCount
 
-    set node [$treePath selection get]
-    set parentId [split $node -]
-    set parentId [lrange $parentId 1 end]
-    set parentId [join $parentId -]
-    set treeNodeCN CN-$parentId-$cnCount
+        lappend nodeIdList $nodeId
+        #creating the GUI for CN
+        image create photo img_cn -file "$image_dir/cn.gif"
+        image create photo img_pdo -file "$image_dir/pdo.gif"
 
-    lappend nodeIdList $nodeId
-    #creating the GUI for CN
-    image create photo img_cn -file "$image_dir/cn.gif"
-    image create photo img_pdo -file "$image_dir/pdo.gif"
-
-    set child [$treePath insert end $node $treeNodeCN -text "$cnName\($nodeId\)" -open 0 -image img_cn]
-
-    if {$tmpImpDir != ""} {
-        #API for Importxml
-        set catchErrCode [ImportXML "$tmpImpDir" $nodeId 1]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error
-            }
-            return
-        } else {
-            Console::DisplayInfo "Imported $tmpImpDir for Node ID: $nodeId"
-        }
+        set child [$treePath insert end $node $treeNodeCN -text "$cnName\($nodeId\)" -open 0 -image img_cn]
 
         thread::send  [tsv::set application importProgress] "StartProgress"
         set result [WrapperInteractions::Import $treeNodeCN $nodeId]
@@ -3131,23 +3100,20 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
         catch {$treePath delete $ObdTreeNode}
         #insert the OBD ico only for expert view mode
         if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-        $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
+            $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
         }
         set mnNodeId 240
         if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
-        # error has occured
-        thread::send  [tsv::set application importProgress] "StopProgress"
-        Operations::CloseProject
-        return 0
+            # error has occured
+            thread::send  [tsv::set application importProgress] "StopProgress"
+            Operations::CloseProject
+            return 0
         }
         thread::send  [tsv::set application importProgress] "StopProgress"
         if { $result == "fail" } {
             return
         }
-
-    } else {
     }
-    return
 }
 
 #---------------------------------------------------------------------------------------------------

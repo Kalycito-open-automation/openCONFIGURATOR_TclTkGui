@@ -28,7 +28,7 @@ proc openConfLib::PrintResult { result } {
 proc openConfLib::AddNode { nodeId nodename xddFilePath } {
     PrintText "::AddNode $nodeId $nodename $xddFilePath "
     set result [::AddNode $nodeId $nodename $xddFilePath ]
-    return result
+    return $result
 }
 
 #Result  DeleteNode(const UINT32 nodeId);
