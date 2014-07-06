@@ -359,7 +359,7 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
         $tabInnerf1.la_advOption4 configure  -text "Loss of SoC Tolerance"
         $tabInnerf1.la_advOptionUnit4 configure -text "µs"
         $tabInnerf1.la_advOption1 configure -text "Asynchronous MTU size"
-        $tabInnerf1.la_advOptionUnit1 configure -text "Byte"
+        $tabInnerf1.la_advOptionUnit1 configure -text "Bytes"
         $tabInnerf1.la_advOption2 configure -text "Asynchronous Timeout"
         $tabInnerf1.la_advOptionUnit2 configure -text "ns"
         $tabInnerf1.la_advOption3 configure -text "Multiplexing prescaler"
@@ -1143,11 +1143,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::DiscardValue {frame0 frame1} {
     global nodeSelect
-    global nodeIdList
-    global treePath
     global userPrefList
-    global lastConv
-
 
     set userPrefList [Operations::DeleteList $userPrefList $nodeSelect 1]
     Validation::ResetPromptFlag
