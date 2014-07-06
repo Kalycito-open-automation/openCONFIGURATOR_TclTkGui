@@ -203,6 +203,8 @@ set lastOpenPjt ""
 set LastTableFocus ""
 set status_save 0
 Validation::ResetPromptFlag
+
+## not used. see Operations::MNProperties Function.
 set Operations::CYCLE_TIME_OBJ 1006
 set Operations::ASYNC_MTU_SIZE_OBJ [list 1F98 08]
 set Operations::ASYNC_TIMEOUT_OBJ [list 1F8A 02]
@@ -2236,20 +2238,31 @@ proc Operations::MNProperties {node nodeId} {
     set tmpInnerf0 [lindex $f3 1]
     set tmpInnerf1 [lindex $f3 2]
 
-    #get node name and display it
-    set dummyNodeId [new_intp]
-    set tmp_stationType [new_StationTypep]
-    set tmp_forceCycleFlag [new_boolp]
-    #API for GetNodeAttributesbyNodePos
-    set catchErrCode [GetNodeAttributesbyNodePos $dummyNodeId $tmp_stationType $tmp_forceCycleFlag]
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
+    set result [openConfLib::GetNodeParameter $nodeId $::NODENAME ]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
         return
     }
+    set locNodeName [lindex $result 1]
+
+#Workaround for nodename the library has openPOWERLINK_MN(240) as the name.
+    if { $nodeId == 240 } {
+        set locNodeName "openPOWERLINK_MN"
+    }
+
+    set result [openConfLib::GetNodeParameter $nodeId $::STATIONTYPE ]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        return
+    }
+    set locStationType [lindex $result 1]
+
+    set result [openConfLib::GetNodeParameter $nodeId $::FORCEDMULTIPLEXEDCYCLE ]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        return
+    }
+    set locForcedMultiplexedCycle [lindex $result 1]
 
     #configure the save button
     $mnPropSaveBtn configure -command "NoteBookManager::SaveMNValue $tmpInnerf0 $tmpInnerf1"
@@ -2260,153 +2273,122 @@ proc Operations::MNProperties {node nodeId} {
         set savedBg white
     }
 
-    set nodeName [lindex $catchErrCode 1]
+    # insert node name
     $tmpInnerf0.en_nodeName delete 0 end
-    $tmpInnerf0.en_nodeName insert 0 $nodeName
+    $tmpInnerf0.en_nodeName insert 0 $locNodeName
     $tmpInnerf0.en_nodeName configure -bg $savedBg
 
-    #insert nodenumber
+    # insert nodenumber
     $tmpInnerf0.en_nodeNo configure -state normal -validate none
     $tmpInnerf0.en_nodeNo delete 0 end
     $tmpInnerf0.en_nodeNo insert 0 $nodeId
     $tmpInnerf0.en_nodeNo configure -state disabled
 
-    # value from 1006 for Cycle time
     set MNDatalist ""
 
-    set cycleTimeresult [GetObjectValueData $nodeId [list 2 5] $Operations::CYCLE_TIME_OBJ]
-    if {[string equal "pass" [lindex $cycleTimeresult 0]] == 1} {
-        set cycleTimeValue [lindex $cycleTimeresult 2]
-        set cycleTimeDatatype [lindex $cycleTimeresult 1]
+    # value from 1006 for Cycle time
+    set result [Operations::GetObjectValueData $nodeId 0x1006]
+    if { [lindex $result 0] } {
+        set locCycleTimeDatatype [lindex $result 1]
         $tmpInnerf0.cycleframe.en_time configure -state normal -validate none -bg $savedBg
         $tmpInnerf0.cycleframe.en_time delete 0 end
-        $tmpInnerf0.cycleframe.en_time insert 0 $cycleTimeValue
-            Operations::CheckConvertValue $tmpInnerf0.cycleframe.en_time $cycleTimeDatatype "dec"
-        lappend MNDatalist [list cycleTimeDatatype $cycleTimeDatatype]
+        $tmpInnerf0.cycleframe.en_time insert 0 [lindex $result 2]
+        Operations::CheckConvertValue $tmpInnerf0.cycleframe.en_time $locCycleTimeDatatype "dec"
+        lappend MNDatalist [list cycleTimeDatatype $locCycleTimeDatatype]
     } else {
-        #fail occured
+        #fail
         $tmpInnerf0.cycleframe.en_time configure -state normal -validate none
         $tmpInnerf0.cycleframe.en_time delete 0 end
         $tmpInnerf0.cycleframe.en_time configure -state disabled
+        Console::DisplayErrMsg "[lindex $result 3]" error
     }
 
-    # value from 0x1C14 for Loss of SoC Tolerance
-    set lossSoCToleranceResult [GetObjectValueData $nodeId  [list 2 4 5] $Operations::LOSS_SOC_TOLERANCE]
-    if {[string equal "pass" [lindex $lossSoCToleranceResult 0]] == 1} {
-        set lossSoCToleranceValue [lindex $lossSoCToleranceResult 3]
-    set lossSoCToleranceDefaultValue [lindex $lossSoCToleranceResult 2]
-        set lossSoCToleranceDatatype [lindex $lossSoCToleranceResult 1]
-
-    if {$lossSoCToleranceDefaultValue == ""} {
-        #if empty set it to default 100 microseconds as per specification
-            set lossSoCToleranceDefaultValue 100
-        } else {
-            if { [ catch { set lossSoCToleranceDefaultValue [expr $lossSoCToleranceDefaultValue / 1000] } ] } {
-                #if error has occured set it to default 10 milliseconds i.e., 100 microseconds as per specification
-                set lossSoCToleranceDefaultValue 100
-            }
+    set result [Operations::GetObjectValueData $nodeId 0x1C14]
+    if { [lindex $result 0] } {
+        # the value of loss of SoC Tolerance is in nanoseconds divide it by 1000 to display it as microseconds
+        if { [ catch { set locSoCToleranceActVal [expr [lindex $result 2] / 1000] } ] } {
+        #if error has occured set it to default 10 milliseconds i.e., 100 microseconds as per specification
+            set locSoCToleranceActVal 100
         }
-
+        set locSoCToleranceDatatype [lindex $result 1]
         $tmpInnerf1.en_advOption4 configure -state normal -validate none -bg $savedBg
         $tmpInnerf1.en_advOption4 delete 0 end
-    if { $lossSoCToleranceValue == "" } {
-            #if the actual is empty assign the default value
-            set lossSoCToleranceValue $lossSoCToleranceDefaultValue
+        $tmpInnerf1.en_advOption4 insert 0 $locSoCToleranceActVal
+        Operations::CheckConvertValue $tmpInnerf1.en_advOption4 $locSoCToleranceDatatype "dec"
+        lappend MNDatalist [list lossSoCToleranceDatatype $locSoCToleranceDatatype]
     } else {
-        # the value of loss of SoC Tolerance is in nanoseconds divide it by 1000 to
-        #display it as microseconds
-        if { [ catch { set lossSoCToleranceValue [expr $lossSoCToleranceValue / 1000] } ] } {
-        #if error has occured set it to default 10 milliseconds i.e., 100 microseconds as per specification
-        set lossSoCToleranceValue 100
-        }
-    }
-
-        $tmpInnerf1.en_advOption4 insert 0 $lossSoCToleranceValue
-        Operations::CheckConvertValue $tmpInnerf1.en_advOption4 $lossSoCToleranceDatatype "dec"
-        lappend MNDatalist [list lossSoCToleranceDatatype $lossSoCToleranceDatatype]
-    } else {
-        #fail occured
+        #fail
         $tmpInnerf1.en_advOption4 configure -state normal -validate none
         $tmpInnerf1.en_advOption4 delete 0 end
         $tmpInnerf1.en_advOption4 configure -state disabled
+        Console::DisplayErrMsg "[lindex $result 3]" error
     }
 
     # value from 0x1F98/08 for Asynchronous MTU size
-    set asynMTUSizeResult [GetObjectValueData $nodeId  [list 2 5] [lindex $Operations::ASYNC_MTU_SIZE_OBJ 0] [lindex $Operations::ASYNC_MTU_SIZE_OBJ 1] ]
-    if {[string equal "pass" [lindex $asynMTUSizeResult 0]] == 1} {
-        set asynMTUSizeValue [lindex $asynMTUSizeResult 2]
-        set asynMTUSizeDatatype [lindex $asynMTUSizeResult 1]
-
+    set result [Operations::GetObjectValueData $nodeId 0x1F98 0x08]
+    if { [lindex $result 0] } {
+        set locAsynMTUSizeDataType [lindex $result 1]
         $tmpInnerf1.en_advOption1 configure -state normal -validate none -bg $savedBg
         $tmpInnerf1.en_advOption1 delete 0 end
-        $tmpInnerf1.en_advOption1 insert 0 $asynMTUSizeValue
-        Operations::CheckConvertValue $tmpInnerf1.en_advOption1 $asynMTUSizeDatatype "dec"
-        lappend MNDatalist [list asynMTUSizeDatatype $asynMTUSizeDatatype]
+        $tmpInnerf1.en_advOption1 insert 0 [lindex $result 2]
+        Operations::CheckConvertValue $tmpInnerf1.en_advOption1 $locAsynMTUSizeDataType "dec"
+        lappend MNDatalist [list asynMTUSizeDatatype $locAsynMTUSizeDataType]
     } else {
-        #fail occured
+        #fail
         $tmpInnerf1.en_advOption1 configure -state normal -validate none
         $tmpInnerf1.en_advOption1 delete 0 end
         $tmpInnerf1.en_advOption1 configure -state disabled
+        Console::DisplayErrMsg "[lindex $result 3]" error
     }
 
-    # value from 0x1F8A/07 for Asynchronous Timeout
-    set asynTimeoutResult [GetObjectValueData $nodeId [list 2 5] [lindex $Operations::ASYNC_TIMEOUT_OBJ 0] [lindex $Operations::ASYNC_TIMEOUT_OBJ 1] ]
-    if {[string equal "pass" [lindex $asynTimeoutResult 0]] == 1} {
-        set asynTimeoutValue [lindex $asynTimeoutResult 2]
-        set asynTimeoutDatatype [lindex $asynTimeoutResult 1]
-
+    # value from 0x1F8A/02 for Asynchronous Timeout
+    set result [Operations::GetObjectValueData $nodeId 0x1F8A 0x02]
+    if { [lindex $result 0] } {
+        set locAsynTimeoutDataType [lindex $result 1]
         $tmpInnerf1.en_advOption2 configure -state normal -validate none -bg $savedBg
         $tmpInnerf1.en_advOption2 delete 0 end
-        $tmpInnerf1.en_advOption2 insert 0 $asynTimeoutValue
-        Operations::CheckConvertValue $tmpInnerf1.en_advOption2 $asynTimeoutDatatype "dec"
-        lappend MNDatalist [list asynTimeoutDatatype $asynTimeoutDatatype]
+        $tmpInnerf1.en_advOption2 insert 0 [lindex $result 2]
+        Operations::CheckConvertValue $tmpInnerf1.en_advOption2 $locAsynTimeoutDataType "dec"
+        lappend MNDatalist [list asynTimeoutDatatype $locAsynTimeoutDataType]
     } else {
-        #fail occured
+        #fail
         $tmpInnerf1.en_advOption2 configure -state normal -validate none
         $tmpInnerf1.en_advOption2 delete 0 end
         $tmpInnerf1.en_advOption2 configure -state disabled
+        Console::DisplayErrMsg "[lindex $result 3]" error
     }
 
-    # value from 0x1F98/07 for Multiplexing prescaler
-    #* Multiplexing Prescaler (MN parameter)
-    #API for GetFeatureValue
-    set catchErrCode [GetFeatureValue $nodeId  1 "DLLMNFeatureMultiplex" ]
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-    }
-    set MNFeatureMultiplexFlag [lindex $catchErrCode 1]
+    # value from 0x1F98/07 for Multiplexing prescaler (MN parameter)
+    set result [openConfLib::GetFeatureValue $nodeId $::DLLMNFeatureMultiplex]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    set MNFeatureMultiplexFlag [lindex $result 1]
 
-    set multiPrescaler [GetObjectValueData $nodeId [list 2 5] [lindex $Operations::MULTI_PRESCAL_OBJ 0] [lindex $Operations::MULTI_PRESCAL_OBJ 1] ]
-    if {[string equal "pass" [lindex $multiPrescaler 0]] == 1} {
-        set multiPrescalerValue [lindex $multiPrescaler 2]
-        set multiPrescalerDatatype [lindex $multiPrescaler 1]
 
+    set result [Operations::GetObjectValueData $nodeId 0x1F98 0x07]
+    if { [lindex $result 0] } {
+        set locMultiPrescalerDatatype [lindex $result 1]
+        set locMultiPreScalarValue [lindex $result 2]
         if { ( [string match -nocase "TRUE" $MNFeatureMultiplexFlag] == 1 )  } {
-            #&& ($multiPrescalerValue != "") && ( [string is int $multiPrescalerValue] == 1 ) && ([expr $multiPrescalerValue > 0])
             $tmpInnerf1.en_advOption3 configure -state normal -validate none -bg $savedBg
             $tmpInnerf1.en_advOption3 delete 0 end
-            $tmpInnerf1.en_advOption3 insert 0 $multiPrescalerValue
-            Operations::CheckConvertValue $tmpInnerf1.en_advOption3 $multiPrescalerDatatype "dec"
-            lappend MNDatalist [list multiPrescalerDatatype $multiPrescalerDatatype]
+            $tmpInnerf1.en_advOption3 insert 0 $locMultiPreScalarValue
+            Operations::CheckConvertValue $tmpInnerf1.en_advOption3 $locMultiPrescalerDatatype "dec"
+            lappend MNDatalist [list multiPrescalerDatatype $locMultiPrescalerDatatype]
         } else {
             $tmpInnerf1.en_advOption3 configure -state normal -validate none
             $tmpInnerf1.en_advOption3 delete 0 end
-            $tmpInnerf1.en_advOption3 insert 0 $multiPrescalerValue
+            $tmpInnerf1.en_advOption3 insert 0 $locMultiPreScalarValue
             $tmpInnerf1.en_advOption3 configure -state disabled
         }
     } else {
-        #fail occured
+        #fail
         $tmpInnerf1.en_advOption3 configure -state normal -validate none
         $tmpInnerf1.en_advOption3 delete 0 end
         $tmpInnerf1.en_advOption3 configure -state disabled
+        Console::DisplayErrMsg "[lindex $result 3]" error
     }
 
     Validation::ResetPromptFlag
-
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -2718,60 +2700,63 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
 #---------------------------------------------------------------------------------------------------
 #  Operations::GetObjectValueData
 #
-#  Arguments : nodePos    - positoion of node in collection
+#  Arguments :
 #              nodeId     - id of the node
-#              nodeType   - indicates the type as MN or CN
 #              indexId    - id of index object
 #              subIndexId - id of subindex object (optional)
 #
-#  Results :  pass and actual, default and datatype value or fail
-#
-#  Description : Gets the actual, default and datatype value for index or subindex
+#  Results : list 0 - 1/0 pass/fail
+#            list 1 - Datatype
+#            list 2 - value (act or default if act is empty)
+#            list 3 - errormessage (if any)
+#  Description : Returns the datatype and (actualvalue/defaultvalue) value for index or subindex
 #---------------------------------------------------------------------------------------------------
-proc Operations::GetObjectValueData {nodePos nodeId nodeType attributeList indexId {subIndexId ""} } {
-    set indexPos [new_intp]
+proc Operations::GetObjectValueData {nodeId indexId {subIndexId ""} } {
+
+    set retValList ""
+    set locDataType ""
+    set locActValue ""
+    set errormessage "success"
+
     if { $subIndexId == "" } {
         #no subindex get the index
-        set existCmd "IfIndexExists $nodeId $nodeType $indexId $indexPos"
+        set cmd "openConfLib::GetIndexAttribute $nodeId $indexId"
     } else {
         #get the subindex property
-        set subIndexPos [new_intp]
-        set existCmd "IfSubIndexExists $nodeId $nodeType $indexId $subIndexId $subIndexPos $indexPos"
+        set cmd "openConfLib::GetSubIndexAttribute $nodeId $indexId $subIndexId"
     }
-    #API call for IfIndexExists or IfSubIndexExists
-    set catchErrCode [eval $existCmd]
-    if { [ocfmRetCode_code_get $catchErrCode] != 0 } {
-        #if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-        #    tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        #} else {
-        #    tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        #}
-        return fail
-    }
-    set indexPos [intp_value $indexPos]
-    if { $subIndexId == "" } {
-        set attributeCmd   "GetIndexAttributesbyPositions $nodePos $indexPos "
-    } else {
-        set subIndexPos [intp_value $subIndexPos]
-        set attributeCmd   "GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos "
-    }
-    set resultList "pass"
 
-    #API call
-    foreach listAttrib $attributeList {
-        set catchErr [eval "$attributeCmd $listAttrib" ]
-        if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-        #    if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-        #   tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]" -title Error -icon error -parent .
-        #    } else {
-        #   tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        #    }
-        return fail
+    set result [eval $cmd $::DATATYPE ]
+    if { [Result_IsSuccessful [lindex $result 0]] == 1 } {
+        set locDataType [lindex $result 1]
+
+        set result [eval $cmd $::DEFAULTVALUE ]
+        if { [Result_IsSuccessful [lindex $result 0]] == 1 } {
+            set locDefaultVal [lindex $result 1]
+
+            set result [eval $cmd $::ACTUALVALUE]
+            if { [Result_IsSuccessful [lindex $result 0]] == 1 } {
+                set locActValue [lindex $result 1]
+                if { $locActValue == "" } {
+                    #if the actual is empty assign the default value
+                    set locActValue $locDefaultVal
+                }
+                set res 1
+            } else {
+                set errormessage "GetACTUALVALUE $nodeId $indexId $subIndexId failed. [Result_GetErrorString [lindex $result 0]]"
+                set res 0
+            }
+        } else {
+            set errormessage "GetDEFAULTVALUE $nodeId $indexId $subIndexId failed. [Result_GetErrorString [lindex $result 0]]"
+            set res 0
         }
-        set result [lindex $catchErr 1]
-        lappend resultList $result
+    } else {
+        set errormessage "GetDATATYPE $nodeId $indexId $subIndexId failed. [Result_GetErrorString [lindex $result 0]]"
+        set res 0
     }
-    return  $resultList
+
+    lappend retValList $res $locDataType $locActValue $errormessage
+    return $retValList
 }
 
 #---------------------------------------------------------------------------------------------------
