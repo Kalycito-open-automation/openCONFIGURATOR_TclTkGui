@@ -204,13 +204,13 @@ set LastTableFocus ""
 set status_save 0
 Validation::ResetPromptFlag
 
-## not used. see Operations::MNProperties Function.
-set Operations::CYCLE_TIME_OBJ 1006
-set Operations::ASYNC_MTU_SIZE_OBJ [list 1F98 08]
-set Operations::ASYNC_TIMEOUT_OBJ [list 1F8A 02]
-set Operations::MULTI_PRESCAL_OBJ [list 1F98 07]
-set Operations::PRES_TIMEOUT_LIMIT_OBJ [list 1F98 03]
-set Operations::LOSS_SOC_TOLERANCE 1C14
+## see Operations::MNProperties, NoteBookManager::SaveMNValue, Operations::CN**
+set Operations::CYCLE_TIME_OBJ 0x1006
+set Operations::LOSS_SOC_TOLERANCE 0x1C14
+set Operations::ASYNC_MTU_SIZE_OBJ [list 0x1F98 0x08]
+set Operations::ASYNC_TIMEOUT_OBJ [list 0x1F8A 0x02]
+set Operations::MULTI_PRESCAL_OBJ [list 0x1F98 0x07]
+set Operations::PRES_TIMEOUT_LIMIT_OBJ [list 0x1F98 0x03]
 
 #---------------------------------------------------------------------------------------------------
 #  Operations::about
@@ -2287,7 +2287,7 @@ proc Operations::MNProperties {node nodeId} {
     set MNDatalist ""
 
     # value from 1006 for Cycle time
-    set result [Operations::GetObjectValueData $nodeId 0x1006]
+    set result [Operations::GetObjectValueData $nodeId $Operations::CYCLE_TIME_OBJ]
     if { [lindex $result 0] } {
         set locCycleTimeDatatype [lindex $result 1]
         $tmpInnerf0.cycleframe.en_time configure -state normal -validate none -bg $savedBg
@@ -2303,7 +2303,7 @@ proc Operations::MNProperties {node nodeId} {
         Console::DisplayErrMsg "[lindex $result 3]" error
     }
 
-    set result [Operations::GetObjectValueData $nodeId 0x1C14]
+    set result [Operations::GetObjectValueData $nodeId $Operations::LOSS_SOC_TOLERANCE]
     if { [lindex $result 0] } {
         # the value of loss of SoC Tolerance is in nanoseconds divide it by 1000 to display it as microseconds
         if { [ catch { set locSoCToleranceActVal [expr [lindex $result 2] / 1000] } ] } {
@@ -2325,7 +2325,7 @@ proc Operations::MNProperties {node nodeId} {
     }
 
     # value from 0x1F98/08 for Asynchronous MTU size
-    set result [Operations::GetObjectValueData $nodeId 0x1F98 0x08]
+    set result [Operations::GetObjectValueData $nodeId [lindex $Operations::ASYNC_MTU_SIZE_OBJ 0]  [lindex $Operations::ASYNC_MTU_SIZE_OBJ 1]]
     if { [lindex $result 0] } {
         set locAsynMTUSizeDataType [lindex $result 1]
         $tmpInnerf1.en_advOption1 configure -state normal -validate none -bg $savedBg
@@ -2342,7 +2342,7 @@ proc Operations::MNProperties {node nodeId} {
     }
 
     # value from 0x1F8A/02 for Asynchronous Timeout
-    set result [Operations::GetObjectValueData $nodeId 0x1F8A 0x02]
+    set result [Operations::GetObjectValueData $nodeId [lindex $Operations::ASYNC_TIMEOUT_OBJ 0] [lindex $Operations::ASYNC_TIMEOUT_OBJ 1]]
     if { [lindex $result 0] } {
         set locAsynTimeoutDataType [lindex $result 1]
         $tmpInnerf1.en_advOption2 configure -state normal -validate none -bg $savedBg
@@ -2364,7 +2364,7 @@ proc Operations::MNProperties {node nodeId} {
     set MNFeatureMultiplexFlag [lindex $result 1]
 
 
-    set result [Operations::GetObjectValueData $nodeId 0x1F98 0x07]
+    set result [Operations::GetObjectValueData $nodeId [lindex $Operations::MULTI_PRESCAL_OBJ 0] [lindex $Operations::MULTI_PRESCAL_OBJ 1]]
     if { [lindex $result 0] } {
         set locMultiPrescalerDatatype [lindex $result 1]
         set locMultiPreScalarValue [lindex $result 2]
