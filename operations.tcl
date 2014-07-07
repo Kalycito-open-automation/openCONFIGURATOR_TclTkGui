@@ -822,7 +822,6 @@ proc Operations::RePopulate { projectDir projectName } {
         set l_NodeName [lindex $aResult 1]
 
         if {$l_NodeId == 240} {
-            set nodeType 0
             $treePath insert end ProjectNode MN-$mnCount -text "$l_NodeName\($l_NodeId\)" -open 1 -image img_mn
             set treeNode OBD-$mnCount-1
         #insert the OBD icon only if the view is in EXPERT mode
@@ -830,7 +829,6 @@ proc Operations::RePopulate { projectDir projectName } {
                 $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
             }
         } else {
-            set nodeType 1
             set treeNode CN-$mnCount-$cnCount
             set child [$treePath insert end MN-$mnCount $treeNode -text "$l_NodeName\($l_NodeId\)" -open 0 -image img_cn]
         }
@@ -2475,7 +2473,7 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
     set nodeIdSidx [lindex [Validation::InputToHex $nodeId INTEGER8] 0]
     set nodeIdSidx [ string range $nodeIdSidx 2 end ]
     if { [string length $nodeIdSidx] < 2 } {
-    set nodeIdSidx 0$nodeIdSidx
+        set nodeIdSidx 0$nodeIdSidx
     }
     set Operations::PRES_TIMEOUT_OBJ [list 1F92 $nodeIdSidx]
 
@@ -3942,32 +3940,28 @@ proc Operations::BuildProject {} {
 
     if { $chkPrompt == 1 && [$treePath exists $nodeSelect] && ([string match "MN*" $nodeSelect] || [string match "CN*" $nodeSelect]) } {
         if { $st_save == "0"} {
-            if { $chkPrompt == 1 } {
-                if { [string match "MN*" $nodeSelect] } {
-                    $mnPropSaveBtn invoke
-                } elseif { [string match "CN*" $nodeSelect] } {
-                    $cnPropSaveBtn invoke
-                } else {
-                    #must be root, ProjectNode, MN, OBD or CN
-                }
+            if { [string match "MN*" $nodeSelect] } {
+                $mnPropSaveBtn invoke
+            } elseif { [string match "CN*" $nodeSelect] } {
+                $cnPropSaveBtn invoke
+            } else {
+                #must be root, ProjectNode, MN, OBD or CN
             }
             Validation::ResetPromptFlag
         } elseif { $st_save == "1" } {
-            if { $chkPrompt == 1 } {
-                set result [tk_messageBox -message "Do you want to save [$treePath itemcget $nodeSelect -text ]?" -parent . -type yesno -icon question]
-                switch -- $result {
-                    yes {
-                        #save the value
-                        if { [string match "MN*" $nodeSelect] } {
-                            $mnPropSaveBtn invoke
-                        } elseif { [string match "CN*" $nodeSelect] } {
-                            $cnPropSaveBtn invoke
-                        } else {
-                            #must be root, ProjectNode, MN, OBD or CN
-                        }
+            set result [tk_messageBox -message "Do you want to save [$treePath itemcget $nodeSelect -text ]?" -parent . -type yesno -icon question]
+            switch -- $result {
+                yes {
+                    #save the value
+                    if { [string match "MN*" $nodeSelect] } {
+                        $mnPropSaveBtn invoke
+                    } elseif { [string match "CN*" $nodeSelect] } {
+                        $cnPropSaveBtn invoke
+                    } else {
+                        #must be root, ProjectNode, MN, OBD or CN
                     }
-                    no  {#continue}
                 }
+                no  {#continue}
             }
             Validation::ResetPromptFlag
         } elseif { $st_save == "2" } {
@@ -3980,24 +3974,17 @@ proc Operations::BuildProject {} {
     # check that 1006 object of MN actual value is greater than zero
     #API for IfNodeExists
     set mnNodeId 240
-    set mnNodeType 0
-    set mnNodePos [new_intp]
-    set mnExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $mnNodeId $mnNodeType $mnNodePos $mnExistfFlag]
-    set mnNodePos [intp_value $mnNodePos]
-    set mnExistfFlag [boolp_value $mnExistfFlag]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
+    set result [openConfLib::IsExistingNode $mnNodeId]
+
     set errCycleTimeFlag 0
-    if { $ErrCode == 0 && $mnExistfFlag == 1 } {
+    if { [Result_IsSuccessful [lindex $result 0]] && [lindex $result 1] } {
         #the node exist continue
         #get the actual value of 1006
-        set cycleTimeresult [GetObjectValueData $mnNodePos $mnNodeId $mnNodeType [list 5 0 9] $Operations::CYCLE_TIME_OBJ]
-        if {[string equal "pass" [lindex $cycleTimeresult 0]] == 1} {
-            set cycleTimeValue [lindex $cycleTimeresult 1]
-            set cycleTimeName [lindex $cycleTimeresult 2]
-            set cycleTimeCdcFlag [lindex $cycleTimeresult 3]
-            if {[lindex $cycleTimeresult 1] != "" } {
-                if { ( [expr $cycleTimeValue > 0] == 1)  } {
+        set result [openConfLib::GetIndexAttribute $mnNodeId $Operations::CYCLE_TIME_OBJ $::ACTUALVALUE]
+        if {[Result_IsSuccessful [lindex $result 0]]} {
+            set cycleTimeValue [lindex $result 1]
+            if {$cycleTimeValue != "" } {
+                if { ( [expr $cycleTimeValue > 0] == 1) } {
                     #value is greater than zero proceed in building project
                 } else {
                     #value is zero
@@ -4025,19 +4012,13 @@ proc Operations::BuildProject {} {
             tk_messageBox -message "$msg" -icon warning -title "Warning" -parent .
             return
         } elseif {$errCycleTimeFlag == 1} {
-            set result [tk_messageBox -message "$msg\nDo you want to copy the default value 50000 µs" -type yesno -icon info -title "Information" -parent .]
+            set result [tk_messageBox -message "$msg\nDo you want to set the default value 50000 µs" -type yesno -icon info -title "Information" -parent .]
             switch -- $result {
                 yes {
-                #API for SetBasicIndexAttributes
                         #hard code the value 50000 for 1006 object in MN
-                        set catchErrCode [SetBasicIndexAttributes $mnNodeId $mnNodeType $Operations::CYCLE_TIME_OBJ 50000 $cycleTimeName $cycleTimeCdcFlag ]
-                        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-                        if { $ErrCode != 0 } {
-                            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-                            } else {
-                                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-                            }
+                        set result [openConfLib::SetIndexActualValue $mnNodeId $Operations::CYCLE_TIME_OBJ 50000]
+                        openConfLib::ShowErrorMessage $result
+                        if { [Result_IsSuccessful $result] != 1 } {
                             return
                         }
                     }
@@ -4067,57 +4048,48 @@ proc Operations::BuildProject {} {
         }
     }
 
-    if { [file isdirectory $projectDir] && ![file isdirectory  [file join $projectDir cdc_xap]] } {
-    catch {file mkdir [file join $projectDir cdc_xap]}
+    set outputDir [file join $projectDir output]
+    if { [file isdirectory $projectDir] && ![file isdirectory $outputDir] } {
+        catch {file mkdir [file join $projectDir output]}
     }
 
     thread::send [tsv::get application importProgress] "StartProgress"
-    #API for GenerateCDC
-    set catchErrCode [GenerateCDC [file join $projectDir cdc_xap] ]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        #exception for exceeding the limit of number of channels
-    if { ($ErrCode != 0) && ($ErrCode != 49) } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            set msg "[ocfmRetCode_errorString_get $catchErrCode]"
+    set result [openConfLib::GenerateStackConfiguration $outputDir ""]
+    openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful $result] != 1 } {
+        if { [ string is ascii [Result_GetErrorString $result] ] } {
+            set msg "Code:[Result_GetErrorCode $result]\nMsg0:[Result_GetErrorString $result]"
         } else {
-            set msg "Unknown Error"
+            set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
         }
-        tk_messageBox -message $msg -title Error -icon error -parent .
-        #error in generating CDC dont generate XAP
         Console::DisplayErrMsg $msg error
-        #Console::DisplayErrMsg "Error in generating cdc. XAP, ProcessImage were not generated" error
         thread::send [tsv::get application importProgress] "StopProgress"
         return
     } else {
-
-        #exception for exceeding the limit of number of channels
-        if { $ErrCode == 49 } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -type ok -parent . -icon warning -title Warning
-        }
-        #build_nodesList is used while deleting the node after the node is built. So collecting the list of CN nodes while the project is build
+	#TODO handle exception for exceeding the limit of number of channels.(ERRCODE 49)
         set build_nodesList ""
         set buildCN_result ""
         set buildCN_nodeId ""
-            foreach mnNode [$treePath nodes ProjectNode] {
+        foreach mnNode [$treePath nodes ProjectNode] {
             set chk 1
             foreach cnNode [$treePath nodes $mnNode] {
-            if {$chk == 1} {
-                if {[string match "OBD*" $cnNode]} {
-                    #Nothing to do for MN
+                if {$chk == 1} {
+                    if {[string match "OBD*" $cnNode]} {
+                        #Nothing to do for MN
+                    } else {
+                        set buildCN_result [Operations::GetNodeIdType $cnNode]
+                    }
+                    set chk 0
                 } else {
-                    set buildCN_result [Operations::GetNodeIdType $cnNode]
+                        set buildCN_result [Operations::GetNodeIdType $cnNode]
                 }
-                set chk 0
-            } else {
-                    set buildCN_result [Operations::GetNodeIdType $cnNode]
-            }
-            if {$buildCN_result != "" } {
-                set buildCN_nodeId [lindex $buildCN_result 0]
-                #set buildCN_nodeType [lindex $buildCN_result 1]
-                #lappend build_nodesList $buildCN_nodeId
-                set build_nodesList [linsert $build_nodesList end $buildCN_nodeId]
-                #puts "Insert: $build_nodesList"
-            }
+                if {$buildCN_result != "" } {
+                    set buildCN_nodeId [lindex $buildCN_result 0]
+                    #set buildCN_nodeType [lindex $buildCN_result 1]
+                    #lappend build_nodesList $buildCN_nodeId
+                    set build_nodesList [linsert $build_nodesList end $buildCN_nodeId]
+                    #puts "Insert: $build_nodesList"
+                }
             }
         }
 
@@ -4131,42 +4103,53 @@ proc Operations::BuildProject {} {
         set st_save $tempSt_save
         set st_autogen $tempSt_autogen
 
-        Operations::RePopulate  $projectDir [string range $projectName 0 end-[string length [file extension $projectName] ] ]
-        set catchErrCode [GenerateXAP [file join $projectDir cdc_xap xap] ]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
+        Operations::RePopulate $projectDir [string range $projectName 0 end-[string length [file extension $projectName] ] ]
+
+        set result [openConfLib::GenerateProcessImageDescription $::C $outputDir "xap.h"]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
+            if { [ string is ascii [Result_GetErrorString $result] ] } {
+                set msg "Code:[Result_GetErrorCode $result]\nMsg1:[Result_GetErrorString $result]"
             } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
+                set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
             }
-            Console::DisplayErrMsg "Error in generating xap"
-            thread::send  [tsv::set application importProgress] "StopProgress"
+            Console::DisplayErrMsg $msg error
+            thread::send [tsv::get application importProgress] "StopProgress"
             return
-        } else {
         }
 
-        set catchErrCode [GenerateNET [file join $projectDir cdc_xap ProcessImage] ]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
+        set result [openConfLib::GenerateProcessImageDescription $::CSHARP $outputDir "ProcessImage.cs"]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
+            if { [ string is ascii [Result_GetErrorString $result] ] } {
+                set msg "Code:[Result_GetErrorCode $result]\nMsg2:[Result_GetErrorString $result]"
             } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
+                set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
             }
-            Console::DisplayErrMsg "Error in generating Process image"
-            thread::send  [tsv::set application importProgress] "StopProgress"
+            Console::DisplayErrMsg $msg error
+            thread::send [tsv::get application importProgress] "StopProgress"
+            return
+        }
+
+        set result [openConfLib::GenerateProcessImageDescription $::XML $outputDir "xap.xml"]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
+            if { [ string is ascii [Result_GetErrorString $result] ] } {
+                set msg "Code:[Result_GetErrorCode $result]\nMsg3:[Result_GetErrorString $result]"
+            } else {
+                set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
+            }
+            Console::DisplayErrMsg $msg error
+            thread::send [tsv::get application importProgress] "StopProgress"
             return
         } else {
             Console::DisplayInfo "files mnobd.txt, mnobd.cdc, xap.xml, xap.h, ProcessImage.cs are generated at location [file join $projectDir cdc_xap]"
             thread::send  [tsv::set application importProgress] "StopProgress"
         }
-
         #project is built need to save
         set status_save 1
     }
 }
-
 
 #---------------------------------------------------------------------------------------------------
 #  Operations::CleanProject
