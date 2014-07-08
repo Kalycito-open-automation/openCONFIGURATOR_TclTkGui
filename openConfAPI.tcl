@@ -21,26 +21,26 @@ proc openConfLib::PrintText { arg } {
 }
 
 proc openConfLib::PrintResult { result } {
-    PrintText "SucS:[Result_IsSuccessful $result] ercode: [Result_GetErrorCode $result] erstr: [Result_GetErrorString $result]"
+    openConfLib::PrintText "SucS:[Result_IsSuccessful $result] ercode: [Result_GetErrorCode $result] erstr: [Result_GetErrorString $result]"
 }
 
 #Result  AddNode(const UINT32 nodeId, const std::string nodeName, const std::string xddFile = "");
 proc openConfLib::AddNode { nodeId nodename xddFilePath } {
-    PrintText "::AddNode $nodeId $nodename $xddFilePath "
+    openConfLib::PrintText "::AddNode $nodeId $nodename $xddFilePath "
     set result [::AddNode $nodeId $nodename $xddFilePath ]
     return $result
 }
 
 #Result  DeleteNode(const UINT32 nodeId);
 proc openConfLib::DeleteNode { nodeId } {
-    PrintText "::DeleteNode $nodeId"
+    openConfLib::PrintText "::DeleteNode $nodeId"
     set result [::DeleteNode $nodeId]
     return $result
 }
 
 #Result  ReplaceXdd(const UINT32 nodeId, const std::string path, const std::string xddFile);
 proc openConfLib::ReplaceXdd { nodeId path xddFile } {
-    PrintText "::ReplaceXdd $nodeId $path $xddFile"
+    openConfLib::PrintText "::ReplaceXdd $nodeId $path $xddFile"
     set result [::ReplaceXdd $nodeId $path $xddFile]
     return $result
 }
@@ -49,7 +49,7 @@ proc openConfLib::ReplaceXdd { nodeId path xddFile } {
 proc openConfLib::IsExistingNode { nodeId } {
     set existsTemp [new_boolpointer]
 
-    PrintText "::IsExistingNode $nodeId"
+    openConfLib::PrintText "::IsExistingNode $nodeId"
     set result [::IsExistingNode $nodeId $existsTemp]
 
     set retVal ""
@@ -57,7 +57,7 @@ proc openConfLib::IsExistingNode { nodeId } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -66,7 +66,7 @@ proc openConfLib::IsExistingNode { nodeId } {
 proc openConfLib::GetNodeCount { } {
     set nodeCountTemp [new_uintpointer]
 
-    PrintText "::GetNodeCount"
+    openConfLib::PrintText "::GetNodeCount"
     set result [::GetNodeCount $nodeCountTemp]
 
     set retVal ""
@@ -74,14 +74,14 @@ proc openConfLib::GetNodeCount { } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
 
 #Result  SetNodeParameter(const UINT32 nodeId, const openCONFIGURATOR::Library::NodeParameter::NodeParameter param, const std::string value);
 proc openConfLib::SetNodeParameter { nodeId param value } {
-    PrintText "::SetNodeParameter $nodeId $param $value"
+    openConfLib::PrintText "::SetNodeParameter $nodeId $param $value"
     set result [::SetNodeParameter $nodeId $param $value]
     return $result
 }
@@ -91,14 +91,14 @@ proc openConfLib::GetNodeParameter { nodeId param  } {
     set retVal ""
     set valueTemp [new_stringpointer]
 
-    PrintText "::GetNodeParameter $nodeId $param"
+    openConfLib::PrintText "::GetNodeParameter $nodeId $param"
     set result [::GetNodeParameter $nodeId $param $valueTemp]
 
     set value [stringpointer_value $valueTemp]
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -108,7 +108,7 @@ proc openConfLib::GetNodeParameter { nodeId param  } {
 proc openConfLib::GetDataTypeSize { type } {
     set sizeTemp [new_uintpointer]
 
-    PrintText "::GetDataTypeSize $type"
+    openConfLib::PrintText "::GetDataTypeSize $type"
     set result [::GetDataTypeSize $type $sizeTemp]
 
     set retVal ""
@@ -116,7 +116,7 @@ proc openConfLib::GetDataTypeSize { type } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -126,14 +126,14 @@ proc openConfLib::GetFeatureValue { nodeId feature  } {
     set retVal ""
     set valueTemp [new_stringpointer]
 
-    PrintText "::GetFeatureValue $nodeId $feature"
+    openConfLib::PrintText "::GetFeatureValue $nodeId $feature"
     set result [::GetFeatureValue $nodeId $feature $valueTemp]
 
     set value [stringpointer_value $valueTemp]
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -142,7 +142,7 @@ proc openConfLib::GetFeatureValue { nodeId feature  } {
 
 #Result  NewProject(const std::string projectName, const std::string projectPath, const std::string pathToMNXdd = "");
 proc openConfLib::NewProject { nodeId param value } {
-    PrintText "::NewProject: $nodeId $param $value"
+    openConfLib::PrintText "::NewProject: $nodeId $param $value"
     set result [::NewProject $nodeId $param $value]
     return $result
 }
@@ -161,14 +161,14 @@ proc openConfLib::CloseProject { } {
 
 #Result  OpenProject(const std::string projectFile);
 proc openConfLib::OpenProject { projectFile } {
-    PrintText "::OpenProject $projectFile"
+    openConfLib::PrintText "::OpenProject $projectFile"
     set result [::OpenProject $projectFile]
     return $result
 }
 
 #Result  AddPath(const std::string id, const std::string path);
 proc openConfLib::AddPath { id path } {
-    PrintText "::AddPath $id $path"
+    openConfLib::PrintText "::AddPath $id $path"
     set result [::AddPath $id $path]
     return $result
 }
@@ -178,14 +178,14 @@ proc openConfLib::GetPath { id } {
     set retVal ""
     set pathTemp [new_stringpointer]
 
-    PrintText "::GetPath $id "
+    openConfLib::PrintText "::GetPath $id "
     set result [::GetPath $id $pathTemp]
 
     set path [stringpointer_value $pathTemp]
     lappend retVal $result
     lappend retVal $path
 
-    PrintText "path: $path"
+    openConfLib::PrintText "path: $path"
 
     return $retVal
 }
@@ -193,14 +193,14 @@ proc openConfLib::GetPath { id } {
 
 #Result  DeletePath(const std::string id);
 proc openConfLib::DeletePath { id } {
-    PrintText "::DeletePath $id"
+    openConfLib::PrintText "::DeletePath $id"
     set result [::DeletePath $id]
     return $result
 }
 
 #Result  SetActiveAutoCalculationConfig(const std::string id);
 proc openConfLib::SetActiveAutoCalculationConfig { id } {
-    PrintText "::SetActiveAutoCalculationConfig $id"
+    openConfLib::PrintText "::SetActiveAutoCalculationConfig $id"
     set result [::SetActiveAutoCalculationConfig $id]
     return $result
 }
@@ -208,7 +208,7 @@ proc openConfLib::SetActiveAutoCalculationConfig { id } {
 #Result  GetActiveAutoCalculationConfig(std::string& id);
 proc openConfLib::GetActiveAutoCalculationConfig {  } {
     set idTemp [new_stringpointer]
-    PrintText "::GetActiveAutoCalculationConfig"
+    openConfLib::PrintText "::GetActiveAutoCalculationConfig"
     set result [::GetActiveAutoCalculationConfig $idTemp]
 
     set retVal ""
@@ -216,14 +216,14 @@ proc openConfLib::GetActiveAutoCalculationConfig {  } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
 
 #Result  AddViewSetting(const openCONFIGURATOR::Library::ProjectFile::ViewType::ViewType viewType, const std::string name, const std::string value);
 proc openConfLib::AddViewSetting { viewType name value } {
-    PrintText "::AddViewSetting $viewType $name $value"
+    openConfLib::PrintText "::AddViewSetting $viewType $name $value"
     set result [::AddViewSetting $viewType $name $value]
     return $result
 }
@@ -232,7 +232,7 @@ proc openConfLib::AddViewSetting { viewType name value } {
 proc openConfLib::GetViewSetting { viewType name } {
     set tempValueStr [new_stringpointer]
 
-    PrintText "::GetViewSetting $viewType $name"
+    openConfLib::PrintText "::GetViewSetting $viewType $name"
     set result [::GetViewSetting $viewType $name $tempValueStr]
 
     set retVal ""
@@ -240,28 +240,28 @@ proc openConfLib::GetViewSetting { viewType name } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
 
 #Result  DeleteViewSetting(const openCONFIGURATOR::Library::ProjectFile::ViewType::ViewType viewType, const std::string name);
 proc openConfLib::DeleteViewSetting { viewType name} {
-    PrintText "::DeleteViewSetting $viewType $name"
+    openConfLib::PrintText "::DeleteViewSetting $viewType $name"
     set result [::DeleteViewSetting $viewType $name]
     return $result
 }
 
 #Result  SetActiveView(const openCONFIGURATOR::Library::ProjectFile::ViewType::ViewType viewType);
 proc openConfLib::SetActiveView { viewType } {
-    PrintText "::SetActiveView $viewType"
+    openConfLib::PrintText "::SetActiveView $viewType"
     set result [::SetActiveView $viewType]
     return $result
 }
 
 #Result  GetActiveView(openCONFIGURATOR::Library::ProjectFile::ViewType::ViewType& viewType);
 proc openConfLib::GetActiveView { } {
-    PrintText "::GetActiveView"
+    openConfLib::PrintText "::GetActiveView"
     set retVal ""
     set viewTypeTemp [new_ViewTypep]
 
@@ -271,35 +271,35 @@ proc openConfLib::GetActiveView { } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
 
 #Result GenerateProcessImageDescription(const OutputLanguage lang, const std::string outputPath, const std::string fileName);
 proc openConfLib::GenerateProcessImageDescription { lang outputPath fileName} {
-    PrintText "::GenerateProcessImageDescription $lang $outputPath $fileName"
+    openConfLib::PrintText "::GenerateProcessImageDescription $lang $outputPath $fileName"
     set result [::GenerateProcessImageDescription $lang $outputPath $fileName]
     return $result
 }
 
 #Result GenerateStackConfiguration(const std::string outputPath, const std::string fileName);
 proc openConfLib::GenerateStackConfiguration { outputPath fileName} {
-    PrintText "::GenerateStackConfiguration $outputPath $fileName"
+    openConfLib::PrintText "::GenerateStackConfiguration $outputPath $fileName"
     set result [::GenerateStackConfiguration $outputPath $fileName]
     return $result
 }
 
 #Result SetIndexActualValue(const UINT32 nodeId, const UINT32 index, const std::string actualValue);
 proc openConfLib::SetIndexActualValue { nodeId index actualValue} {
-    PrintText "::SetIndexActualValue $nodeId $index $actualValue"
+    openConfLib::PrintText "::SetIndexActualValue $nodeId $index $actualValue"
     set result [::SetIndexActualValue $nodeId $index $actualValue]
     return $result
 }
 
 #Result SetSubIndexActualValue(const UINT32 nodeId, const UINT32 index, const UINT32 subIndex, const std::string actualValue);
 proc openConfLib::SetSubIndexActualValue { nodeId index subIndex actualValue} {
-    PrintText "::SetSubIndexActualValue $nodeId $index $subIndex $actualValue"
+    openConfLib::PrintText "::SetSubIndexActualValue $nodeId $index $subIndex $actualValue"
     set result [::SetSubIndexActualValue $nodeId $index $subIndex $actualValue]
     return $result
 }
@@ -308,7 +308,7 @@ proc openConfLib::SetSubIndexActualValue { nodeId index subIndex actualValue} {
 proc openConfLib::GetIndexAttribute { nodeId index attributeType } {
     set tempAttributeValue [new_stringpointer]
 
-    PrintText "::GetIndexAttribute $nodeId $index $attributeType"
+    openConfLib::PrintText "::GetIndexAttribute $nodeId $index $attributeType"
     set result [::GetIndexAttribute $nodeId $index $attributeType $tempAttributeValue]
 
     set retVal ""
@@ -316,7 +316,7 @@ proc openConfLib::GetIndexAttribute { nodeId index attributeType } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -325,7 +325,7 @@ proc openConfLib::GetIndexAttribute { nodeId index attributeType } {
 proc openConfLib::GetSubIndexAttribute { nodeId index subIndex attributeType } {
     set tempAttributeValue [new_stringpointer]
 
-    PrintText "::GetSubIndexAttribute $nodeId $index $subIndex $attributeType"
+    openConfLib::PrintText "::GetSubIndexAttribute $nodeId $index $subIndex $attributeType"
     set result [::GetSubIndexAttribute $nodeId $index $subIndex $attributeType $tempAttributeValue]
 
     set retVal ""
@@ -333,7 +333,7 @@ proc openConfLib::GetSubIndexAttribute { nodeId index subIndex attributeType } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -342,7 +342,7 @@ proc openConfLib::GetSubIndexAttribute { nodeId index subIndex attributeType } {
 proc openConfLib::IsExistingIndex { nodeId index } {
     set existsTemp [new_boolpointer]
 
-    PrintText "::IsExistingIndex $nodeId $index"
+    openConfLib::PrintText "::IsExistingIndex $nodeId $index"
     set result [::IsExistingIndex $nodeId $index $existsTemp]
 
     set retVal ""
@@ -350,7 +350,7 @@ proc openConfLib::IsExistingIndex { nodeId index } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
@@ -359,7 +359,7 @@ proc openConfLib::IsExistingIndex { nodeId index } {
 proc openConfLib::IsExistingSubIndex { nodeId index subIndex } {
     set existsTemp [new_boolpointer]
 
-    PrintText "::IsExistingSubIndex $nodeId $index $subIndex"
+    openConfLib::PrintText "::IsExistingSubIndex $nodeId $index $subIndex"
     set result [::IsExistingSubIndex $nodeId $index $subIndex $existsTemp]
 
     set retVal ""
@@ -367,27 +367,132 @@ proc openConfLib::IsExistingSubIndex { nodeId index subIndex } {
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
 
 #Result GetIndexCount(const UINT32 nodeId, UINT32& indexCount);
-proc openConfLib::IsExistingIndex { nodeId index } {
-    set existsTemp [new_boolpointer]
+proc openConfLib::GetIndexCount { nodeId } {
+    set indexCountTemp [new_uintpointer]
 
-    PrintText "::IsExistingIndex $nodeId $index"
-    set result [::IsExistingIndex $nodeId $index $existsTemp]
+    openConfLib::PrintText "::GetIndexCount $nodeId"
+    set result [::GetIndexCount $nodeId $indexCountTemp]
 
     set retVal ""
-    set value [boolpointer_value $existsTemp]
+    set value [uintpointer_value $indexCountTemp]
     lappend retVal $result
     lappend retVal $value
 
-    PrintText "value: $value"
+    openConfLib::PrintText "value: $value"
 
     return $retVal
 }
 
 #Result GetSubIndexCount(const UINT32 nodeId, const UINT32 index, UINT32& subIndexCount);
+proc openConfLib::GetSubIndexCount { nodeId index } {
+    set subIndexCountTemp [new_uintpointer]
+
+    openConfLib::PrintText "::GetSubIndexCount $nodeId $index"
+    set result [::GetSubIndexCount $nodeId $index $subIndexCountTemp]
+
+    set retVal ""
+    set value [uintpointer_value $subIndexCountTemp]
+    lappend retVal $result
+    lappend retVal $value
+
+    openConfLib::PrintText "value: $value"
+
+    return $retVal
+}
+
 #Result GetNumberOfEntries(const UINT32 nodeId, const UINT32 index, const bool getDefault, UINT32& nrOfEntries);
+proc openConfLib::GetNumberOfEntries { nodeId index getDefault } {
+    set nrOfEntriesTemp [new_uintpointer]
+
+    openConfLib::PrintText "::GetNumberOfEntries $nodeId $index $getDefault"
+    set result [::GetNumberOfEntries $nodeId $index $getDefault $nrOfEntriesTemp]
+
+    set retVal ""
+    set value [uintpointer_value $nrOfEntriesTemp]
+    lappend retVal $result
+    lappend retVal $value
+
+    openConfLib::PrintText "value: $value"
+
+    return $retVal
+}
+
+##############################################################################
+#           GetNodes, GetIndices, GetSubIndices  API
+#  Returns the result in a list using following format.
+#    List arg 0 - The openCONFIGURATOR::Library::ErrorHandling::Result obj
+#    List arg 1 - Total number of elements returned
+#    List arg 2 - A list of id's of the node available.
+#    sampleretun: res:::: _50a29b06_p_openCONFIGURATOR__Library__ErrorHandling__Result 5 {240 1 2 4 3}
+##############################################################################
+#Result GetNodes(std::vector<unsigned int>& nodeIds);
+proc openConfLib::GetNodes { } {
+    set nodeIdlistTemp [new_UIntVector]
+
+    openConfLib::PrintText "::GetNodes "
+    set result [::GetNodes $nodeIdlistTemp]
+
+    set retVal ""
+    lappend retVal $result
+
+    set noOfElements [UIntVector_size $nodeIdlistTemp]
+    lappend retVal $noOfElements
+
+    set nodeidlist ""
+    for {set inc 0} {$inc < $noOfElements} {incr inc} {
+        lappend nodeidlist [UIntVector_get $nodeIdlistTemp $inc]
+    }
+    lappend retVal $nodeidlist
+    openConfLib::PrintText "No:$noOfElements value:$nodeidlist"
+    return $retVal
+}
+
+#Result GetIndices(const unsigned int nodeId, std::vector<unsigned int>& indices);
+proc openConfLib::GetIndices { nodeId } {
+    set indexListTemp [new_UIntVector]
+
+    openConfLib::PrintText "::GetIndices $nodeId"
+    set result [::GetIndices $nodeId $indexListTemp]
+
+    set retVal ""
+    lappend retVal $result
+
+    set noOfElements [UIntVector_size $indexListTemp]
+    lappend retVal $noOfElements
+
+    set indexList ""
+    for {set inc 0} {$inc < $noOfElements} {incr inc} {
+        lappend indexList [UIntVector_get $indexListTemp $inc]
+    }
+    lappend retVal $indexList
+    openConfLib::PrintText "No:$noOfElements value:$indexList"
+    return $retVal
+}
+
+#Result GetSubIndices(const unsigned int nodeId, const unsigned int index, std::vector<unsigned int>& subIndices);
+proc openConfLib::GetSubIndices { nodeId indexId } {
+    set subIndexListTemp [new_UIntVector]
+
+    openConfLib::PrintText "::GetSubIndices $nodeId $indexId"
+    set result [::GetSubIndices $nodeId $indexId $subIndexListTemp]
+
+    set retVal ""
+    lappend retVal $result
+
+    set noOfElements [UIntVector_size $subIndexListTemp]
+    lappend retVal $noOfElements
+
+    set indexList ""
+    for {set inc 0} {$inc < $noOfElements} {incr inc} {
+        lappend indexList [UIntVector_get $subIndexListTemp $inc]
+    }
+    lappend retVal $indexList
+    openConfLib::PrintText "No:$noOfElements value:$indexList"
+    return $retVal
+}
