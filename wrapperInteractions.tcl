@@ -68,13 +68,10 @@ namespace eval WrapperInteractions {
 
 }
 
-
 #---------------------------------------------------------------------------------------------------
 #  WrapperInteractions::SortNode
 #
-#  Arguments :
-#              nodeID   - id of the nodes
-#              nodePos  - node position in the object created
+#  Arguments : nodeID   - id of the nodes
 #              choice   - sorts based on the given choice
 #              indexPos - index position in the object created
 #              indexId  - id of the index
@@ -82,7 +79,7 @@ namespace eval WrapperInteractions {
 #
 #  Description : Sorts the index and sub index of the objects
 #---------------------------------------------------------------------------------------------------
-proc WrapperInteractions::SortNode {nodeID nodePos choice {indexPos ""} {indexId ""}} {
+proc WrapperInteractions::SortNode {nodeID choice {indexPos ""} {indexId ""}} {
     global treePath
 
     set errorString []
@@ -121,11 +118,11 @@ proc WrapperInteractions::SortNode {nodeID nodePos choice {indexPos ""} {indexId
             set tmpInc 0$tmpInc
         }
         if { $choice == "ind" } {
-            set catchErrCode [GetIndexIDbyPositions $nodePos $inc]
+            set catchErrCode [GetIndexIDbyPositions $inc]
             set indexId [lindex $catchErrCode 1]
             lappend sortList $indexId$tmpInc
         } elseif { $choice == "sub" } {
-            set catchErrCode [GetSubIndexIDbyPositions $nodePos $indexPos $inc]
+            set catchErrCode [GetSubIndexIDbyPositions $indexPos $inc]
             set subIndexId [lindex $catchErrCode 1]
             lappend sortList $subIndexId$tmpInc
         } else {
@@ -188,13 +185,13 @@ proc WrapperInteractions::SortNode {nodeID nodePos choice {indexPos ""} {indexId
 #  WrapperInteractions::Import
 #
 #  Arguments : parentNode - parent node in tree window
-#              nodeID     - id of the node
+#              nodeId     - id of the node
 #
 #  Results : pass or fail
 #
 #  Description : Populates the node on to the tree window
 #---------------------------------------------------------------------------------------------------
-proc WrapperInteractions::Import {parentNode nodeID } {
+proc WrapperInteractions::Import { parentNode nodeId } {
     global treePath
     global cnCount
     global image_dir
@@ -205,22 +202,10 @@ proc WrapperInteractions::Import {parentNode nodeID } {
     if { [string match "SIMPLE" $Operations::viewType ] == 1 } {
         return pass
     }
-    set nodePos [new_intp]
 
-    #TODO waiting for new so then implement it
-    set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeID $nodePos $ExistfFlag]
-    set nodePos [intp_value $nodePos]
-    set ExistfFlag [boolp_value $ExistfFlag]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode == 0 && $ExistfFlag == 1 } {
-        #the node exist continue
-    } else {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error
-        }
+    set result [openConfLib::IsExistingNode $nodeId]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [lindex $result 0] == 0 && [Result_IsSuccessful [lindex $result 0]] != 1 } {
         Operations::CloseProject
         return fail
     }
@@ -233,204 +218,140 @@ proc WrapperInteractions::Import {parentNode nodeID } {
     image create photo img_index -file "$image_dir/index.gif"
     image create photo img_subindex -file "$image_dir/subindex.gif"
 
-
     $treePath insert end $parentNode PDO-$parentId -text "PDO" -open 0 -image img_pdo
     $treePath insert end PDO-$parentId TPDO-$parentId -text "TPDO" -open 0 -image img_pdo
     $treePath insert end PDO-$parentId RPDO-$parentId -text "RPDO" -open 0 -image img_pdo
 
-    set count [new_intp]
-    set catchErrCode [GetIndexCount $nodeID $count]
-    set count [intp_value $count]
-    if {$count == 0} {
-            return
-    }
-
-    set returnList [WrapperInteractions::SortNode $nodeID $nodePos ind]
-    set corrList [lindex $returnList 0]
-    set count [llength $corrList]
-    for { set inc 0 } { $inc < $count } { incr inc } {
-        set sortedIndexPos [lindex $corrList $inc]
-        set IndexValue [GetIndexIDbyPositions $nodePos $sortedIndexPos]
-        if { [ocfmRetCode_code_get [lindex $IndexValue 0]] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get [lindex $IndexValue 0]] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $IndexValue 0]]\nClosing the project" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-            }
-            Operations::CloseProject
-            return fail
+    set indexCount 0
+    set indexList [WrapperInteractions::GetIndexId $nodeId 3]
+    foreach index $indexList {
+        set indexName ""
+        set result [openConfLib::GetIndexAttribute $nodeId $index $::NAME]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set indexName [lindex $result 1]
         }
-        set IndexValue [lindex $IndexValue 1]
-        set catchErr [GetIndexAttributesbyPositions $nodePos $sortedIndexPos 0 ]
-        set IndexName [lindex $catchErr 1]
-        if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]\nClosing the project" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-            }
-            Operations::CloseProject
-            return fail
-        }
-
-        $treePath insert $inc $parentNode IndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
-        set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $sortedIndexPos $IndexValue]
-
-        set SIdxCount [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
-        set SIdxCount [intp_value $SIdxCount]
-        for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
-            set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
-            set SIdxValue [GetSubIndexIDbyPositions $nodePos $sortedIndexPos $sortedSubIndexPos]
-            if { [ocfmRetCode_code_get [lindex $SIdxValue 0]] != 0 } {
-                if { [ string is ascii [ocfmRetCode_errorString_get [lindex $SIdxValue 0]] ] } {
-                    tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $SIdxValue 0] ]\nClosing the project" -title Error -icon error -parent .
-                } else {
-                    tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
+        $treePath insert $indexCount $parentNode IndexValue-$parentId-$indexCount -text $indexName\($index\) -open 0 -image img_index
+        set result [openConfLib::GetSubIndices $nodeId $index]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set subIndexCount 0
+            foreach sidx [lindex $result 2] {
+                set subIndexIdHex "0x[format %2.2X $sidx]"
+                set subIndexName ""
+                set result [openConfLib::GetSubIndexAttribute $nodeId $index $subIndexIdHex $::NAME]
+                if { [Result_IsSuccessful [lindex $result 0]] } {
+                    set subIndexName [lindex $result 1]
                 }
-                Operations::CloseProject
-                return fail
+
+                $treePath insert end IndexValue-$parentId-$indexCount SubIndexValue-$parentId-$indexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
+                incr subIndexCount
             }
-            set SIdxValue [lindex $SIdxValue 1]
-            set catchErr [GetSubIndexAttributesbyPositions $nodePos $sortedIndexPos $sortedSubIndexPos 0 ]
-            set SIdxName [lindex $catchErr 1]
-            if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-                if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-                    tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]\nClosing the project" -title Error -icon error -parent .
-                } else {
-                    tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-                }
-                Operations::CloseProject
-                return fail
-            }
-            $treePath insert end IndexValue-$parentId-$inc SubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
         }
+        incr indexCount
         update idletasks
     }
-    #for TPDO
-    set corrList [lindex $returnList 1]
-    set count [llength $corrList]
 
-    for { set inc 0 } { $inc < $count } { incr inc } {
-        set sortedIndexPos [lindex $corrList $inc]
-        set IndexValue [GetIndexIDbyPositions $nodePos $sortedIndexPos]
-        if { [ocfmRetCode_code_get [lindex $IndexValue 0]] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get [lindex $IndexValue 0]] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $IndexValue 0]]\nClosing the project" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-            }
-            Operations::CloseProject
-            return fail
+    set tpdoIndexCount 0
+    set indexList [WrapperInteractions::GetIndexId $nodeId 1]
+    foreach index $indexList {
+        set indexName ""
+        set result [openConfLib::GetIndexAttribute $nodeId $index $::NAME]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set indexName [lindex $result 1]
         }
-        set IndexValue [lindex $IndexValue 1]
-        set catchErr [GetIndexAttributesbyPositions $nodePos $sortedIndexPos 0 ]
-        set IndexName [lindex $catchErr 1]
-        if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]\nClosing the project" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-            }
-            Operations::CloseProject
-            return fail
-        }
+        $treePath insert $tpdoIndexCount TPDO-$parentId TPdoIndexValue-$parentId-$tpdoIndexCount -text $indexName\($index\) -open 0 -image img_index
+        set result [openConfLib::GetSubIndices $nodeId $index]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set subIndexCount 0
+            foreach sidx [lindex $result 2] {
+                set subIndexIdHex "0x[format %2.2X $sidx]"
+                set subIndexName ""
+                set result [openConfLib::GetSubIndexAttribute $nodeId $index $subIndexIdHex $::NAME]
+                if { [Result_IsSuccessful [lindex $result 0]] } {
+                    set subIndexName [lindex $result 1]
+                }
 
-        $treePath insert $inc TPDO-$parentId TPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
-        set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $sortedIndexPos $IndexValue]
-        set SIdxCount [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
-        set SIdxCount [intp_value $SIdxCount]
-        for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
-            set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
-            set SIdxValue [GetSubIndexIDbyPositions $nodePos $sortedIndexPos $sortedSubIndexPos]
-            if { [ocfmRetCode_code_get [lindex $SIdxValue 0]] != 0 } {
-                if { [ string is ascii [ocfmRetCode_errorString_get [lindex $SIdxValue 0]] ] } {
-                    tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $SIdxValue 0] ]\nClosing the project" -title Error -icon error -parent .
-                } else {
-                    tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-                }
-                Operations::CloseProject
-                return fail
+                $treePath insert end TPdoIndexValue-$parentId-$tpdoIndexCount TPdoSubIndexValue-$parentId-$tpdoIndexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
+                incr subIndexCount
             }
-            set SIdxValue [lindex $SIdxValue 1]
-            set catchErr [GetSubIndexAttributesbyPositions $nodePos $sortedIndexPos $sortedSubIndexPos 0 ]
-            set SIdxName [lindex $catchErr 1]
-            if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-                if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-                    tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]\nClosing the project" -title Error -icon error -parent .
-                } else {
-                    tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-                }
-                Operations::CloseProject
-                return fail
-            }
-            $treePath insert end TPdoIndexValue-$parentId-$inc TPdoSubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
         }
+        incr tpdoIndexCount
         update idletasks
     }
-    #for RPDO
-    set corrList [lindex $returnList 2]
-    set count [llength $corrList]
 
-    for { set inc 0 } { $inc < $count } { incr inc } {
-        set sortedIndexPos [lindex $corrList $inc]
-        set IndexValue [GetIndexIDbyPositions $nodePos $sortedIndexPos]
-        if { [ocfmRetCode_code_get [lindex $IndexValue 0]] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get [lindex $IndexValue 0]] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $IndexValue 0]]\nClosing the project" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-            }
-            Operations::CloseProject
-            return fail
+    set rpdoIndexCount 0
+    set indexList [WrapperInteractions::GetIndexId $nodeId 2]
+    foreach index $indexList {
+        set indexName ""
+        set result [openConfLib::GetIndexAttribute $nodeId $index $::NAME]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set indexName [lindex $result 1]
         }
-        set IndexValue [lindex $IndexValue 1]
-        set catchErr [GetIndexAttributesbyPositions $nodePos $sortedIndexPos 0 ]
-        set IndexName [lindex $catchErr 1]
-        if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]\nClosing the project" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-            }
-            Operations::CloseProject
-            return fail
-        }
-        $treePath insert $inc RPDO-$parentId RPdoIndexValue-$parentId-$inc -text $IndexName\(0x$IndexValue\) -open 0 -image img_index
-        set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $sortedIndexPos $IndexValue]
-        set SIdxCount [new_intp]
-        set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
-        set SIdxCount [intp_value $SIdxCount]
-        for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
-            set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
-            set SIdxValue [GetSubIndexIDbyPositions $nodePos $sortedIndexPos $sortedSubIndexPos]
-            if { [ocfmRetCode_code_get [lindex $SIdxValue 0]] != 0 } {
-                if { [ string is ascii [ocfmRetCode_errorString_get [lindex $SIdxValue 0]] ] } {
-                    tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $SIdxValue 0] ]\nClosing the project" -title Error -icon error -parent .
-                } else {
-                    tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
+
+        $treePath insert $rpdoIndexCount RPDO-$parentId RPdoIndexValue-$parentId-$rpdoIndexCount -text $indexName\($index\) -open 0 -image img_index
+        set result [openConfLib::GetSubIndices $nodeId $index]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set subIndexCount 0
+            foreach sidx [lindex $result 2] {
+                set subIndexIdHex "0x[format %2.2X $sidx]"
+                set subIndexName ""
+                set result [openConfLib::GetSubIndexAttribute $nodeId $index $subIndexIdHex $::NAME]
+                if { [Result_IsSuccessful [lindex $result 0]] } {
+                    set subIndexName [lindex $result 1]
                 }
-                Operations::CloseProject
-                return fail
+
+                $treePath insert end RPdoIndexValue-$parentId-$rpdoIndexCount RPdoSubIndexValue-$parentId-$rpdoIndexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
+                incr subIndexCount
             }
-            set SIdxValue [lindex $SIdxValue 1]
-            set catchErr [GetSubIndexAttributesbyPositions $nodePos $sortedIndexPos $sortedSubIndexPos 0 ]
-            if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
-                if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
-                    tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $catchErr 0]]\nClosing the project" -title Error -icon error -parent .
-                } else {
-                    tk_messageBox -message "Unknown Error\nClosing the project" -title Error -icon error -parent .
-                }
-                Operations::CloseProject
-                return fail
-            }
-            set SIdxName [lindex $catchErr 1]
-            $treePath insert end RPdoIndexValue-$parentId-$inc RPdoSubIndexValue-$parentId-$inc-$tmpCount -text $SIdxName\(0x$SIdxValue\) -open 0 -image img_subindex
         }
+        incr rpdoIndexCount
         update idletasks
     }
+
     return pass
+}
+
+################################################################################
+# Returns the list of index id with 0x based on the type
+# type shall be 0 - all
+#               1 - TPDO
+#               2 - RPDO
+#               3 - NonPDOnodes
+################################################################################
+proc WrapperInteractions::GetIndexId {nodeId type} {
+    set returnList ""
+    set result [openConfLib::GetIndices $nodeId]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
+        set indexList [lsort -ascii [lindex $result 2]]
+        foreach index $indexList {
+            set indexIdHex "[format %4.4X $index]"
+            switch $type {
+                0 {
+                    lappend returnList "0x$indexIdHex"
+                }
+                1 {
+                    if {[string match "18*" $indexIdHex] || [string match "1A*" $indexIdHex]} {
+                        lappend returnList "0x$indexIdHex"
+                    }
+                }
+                2 {
+                    if {[string match "14*" $indexIdHex] || [string match "16*" $indexIdHex]} {
+                        lappend returnList "0x$indexIdHex"
+                    }
+                }
+                3 {
+                    if {[string match "18*" $indexIdHex] || [string match "1A*" $indexIdHex] || [string match "14*" $indexIdHex] || [string match "16*" $indexIdHex]} {
+
+                    } else {
+                        lappend returnList "0x$indexIdHex"
+                    }
+                }
+                default {
+                    puts "default"
+                }
+            }
+        }
+    }
+    return $returnList
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -467,10 +388,8 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
     set nodePosition [lrange $nodePosition 1 end]
     set nodePosition [join $nodePosition -]
 
-    set nodePos [new_intp]
     set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeID $nodePos $ExistfFlag]
-    set nodePos [intp_value $nodePos]
+    set catchErrCode [IfNodeExists $nodeID $ExistfFlag]
     set ExistfFlag [boolp_value $ExistfFlag]
     set ErrCode [ocfmRetCode_code_get $catchErrCode]
     if { $ErrCode == 0 && $ExistfFlag == 1 } {
@@ -506,14 +425,14 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
         $treePath delete $childNode
     }
 
-    set sidxCorrList [WrapperInteractions::SortNode $nodeID $nodePos sub $indexPos $IndexValue]
+    set sidxCorrList [WrapperInteractions::SortNode $nodeID sub $indexPos $IndexValue]
 
     set SIdxCount [new_intp]
     set catchErrCode [GetSubIndexCount $nodeID $IndexValue $SIdxCount]
     set SIdxCount [intp_value $SIdxCount]
     for { set tmpCount 0 } { $tmpCount < $SIdxCount } { incr tmpCount } {
         set sortedSubIndexPos [lindex $sidxCorrList $tmpCount]
-        set SIdxValue [GetSubIndexIDbyPositions $nodePos $indexPos $sortedSubIndexPos]
+        set SIdxValue [GetSubIndexIDbyPositions $indexPos $sortedSubIndexPos]
         if { [ocfmRetCode_code_get [lindex $SIdxValue 0]] != 0 } {
             if { [ string is ascii [ocfmRetCode_errorString_get [lindex $SIdxValue 0]] ] } {
                 tk_messageBox -message "[ocfmRetCode_errorString_get [lindex $SIdxValue 0] ]\nClosing the project" -title Error -icon error -parent .
@@ -523,7 +442,7 @@ proc WrapperInteractions::RebuildNode {{Node ""}} {
             return fail
         }
         set SIdxValue [lindex $SIdxValue 1]
-        set catchErr [GetSubIndexAttributesbyPositions $nodePos $indexPos $sortedSubIndexPos 0 ]
+        set catchErr [GetSubIndexAttributesbyPositions $indexPos $sortedSubIndexPos 0 ]
         set SIdxName [lindex $catchErr 1]
         if { [ocfmRetCode_code_get [lindex $catchErr 0]] != 0 } {
             if { [ string is ascii [ocfmRetCode_errorString_get [lindex $catchErr 0]] ] } {
