@@ -807,49 +807,48 @@ proc Operations::RePopulate { projectDir projectName } {
 
     $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
 
-# TODO Parse using the list of nodeId's inserted.
-    for {set inc 240} {$inc > 0} {incr inc -1} {
+    set result [openConfLib::GetNodes]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
+        foreach node [lindex $result 2] {
+            set l_NodeId $node
+            # 0 for nodename
+            set aResult [openConfLib::GetNodeParameter $l_NodeId $::NAME]
+    # TODO handle result and report error message.
+            set l_NodeName [lindex $aResult 1]
 
-#For Safety check if the node exists?
-        set result [openConfLib::IsExistingNode $inc]
-        if { [lindex $result 1] == 0 } {
-            continue
-        }
-        set l_NodeId $inc
-        # 0 for nodename
-        set aResult [openConfLib::GetNodeParameter $l_NodeId 0]
-# TODO handle result and report error message.
-        set l_NodeName [lindex $aResult 1]
-
-        if {$l_NodeId == 240} {
-            $treePath insert end ProjectNode MN-$mnCount -text "$l_NodeName\($l_NodeId\)" -open 1 -image img_mn
-            set treeNode OBD-$mnCount-1
-        #insert the OBD icon only if the view is in EXPERT mode
-            if {[string match "EXPERT" $Operations::viewType ] == 1} {
-                $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
+            if {$l_NodeId == 240} {
+                $treePath insert end ProjectNode MN-$mnCount -text "$l_NodeName\($l_NodeId\)" -open 1 -image img_mn
+                set treeNode OBD-$mnCount-1
+            #insert the OBD icon only if the view is in EXPERT mode
+                if {[string match "EXPERT" $Operations::viewType ] == 1} {
+                    $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
+                }
+            } elseif {$l_NodeId > 0} {
+                set treeNode CN-$mnCount-$cnCount
+                set child [$treePath insert end MN-$mnCount $treeNode -text "$l_NodeName\($l_NodeId\)" -open 0 -image img_cn]
+            } else {
+                continue
             }
-        } else {
-            set treeNode CN-$mnCount-$cnCount
-            set child [$treePath insert end MN-$mnCount $treeNode -text "$l_NodeName\($l_NodeId\)" -open 0 -image img_cn]
+            if { [ catch { set result [WrapperInteractions::Import $treeNode $l_NodeId] } errormessage ] } {
+                # error has occured
+                Console::DisplayErrMsg "$l_NodeId.$l_NodeName Internal error occurred\n Err: $errormessage" error
+                Operations::CloseProject
+                return 0
+            }
+            if { $result == "fail" } {
+                return 0
+            }
+            incr cnCount
+            lappend nodeIdList $l_NodeId
         }
-        if { [ catch { set result [WrapperInteractions::Import $treeNode $l_NodeId] } errormessage ] } {
-            # error has occured
-            Console::DisplayErrMsg "$l_NodeId.$l_NodeName Internal error occurred\n Err: $errormessage" error
-            Operations::CloseProject
-            return 0
-        }
-        if { $result == "fail" } {
-            return 0
-        }
-        incr cnCount
-        lappend nodeIdList $l_NodeId
-    }
 
-    if { [$Operations::projMenu index 2] != "2" } {
-        $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
-    }
-    if { [$Operations::projMenu index 3] != "3" } {
-        $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
+        if { [$Operations::projMenu index 2] != "2" } {
+            $Operations::projMenu insert 2 command -label "Close Project" -command "Operations::InitiateCloseProject"
+        }
+        if { [$Operations::projMenu index 3] != "3" } {
+            $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
+        }
     }
 
     return 1
