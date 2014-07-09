@@ -665,7 +665,7 @@ proc NoteBookManager::ConvertDec {framePath0 framePath1} {
         $framePath0.en_idx1 configure -state normal
         set indexId [string range [$framePath0.en_idx1 get] 2 end]
         $framePath0.en_idx1 configure -state disabled
-        if { [expr 0x$indexId <= 0x1fff] } {
+        if { [expr $indexId <= 0x1fff] } {
             $framePath1.en_data1 configure -state normal
             set dataType [$framePath1.en_data1 get]
             $framePath1.en_data1 configure -state disabled
@@ -746,7 +746,7 @@ proc NoteBookManager::ConvertHex {framePath0 framePath1} {
         $framePath0.en_idx1 configure -state normal
         set indexId [string range [$framePath0.en_idx1 get] 2 end]
         $framePath0.en_idx1 configure -state disabled
-        if { [expr 0x$indexId <= 0x1fff] } {
+        if { [expr $indexId <= 0x1fff] } {
             $framePath1.en_data1 configure -state normal
             set dataType [$framePath1.en_data1 get]
             $framePath1.en_data1 configure -state disabled
@@ -836,7 +836,6 @@ proc NoteBookManager::CountLeadZero {input} {
         }
     }
     return $loopCount
-
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -851,284 +850,76 @@ proc NoteBookManager::CountLeadZero {input} {
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
     global nodeSelect
-    global nodeIdList
     global treePath
     global savedValueList
-    global userPrefList
-    global lastConv
     global status_save
-    global LOWER_LIMIT
-    global UPPER_LIMIT
-
-    #reloadView will call the Opertions::Singleclicknode so as when for index
-    #2000 and above is saved the datatype validation will take effect
-    set reloadView 0
-    #rebuildNode WrapperInteractions::RebuildNode for 2000 and above index if
-    #the datatype is set as ARRAY or RECORD subindex 00 will automatically
-    #added rebuild that node alone
-    set rebuildNode 0
-    set oldName [$treePath itemcget $nodeSelect -text]
-    if {[string match "*SubIndexValue*" $nodeSelect]} {
-        set subIndexId [string range $oldName end-2 end-1]
-        set subIndexId [string toupper $subIndexId]
-        set parent [$treePath parent $nodeSelect]
-        set indexId [string range [$treePath itemcget $parent -text ] end-4 end-1]
-        set indexId [string toupper $indexId]
-        set oldName [string range $oldName end-5 end ]
-    } elseif {[string match "*IndexValue*" $nodeSelect]} {
-        set indexId [string range $oldName end-4 end-1 ]
-        set indexId [string toupper $indexId]
-        set oldName [string range $oldName end-7 end ]
-    } else {
-        return
-    }
 
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $nodeSelect]
     if {$result != "" } {
         set nodeId [lindex $result 0]
-        set nodeType [lindex $result 1]
     } else {
-            #must be some other node this condition should never reach
-            return
-    }
-
-    set tmpVar0 [$frame0.en_nam1 cget -textvariable]
-    global $tmpVar0
-    set newName [subst $[subst $tmpVar0]]
-    if { $newName == "" } {
-        tk_messageBox -message "Name field is empty\nValues not saved" -parent .
-        Validation::ResetPromptFlag
+        #must be some other node this condition should never reach
         return
     }
 
-    if { [expr 0x$indexId > 0x1fff] } {
+    set state [$frame1.en_value1 cget -state]
+    if {[string match "disabled" $state]} {
+        # no need to save
+        return
+    }
+
+    set tmpVar1 [$frame1.en_value1 cget -textvariable]
+    global $tmpVar1
+    set value [subst $[subst $tmpVar1]]
+
+    set oldName [$treePath itemcget $nodeSelect -text]
+    if {[string match "*SubIndexValue*" $nodeSelect]} {
+        set subIndexId [string range $oldName end-2 end-1]
+        set subIndexId "0x[string toupper $subIndexId]"
+        set parent [$treePath parent $nodeSelect]
+        set indexId [string range [$treePath itemcget $parent -text ] end-4 end-1]
+        set indexId "0x[string toupper $indexId]"
+        set idWithBrace [string range $oldName end-5 end ]
+        set oldName [string range $oldName 0 end-6]
+
+        set result [openConfLib::SetSubIndexActualValue $nodeId $indexId $subIndexId $value]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
+            return
+        }
+        #value for SubIndex is edited need to change
+        set status_save 1
+    } elseif {[string match "*IndexValue*" $nodeSelect]} {
+        set indexId [string range $oldName end-4 end-1 ]
+        set indexId "0x[string toupper $indexId]"
+        set idWithBrace [string range $oldName end-7 end ]
+        set oldName [string range $oldName 0 end-8]
+
+        set result [openConfLib::SetIndexActualValue $nodeId $indexId $value]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
+            return
+        }
+        #value for SubIndex is edited need to change
+        set status_save 1
+    } else {
+        return
+    }
+
+    if { [expr $indexId > 0x1fff] } {
         set lastFocus [focus]
         if { $lastFocus == "$frame1.en_lower1" || $lastFocus == "$frame1.en_upper1" } {
             NoteBookManager::LimitFocusChanged $frame1 $lastFocus
         }
     }
 
-    set state [$frame1.en_value1 cget -state]
-    $frame1.en_value1 configure -state normal
-    set tmpVar1 [$frame1.en_value1 cget -textvariable]
-    global $tmpVar1
-    set value [string toupper [subst $[subst $tmpVar1]] ]
-    $frame1.en_value1 configure -state $state
-
-    set objectType [NoteBookManager::GetEntryValue $frame1.en_obj1]
-    set dataType [NoteBookManager::GetEntryValue $frame1.en_data1]
-    set accessType [NoteBookManager::GetEntryValue $frame1.en_access1]
-    set objectType [NoteBookManager::GetEntryValue $frame1.en_obj1]
-    set pdoType [NoteBookManager::GetEntryValue $frame1.en_pdo1]
-    set default [NoteBookManager::GetEntryValue $frame1.en_default1]
-    set upperLimit [NoteBookManager::GetEntryValue $frame1.en_upper1]
-    set lowerLimit [NoteBookManager::GetEntryValue $frame1.en_lower1]
-
-    if { [expr 0x$indexId > 0x1fff] } {
-        if { $objectType == "" } {
-            tk_messageBox -message "ObjectType not present\nValues not saved" -title Warning -icon warning -parent .
-            Validation::ResetPromptFlag
-            return
-        }
-    }
-
-    set tempValidateValue $value
-
-    if { [string match -nocase "INTEGER*" $dataType] || [string match -nocase "UNSIGNED*" $dataType] || [string match -nocase "BOOLEAN" $dataType ] } {
-        #need to convert
-        set radioSel [$frame1.frame1.ra_dec cget -variable]
-        global $radioSel
-        set radioSel [subst $[subst $radioSel]]
-        if {$value != ""} {
-            if { $radioSel == "hex" } {
-                #it is hex value trim leading 0x
-                if {[string match -nocase "0x*" $value]} {
-                    set value [string range $value 2 end]
-                }
-                set value [string toupper $value]
-                if { $value == "" } {
-                    set value ""
-                } else {
-                    set value 0x$value
-                }
-            } elseif { $radioSel == "dec" } {
-                #is is dec value convert to hex
-                set value [lindex [Validation::InputToHex $value $dataType] 0]
-                if { $value == "" } {
-                    set value ""
-                } else {
-                    #0x is appended to represent it as hex
-                    set value [string range $value 2 end]
-                    set value [string toupper $value]
-                    set value 0x$value
-                }
-            } else {
-                #invalid condition
-            }
-        }
-    } elseif { [string match -nocase "BIT" $dataType] } {
-        if {$value != ""} {
-            #convert value to hex and save
-            set value 0x[Validation::BintoHex $value]
-        }
-        #continue
-    } elseif { [string match -nocase "REAL*" $dataType] } {
-        if { [string match -nocase "0x" $value] } {
-            set value ""
-        } else {
-            #continue
-        }
-    } elseif { $dataType == "IP_ADDRESS" } {
-        set result [$frame1.en_value1 validate]
-        if {$result == 0} {
-            tk_messageBox -message "IP address not complete\nValues not saved" -title Warning -icon warning -parent .
-            Validation::ResetPromptFlag
-            return
-        }
-    } elseif { $dataType == "MAC_ADDRESS" } {
-        set result [$frame1.en_value1 validate]
-        if {$result == 0} {
-            tk_messageBox -message "MAC address not complete\nValues not saved" -title Warning -icon warning -parent .
-            Validation::ResetPromptFlag
-            return
-        }
-    } elseif { [string match -nocase "Visible_String" $dataType] } {
-        #continue
-    } elseif { [string match -nocase "Octet_String" $dataType] } {
-        #continue
-        set value [subst $[subst $tmpVar1]]
-    }
-    if { $value == "" || $dataType == "" || $value == "-" } {
-        #no need to check
-        if { ($dataType == "") && ([expr 0x$indexId > 0x1fff]) && ( ($objectType == "ARRAY") || ($objectType == "VAR") ) } {
-            #for objects less than 1fff and objects greater than 1fff with object type other than
-            # ARRAY or VAR, datatype is not editable so allow user to save
-            tk_messageBox -message "Datatype not selected\nValues not saved" -title Warning -icon warning -parent .
-            Validation::ResetPromptFlag
-            return
-        }
-        if { $value == "-" } {
-            tk_messageBox -message "\"-\" cannot be saved for value" -title Warning -icon warning -parent .
-            Validation::ResetPromptFlag
-            return
-        }
-    } else {
-        #value and datatype is not empty continue
-    }
-
-    if {[expr 0x$indexId > 0x1fff] } {
-        set limitResult [Validation::validateValueandLimit $tempValidateValue $lowerLimit $upperLimit]
-        if { [lindex $limitResult 0] == 0 } {
-            Console::DisplayWarning "[lindex $limitResult 1].\nValues not saved"
-            tk_messageBox -message "[lindex $limitResult 1].\nValues not saved" -title Warning -icon warning -parent .
-            Validation::ResetPromptFlag
-            return
-        }
-    }
-    set chkGen [$frame0.frame1.ch_gen cget -variable]
-    global $chkGen
-
-    if {[string match "*SubIndexValue*" $nodeSelect]} {
-        if { ([expr 0x$indexId > 0x1fff]) } {
-            set catchErrCode [SetAllSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $newName $accessType $dataType $pdoType $default $upperLimit $lowerLimit $objectType [subst $[subst $chkGen]] ]
-            set reloadView 1
-        } else {
-            if { [string match -nocase "18??" $indexId] || [string match "14??" $indexId]} {
-                if { [string match "01" $subIndexId] } {
-                    if { $value == "" || [expr $value > 0xfe] || [expr $value < 0x0] } {
-                        tk_messageBox -message "Value should be in range 0x0 to 0xFE\nFor subindex 01 in index $indexId\nValues not saved" -title Warning -icon warning -parent .
-                        Validation::ResetPromptFlag
-                        return
-                    }
-                }
-            }
-
-            if { [string match -nocase "1A??" $indexId] || [string match "16??" $indexId]} {
-                if { ![string match "00" $subIndexId] } {
-                    if { $value == "" || [string length $value] != 18 } {
-                        tk_messageBox -message "Value should be a 16 digit hexadecimal\nFor subindex $subIndexId in index $indexId\nValues not saved" -title Warning -icon warning -parent .
-                        Validation::ResetPromptFlag
-                        return
-                    }
-                }
-            }
-        }
-    } elseif {[string match "*IndexValue*" $nodeSelect]} {
-
-        if { [expr 0x$indexId > 0x1fff] } {
-            # if the index is greater than 1fff and the object type is not ARRAY or RECORD the delete all subobjects if present
-            if { [expr 0x$indexId > 0x1fff] && (($objectType != "ARRAY") && ($objectType != "RECORD")) && ([llength [$treePath nodes $nodeSelect] ] > 0) } {
-                set result [tk_messageBox -message "Only the Object Type ARRAY or RECORD can have subindexes.\nThe subindexes of [string toupper $indexId] will be deleted.\nDo you want to continue?" -type okcancel -icon question -title "Question" -parent .]
-                switch -- $result {
-                    ok {
-                        #continue
-                    }
-                    cancel {
-                        Validation::ResetPromptFlag
-                        return
-                    }
-                }
-                #delete the subindex
-                foreach sidxTreeNode [$treePath nodes $nodeSelect] {
-                    set sidx [string range [$treePath itemcget $sidxTreeNode -text] end-2 end-1 ]
-                    set catchErrCode [DeleteSubIndex $nodeId $nodeType $indexId $sidx]
-                    #need to check the result
-                    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-                    if { $ErrCode != 0 } {
-                        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                            set msg "[ocfmRetCode_errorString_get $catchErrCode]"
-                        } else {
-                            set msg "Unknown Error"
-                        }
-                        append msg "\nIndex $indexId not saved"
-                        tk_messageBox -message "$msg" -title Error -icon error -parent .
-                        return
-                    }
-                    catch {$treePath delete $sidxTreeNode}
-                }
-            }
-            set catchErrCode [SetAllIndexAttributes $nodeId $nodeType $indexId $value $newName $accessType $dataType $pdoType $default $upperLimit $lowerLimit $objectType [subst $[subst $chkGen]] ]
-            set reloadView 1
-            if { ([string match -nocase "ARRAY" $objectType] == 1) || ([string match -nocase "RECORD" $objectType] == 1) } {
-                set rebuildNode 1
-            }
-        } else {
-            set catchErrCode [SetBasicIndexAttributes $nodeId $nodeType $indexId $value $newName [subst $[subst $chkGen]] ]
-        }
-    } else {
-        #invalid condition
-        return
-    }
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-        Validation::ResetPromptFlag
-        return
-    }
-
-    #value for Index or SubIndex is edited need to change
-    set status_save 1
-    Validation::ResetPromptFlag
-    set newName [append newName $oldName]
-    $treePath itemconfigure $nodeSelect -text $newName
+    #Validation::ResetPromptFlag
     if { [lsearch $savedValueList $nodeSelect] == -1 } {
         lappend savedValueList $nodeSelect
     }
-    $frame0.en_nam1 configure -bg #fdfdd4
     $frame1.en_value1 configure -bg #fdfdd4
-    #rebuild the node if index is saved as VAR since 00 will be added
-    if { $rebuildNode == 1 } {
-        WrapperInteractions::RebuildNode $nodeSelect
-    }
-    #reload the view after saving
-    if { $reloadView == 1 } {
-        Operations::SingleClickNode $nodeSelect
-    }
+    Operations::SingleClickNode $nodeSelect
 }
 
 #---------------------------------------------------------------------------------------------------
