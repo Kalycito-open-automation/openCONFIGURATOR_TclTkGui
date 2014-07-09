@@ -1889,7 +1889,7 @@ proc Operations::SingleClickNode {node} {
 
         $tmpInnerf0.en_idx1 configure -state normal
         $tmpInnerf0.en_idx1 delete 0 end
-        $tmpInnerf0.en_idx1 insert 0 0x$indexId
+        $tmpInnerf0.en_idx1 insert 0 $indexId
         $tmpInnerf0.en_idx1 configure -state disabled
 
         $tmpInnerf0.en_sidx1 configure -state normal
