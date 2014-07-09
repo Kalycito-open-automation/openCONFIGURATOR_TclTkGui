@@ -1691,36 +1691,29 @@ proc Operations::SingleClickNode {node} {
                     set subIndexId [string range [$treePath itemcget $tempSidx -text] end-2 end-1 ]
                     if { [string match "01" $subIndexId] == 1 } {
 
-                        #API for IfSubIndexExists
-                        set indexPos [new_intp]
-                        set subIndexPos [new_intp]
-                        set catchErrCode [IfSubIndexExists $nodeId $nodeType $indexId $subIndexId $subIndexPos $indexPos]
-                        set indexPos [intp_value $indexPos]
-                        set subIndexPos [intp_value $subIndexPos]
-                        # 5 is passed to get the actual value
-                        #API for GetSubIndexAttributesbyPositions
-                        set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 5 ]
-                        set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0] ]
-                        if {$ErrCode != 0} {
+                        set result [openConfLib::GetSubIndexAttribute $nodeId 0x$indexId 0x$subIndexId $::ACTUALVALUE]
+                        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
                             continue
                         }
-                        set IndexActualValue [lindex $tempIndexProp 1]
+                        set IndexActualValue [lindex $result 1]
                         if {[string match -nocase "0x*" $IndexActualValue] } {
                             #remove appended 0x
                             set IndexActualValue [string range $IndexActualValue 2 end]
                         } elseif { $IndexActualValue != ""} {
-                        set IndexActualValue [format %X $IndexActualValue]
+                            set IndexActualValue [format %X $IndexActualValue]
                         } else {
-                        #do nothing
+                            #do nothing
                         }
                         set commParamValue $IndexActualValue
                         set nodeidEditableFlag 1
                     }
                 }
             }
-                    if { $commParamValue != ""} {
-                        set commParamValue 0x$commParamValue
-                    }
+
+            if { $commParamValue != ""} {
+                set commParamValue 0x$commParamValue
+            }
+
             set tempIdx [lindex $finalMappList $count+1]
             set indexId [string range [$treePath itemcget $tempIdx -text] end-4 end-1 ]
             set sidx [$treePath nodes $tempIdx]
@@ -1728,52 +1721,43 @@ proc Operations::SingleClickNode {node} {
                 set subIndexId [string range [$treePath itemcget $tempSidx -text] end-2 end-1 ]
                 if {[string match "00" $subIndexId] == 0 } {
 
-                    #API for IfSubIndexExists
-                    set indexPos [new_intp]
-                    set subIndexPos [new_intp]
-                    set catchErrCode [IfSubIndexExists $nodeId $nodeType $indexId $subIndexId $subIndexPos $indexPos]
-                    set indexPos [intp_value $indexPos]
-                    set subIndexPos [intp_value $subIndexPos]
-                    # 3 is passed to get the accesstype
-                    #API for GetSubIndexAttributesbyPositions
-                    set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 3 ]
-                    if {$ErrCode != 0} {
-                    if {$st_autogen == 1 } {
-                        [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
-                        foreach col [list 2 3 4 5 ] {
-                            [lindex $f5 1] cellconfigure $popCount,$col -editable no
+                    set result [openConfLib::GetSubIndexAttribute $nodeId 0x$indexId 0x$subIndexId $::ACCESSTYPE]
+                    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+                        if {$st_autogen == 1 } {
+                            [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
+                            foreach col [list 2 3 4 5 ] {
+                                [lindex $f5 1] cellconfigure $popCount,$col -editable no
+                            }
+                        } else {
+                            [lindex $f2 1] insert $popCount [list "" "" "" "" "" ""]
+                            foreach col [list 2 3 4 5 ] {
+                                [lindex $f2 1] cellconfigure $popCount,$col -editable no
+                            }
                         }
-                    } else {
-                        [lindex $f2 1] insert $popCount [list "" "" "" "" "" ""]
-                        foreach col [list 2 3 4 5 ] {
-                            [lindex $f2 1] cellconfigure $popCount,$col -editable no
-                        }
-                    }
-                    incr popCount 1
-                    continue
-                    }
-                    set accessType [lindex $tempIndexProp 1]
-                    # 5 is passed to get the actual value
-                    #API for GetSubIndexAttributesbyPositions
-                    set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 5 ]
-                    set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0] ]
-                    if {$ErrCode != 0} {
-                    if {$st_autogen == 1 } {
-                        [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
-                        foreach col [list 2 3 4 5 ] {
-                        [lindex $f5 1] cellconfigure $popCount,$col -editable no
-                        }
-                    } else {
-                        [lindex $f2 1] insert $popCount [list "" "" "" "" "" ""]
-                        foreach col [list 2 3 4 5 ] {
-                        [lindex $f2 1] cellconfigure $popCount,$col -editable no
-                        }
-                    }
-                    incr popCount 1
-                    continue
+                        incr popCount 1
+                        continue
                     }
 
-                    set IndexActualValue [lindex $tempIndexProp 1]
+                    set accessType [lindex $result 1]
+
+                    set result [openConfLib::GetSubIndexAttribute $nodeId 0x$indexId 0x$subIndexId $::ACTUALVALUE]
+                    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+                        if {$st_autogen == 1 } {
+                            [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
+                            foreach col [list 2 3 4 5 ] {
+                            [lindex $f5 1] cellconfigure $popCount,$col -editable no
+                            }
+                        } else {
+                            [lindex $f2 1] insert $popCount [list "" "" "" "" "" ""]
+                            foreach col [list 2 3 4 5 ] {
+                            [lindex $f2 1] cellconfigure $popCount,$col -editable no
+                            }
+                        }
+                        incr popCount 1
+                        continue
+                    }
+
+                    set IndexActualValue [lindex $result 1]
                     if {[string match -nocase "0x*" $IndexActualValue] } {
                         #remove appended 0x
                         set IndexActualValue [string range $IndexActualValue 2 end]
@@ -1786,44 +1770,44 @@ proc Operations::SingleClickNode {node} {
                     set reserved [string range $IndexActualValue 8 9]
                     set listSubIndex [string range $IndexActualValue 10 11]
                     set listIndex [string range $IndexActualValue 12 15]
-                                    foreach tempPdo [list offset length listIndex listSubIndex] {
-                                        if {[subst $[subst $tempPdo]] != ""} {
-                                            set $tempPdo 0x[subst $[subst $tempPdo]]
-                                        }
-                                    }
+                    foreach tempPdo [list offset length listIndex listSubIndex] {
+                        if {[subst $[subst $tempPdo]] != ""} {
+                            set $tempPdo 0x[subst $[subst $tempPdo]]
+                        }
+                    }
 
                     if {$st_autogen == 1 } {
-                    [lindex $f5 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
+                        [lindex $f5 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
                     } else {
-                    [lindex $f2 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
+                        [lindex $f2 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
                     }
 
                     lappend popCountList $popCount
 
                     if { $accessType == "ro" || $accessType == "const" } {
                         foreach col [list 2 3 4 5 ] {
-                        if {$st_autogen == 1 } {
-                            [lindex $f5 1] cellconfigure $popCount,$col -editable no
-                        } else {
-                            [lindex $f2 1] cellconfigure $popCount,$col -editable no
-                        }
+                            if {$st_autogen == 1 } {
+                                [lindex $f5 1] cellconfigure $popCount,$col -editable no
+                            } else {
+                                [lindex $f2 1] cellconfigure $popCount,$col -editable no
+                            }
                         }
                     } else {
                     # as a default the first cell is always non editable, adding it to the list only when made editable
                         if {$st_autogen == 1 } {
-                        foreach col [list 2 3 4 ] {
-                            [lindex $f5 1] cellconfigure $popCount,$col -editable yes
-                        }
-                        if { $nodeidEditableFlag == 1} {
-                            [lindex $f5 1] cellconfigure $popCount,1 -editable yes
-                        }
+                            foreach col [list 2 3 4 ] {
+                                [lindex $f5 1] cellconfigure $popCount,$col -editable yes
+                            }
+                            if { $nodeidEditableFlag == 1} {
+                                [lindex $f5 1] cellconfigure $popCount,1 -editable yes
+                            }
                         } else {
-                        foreach col [list 2 3 4 5 ] {
-                            [lindex $f2 1] cellconfigure $popCount,$col -editable yes
-                        }
-                        if { $nodeidEditableFlag == 1} {
-                            [lindex $f2 1] cellconfigure $popCount,1 -editable yes
-                        }
+                            foreach col [list 2 3 4 5 ] {
+                                [lindex $f2 1] cellconfigure $popCount,$col -editable yes
+                            }
+                            if { $nodeidEditableFlag == 1} {
+                                [lindex $f2 1] cellconfigure $popCount,1 -editable yes
+                            }
                         }
                     }
                     incr popCount 1
