@@ -159,7 +159,7 @@ proc NoteBookManager::create_tab { nbpath choice } {
     grid config $tabTitlef1 -row 2 -column 0 -sticky ew
 
     grid config $tabInnerf0.la_idx -row 0 -column 0 -sticky w
-    grid config $tabInnerf0.en_idx1 -row 0 -column 1 -padx 5
+    grid config $tabInnerf0.en_idx1 -row 0 -column 1 -padx 5 -sticky w
     grid config $tabInnerf0.la_empty1 -row 1 -column 0 -columnspan 2
     grid config $tabInnerf0.la_empty2 -row 3 -column 0 -columnspan 2
 
@@ -210,7 +210,7 @@ proc NoteBookManager::create_tab { nbpath choice } {
         grid config $tabInnerf0_1.ch_gen -row 0 -column 1 -sticky e -padx 5
         grid config $tabInnerf0.la_empty3 -row 5 -column 0 -columnspan 2
         bind $tabInnerf0_1.la_generate <1> "$tabInnerf0_1.ch_gen toggle ; Validation::SetPromptFlag"
-        $tabInnerf0_1.la_generate configure -text "Include Index in CDC generation"
+        $tabInnerf0_1.la_generate configure -text "Force CDC export"
     } elseif { $choice == "subindex" } {
         $tabTitlef0 configure -text "Sub Index"
         $tabTitlef1 configure -text "Properties"
@@ -218,17 +218,17 @@ proc NoteBookManager::create_tab { nbpath choice } {
         label $tabInnerf0.la_sidx -text "Sub Index  "
         entry $tabInnerf0.en_sidx1 -state disabled -width 20
 
-        grid config $tabInnerf0.la_sidx -row 2 -column 0 -sticky w
-        grid config $tabInnerf0.en_sidx1 -row 2 -column 1 -padx 5
-        grid config $tabInnerf0.la_nam -row 2 -column 2 -sticky w
-        grid config $tabInnerf0.en_nam1 -row 2 -column 3  -sticky e -columnspan 1
+        grid config $tabInnerf0.la_sidx -row 0 -column 2 -sticky w
+        grid config $tabInnerf0.en_sidx1 -row 0 -column 3 -padx 5
+        grid config $tabInnerf0.la_nam -row 2 -column 0 -sticky w
+        grid config $tabInnerf0.en_nam1 -row 2 -column 1  -sticky e -columnspan 1
 
         grid config $tabInnerf0_1 -row 4 -column 0 -columnspan 2 -sticky w
         grid config $tabInnerf0_1.la_generate -row 0 -column 0 -sticky w
         grid config $tabInnerf0_1.ch_gen -row 0 -column 1 -sticky e -padx 5
         grid config $tabInnerf0.la_empty3 -row 5 -column 0 -columnspan 2
         bind $tabInnerf0_1.la_generate <1> "$tabInnerf0_1.ch_gen toggle ; Validation::SetPromptFlag"
-        $tabInnerf0_1.la_generate configure -text "Include Subindex in CDC generation"
+        $tabInnerf0_1.la_generate configure -text "Force CDC export"
     }
 
     set fram [frame $frame.f1]
@@ -1863,6 +1863,7 @@ proc NoteBookManager::ValueFocusChanged {framePath entryPath} {
         set valueState [$entryPath cget -state]
         set valueInput [$entryPath get]
         if { $valueState != "normal" || $valueInput == "" || $valueInput == "-" || [string match -nocase "0x" $valueInput] } {
+            puts "returning focus changed"
             return
         }
         if { [string match "*.en_value1" $entryPath] } {
