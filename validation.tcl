@@ -615,27 +615,18 @@ proc Validation::IsHex {input preinput entryPath mode idx {dataType ""}} {
     }
 
     if { $tempInput == "" || ([string is xdigit $tempInput ] == 1 && [expr 0x$tempInput <= $maxLimit] && [expr 0x$tempInput >= $minLimit] && [string length $tempInput] <= $reqLengt )} {
-        ##if { $tempInput != "" } {
-        #if { [string match "*.en_value1" $entryPath] } {
-        #    set limitResult [CheckAgainstLimits $entryPath 0x$tempInput $dataType]
-        #    if { [lindex $limitResult 0] == 0 } {
-        #        return 0
-        #    }
-        #}
-        ##}
-    set tempInput 0x$tempInput
-    if {[string match "*.en_lower1" $entryPath] && $tempInput != "0x"} {
+        set tempInput 0x$tempInput
+        if {[string match "*.en_lower1" $entryPath] && $tempInput != "0x"} {
             set LOWER_LIMIT $tempInput
         } elseif {[string match "*.en_upper1" $entryPath] && $tempInput != "0x"} {
             set UPPER_LIMIT $tempInput
         }
-    after 1 Validation::SetValue $entryPath $mode $idx $tempInput
-    Validation::SetPromptFlag
-    return 1
+        after 1 Validation::SetValue $entryPath $mode $idx $tempInput
+        Validation::SetPromptFlag
+        return 1
     } else {
         return 0
     }
-
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -707,7 +698,6 @@ proc Validation::IsValidIdx {input indexLength} {
 #---------------------------------------------------------------------------------------------------
 proc Validation::IsTableHex {input preinput mode idx reqLen tablePath rowIndex columnIndex entryPath} {
 
-    #puts "IsTableHex::: entryPath:$entryPath, mode:$mode, idx:$idx, input:$input preinput:$preinput"
     if {[string match -nocase "0x*" $input]} {
         set input [string range $input 2 end]
     } elseif {[string match -nocase "x*" $input]} {

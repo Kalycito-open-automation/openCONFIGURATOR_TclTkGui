@@ -1578,7 +1578,6 @@ proc Operations::SingleClickNode {node} {
         return
     }
 
-# TODO remove nodetype usage from here..
     #getting Id and Type of node
     set result [Operations::GetNodeIdType $node]
     if {$result == ""} {
@@ -1588,7 +1587,6 @@ proc Operations::SingleClickNode {node} {
     } else {
         # it is index or subindex
         set nodeId [lindex $result 0]
-        set nodeType [lindex $result 1]
     }
 
     set result [openConfLib::IsExistingNode $nodeId]
@@ -1624,7 +1622,7 @@ proc Operations::SingleClickNode {node} {
         pack forget [lindex $f3 0]
         pack [lindex $f4 0] -expand yes -fill both -padx 2 -pady 4
 
-        Operations::CNProperties $node $nodePos $nodeId $nodeType
+        Operations::CNProperties $node $nodeId
         return
     }
 
@@ -1869,28 +1867,21 @@ proc Operations::SingleClickNode {node} {
         set parent [$treePath parent $node]
         set indexId [string range [$treePath itemcget $parent -text] end-4 end-1]
 
-        #API for IfSubIndexExists
-        set indexPos [new_intp]
-        set subIndexPos [new_intp]
-        set catchErrCode [IfSubIndexExists $nodeId $nodeType $indexId $subIndexId $subIndexPos $indexPos]
-        if { [ocfmRetCode_code_get $catchErrCode] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
+        set indexId "0x$indexId"
+        set subIndexId "0x$subIndexId"
+
+        set result [openConfLib::IsExistingSubIndex $nodeId $indexId $subIndexId]
+        openConfLib::ShowErrorMessage [lindex $result 0]
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
             return
         }
-        set indexPos [intp_value $indexPos]
-        set subIndexPos [intp_value $subIndexPos]
+        set subIndexExists [lindex $result 1]
+
         set IndexProp []
         for {set cnt 0 } {$cnt <= 9} {incr cnt} {
-
-            #API for IfSubIndexExists
-            set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos $cnt ]
-            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-            if {$ErrCode == 0} {
-                lappend IndexProp [lindex $tempIndexProp 1]
+            set result [openConfLib::GetSubIndexAttribute $nodeId $indexId $subIndexId $cnt]
+            if { [Result_IsSuccessful [lindex $result 0]] } {
+                lappend IndexProp [lindex $result 1]
             } else {
                 lappend IndexProp []
             }
@@ -1898,12 +1889,12 @@ proc Operations::SingleClickNode {node} {
 
         $tmpInnerf0.en_idx1 configure -state normal
         $tmpInnerf0.en_idx1 delete 0 end
-        $tmpInnerf0.en_idx1 insert 0 0x$indexId
+        $tmpInnerf0.en_idx1 insert 0 $indexId
         $tmpInnerf0.en_idx1 configure -state disabled
 
         $tmpInnerf0.en_sidx1 configure -state normal
         $tmpInnerf0.en_sidx1 delete 0 end
-        $tmpInnerf0.en_sidx1 insert 0 0x$subIndexId
+        $tmpInnerf0.en_sidx1 insert 0 $subIndexId
         $tmpInnerf0.en_sidx1 configure -state disabled
 
         pack forget [lindex $f0 0]
@@ -1922,32 +1913,28 @@ proc Operations::SingleClickNode {node} {
         set tmpInnerf1 [lindex $f0 2]
 
         set indexId [string range [$treePath itemcget $node -text] end-4 end-1]
-        set indexPos [new_intp]
-        #API for IfIndexExists
-        set catchErrCode [IfIndexExists $nodeId $nodeType $indexId $indexPos]
-        if { [ocfmRetCode_code_get $catchErrCode] != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
+        set indexId "0x$indexId"
+
+        set result [openConfLib::IsExistingIndex $nodeId $indexId]
+        openConfLib::ShowErrorMessage [lindex $result 0]
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
             return
         }
-        set indexPos [intp_value $indexPos]
+        set indexExists [lindex $result 1]
+
         set IndexProp []
         for {set cnt 0 } {$cnt <= 9} {incr cnt} {
-            #API for GetIndexAttributesbyPositions
-            set tempIndexProp [GetIndexAttributesbyPositions $nodePos $indexPos $cnt ]
-            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-            if {$ErrCode == 0} {
-                lappend IndexProp [lindex $tempIndexProp 1]
+            set result [openConfLib::GetIndexAttribute $nodeId $indexId $cnt]
+            if { [Result_IsSuccessful [lindex $result 0]] } {
+                lappend IndexProp [lindex $result 1]
             } else {
                 lappend IndexProp []
             }
         }
+
         $tmpInnerf0.en_idx1 configure -state normal
         $tmpInnerf0.en_idx1 delete 0 end
-        $tmpInnerf0.en_idx1 insert 0 0x$indexId
+        $tmpInnerf0.en_idx1 insert 0 $indexId
         $tmpInnerf0.en_idx1 configure -state disabled
 
         pack [lindex $f0 0] -expand yes -fill both -padx 2 -pady 4
@@ -1957,7 +1944,7 @@ proc Operations::SingleClickNode {node} {
         [lindex $f2 1] configure -state disabled
         pack forget [lindex $f3 0]
         pack forget [lindex $f4 0]
-            pack forget [lindex $f5 0]
+        pack forget [lindex $f5 0]
         [lindex $f5 1] cancelediting
         [lindex $f5 1] configure -state disabled
         set saveButton $indexSaveBtn
@@ -1965,7 +1952,7 @@ proc Operations::SingleClickNode {node} {
 
     #configuring the index and subindex save buttons with object type
     $saveButton configure -command "NoteBookManager::SaveValue $tmpInnerf0 $tmpInnerf1 [lindex $IndexProp 1]"
-    if { ([expr 0x$indexId > 0x1fff]) && ( ([lindex $IndexProp 1] == "VAR") || ([lindex $IndexProp 1] == "") ) } {
+    if { ([expr $indexId > 0x1fff]) && ( ([lindex $IndexProp 1] == "VAR") || ([lindex $IndexProp 1] == "") ) } {
         set entryState normal
     } else {
         set entryState disabled
@@ -1974,7 +1961,7 @@ proc Operations::SingleClickNode {node} {
     #for index starting with A and their subobjects all the fileds cannot be edited
     #for object type ro or const should not be added to CDC generation
     $tmpInnerf0.frame1.ch_gen deselect
-    if { [string match -nocase "A???" $indexId] || [string match -nocase "const" [lindex $IndexProp 3]] == 1 || [string match -nocase "ro" [lindex $IndexProp 3]] == 1 } {
+    if { [string match -nocase "0xA???" $indexId] || [string match -nocase "const" [lindex $IndexProp 3]] == 1 || [string match -nocase "ro" [lindex $IndexProp 3]] == 1 } {
         $tmpInnerf0.frame1.ch_gen configure -state disabled
     } else {
         $tmpInnerf0.frame1.ch_gen configure -state normal
@@ -2020,34 +2007,29 @@ proc Operations::SingleClickNode {node} {
     $tmpInnerf1.en_obj1 configure -state normal
     $tmpInnerf1.en_obj1 delete 0 end
     $tmpInnerf1.en_obj1 insert 0 [lindex $IndexProp 1]
-    $tmpInnerf1.en_obj1 configure -state disabled
     $tmpInnerf1.en_obj1 configure -state disabled -bg white
 
     $tmpInnerf1.en_data1 configure -state normal
     $tmpInnerf1.en_data1 delete 0 end
     $tmpInnerf1.en_data1 insert 0 [lindex $IndexProp 2]
     $tmpInnerf1.en_data1 configure -state disabled -bg white
-    $tmpInnerf1.en_data1 configure -state disabled -bg white
 
     $tmpInnerf1.en_access1 configure -state normal
     $tmpInnerf1.en_access1 delete 0 end
     $tmpInnerf1.en_access1 insert 0 [lindex $IndexProp 3]
-    $tmpInnerf1.en_access1 configure -state disabled
-    #NoteBookManager::SetComboValue $tmpInnerf1.co_access1 [lindex $IndexProp 3]
     $tmpInnerf1.en_access1 configure -state disabled -bg white
 
     $tmpInnerf1.en_pdo1 configure -state normal
     $tmpInnerf1.en_pdo1 delete 0 end
     $tmpInnerf1.en_pdo1 insert 0 [lindex $IndexProp 6]
-    $tmpInnerf1.en_pdo1 configure -state disabled
     $tmpInnerf1.en_pdo1 configure -state disabled -bg white
 
     #The object less than 1FFF and object greater than 1FFF having object type
     #other than VAR only name and values are editable
     # The object types starting with A are validated in the else case those should be excluded
-    set exp1 [string match -nocase "A???" $indexId]
-    set exp2 [expr 0x$indexId <= 0x1fff]
-    set exp3 [expr 0x$indexId > 0x1fff]
+    set exp1 [string match -nocase "0xA???" $indexId]
+    set exp2 [expr $indexId <= 0x1fff]
+    set exp3 [expr $indexId > 0x1fff]
     set exp4 [lindex $IndexProp 1]
 
     grid $tmpInnerf1.en_obj1
@@ -2072,7 +2054,7 @@ proc Operations::SingleClickNode {node} {
         grid $tmpInnerf1.frame1.ra_hex
 
         $tmpInnerf1.en_value1 configure -validate key -vcmd "Validation::IsValidEntryData %P"
-        if { [string match -nocase "A???" $indexId] == 1 } {
+        if { [string match -nocase "0xA???" $indexId] == 1 } {
             grid remove $tmpInnerf1.frame1.ra_dec
             grid remove $tmpInnerf1.frame1.ra_hex
             set widgetState disabled
@@ -2087,15 +2069,13 @@ proc Operations::SingleClickNode {node} {
         $subindexSaveBtn configure -state $widgetState
 
         $tmpInnerf1.en_value1 configure -state disabled
-        #$tmpInnerf1.en_lower1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_lower1 %d %i [lindex $IndexProp 2]"
-        #$tmpInnerf1.en_upper1 configure -state disabled -validate key -vcmd "Validation::IsHex %P %s $tmpInnerf1.en_upper1 %d %i [lindex $IndexProp 2]"
 
         #fields are editable only for VAR type and acess type other than ro const
             #it is also mot editable for index starting with "A"
             #NOTE: also refer to the if part above
         if { [lindex $IndexProp 3] == "const" || [lindex $IndexProp 3] == "ro" \
             || [ string match -nocase "VAR" [lindex $IndexProp 1] ] != 1 \
-            || [string match -nocase "A???" $indexId] == 1} {
+            || [string match -nocase "0xA???" $indexId] == 1} {
                 #the field is non editable
             $tmpInnerf1.en_value1 configure -state "disabled"
         } else {
@@ -2103,24 +2083,14 @@ proc Operations::SingleClickNode {node} {
         }
     }
     # disable the object type combobox of sub objects
-    if { [string match "*SubIndex*" $node] && ([expr 0x$indexId > 0x1fff]) } {
-
+    if { [string match "*SubIndex*" $node] && ([expr $indexId > 0x1fff]) } {
         #subobjects of index greater than 1fff exists only for index of type
         #ARRAY datatype is not editable
-        #API for GetIndexAttributesbyPositions
-        set tempIndexObjtype [GetIndexAttributesbyPositions $nodePos $indexPos 1 ]
-            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexObjtype 0]]
-        if {$ErrCode == 0} {
-            set IndexObjtype [lindex $tempIndexObjtype 1]
-        } else {
-            set IndexObjtype []
-        }
-
-        if { ($subIndexId == "00") } {
+        if { ($subIndexId == "0x00") } {
             #$tmpInnerf1.en_lower1 configure -state disabled
             #$tmpInnerf1.en_upper1 configure -state disabled
 
-            if { [ string match -nocase "ARRAY" $IndexObjtype ] } {
+            if { [ string match -nocase "ARRAY" [lindex $IndexProp 1] ] } {
                 $tmpInnerf1.en_value1 configure -state normal
                 $subindexSaveBtn configure -state normal
             } else {
@@ -4065,7 +4035,7 @@ proc Operations::BuildProject {} {
         thread::send [tsv::get application importProgress] "StopProgress"
         return
     } else {
-	#TODO handle exception for exceeding the limit of number of channels.(ERRCODE 49)
+        #TODO handle exception for exceeding the limit of number of channels.(ERRCODE 49)
         set build_nodesList ""
         set buildCN_result ""
         set buildCN_nodeId ""
