@@ -765,11 +765,15 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
             # Do nothing for Sno
         }
         1 {
+            #set result [regexp {[\(][0-9]+[\)]} $input match]
+            #set value [string range $match 1 end-1]
+
             #set enty [Widget::subcget $tablePath .e]
             #$entryPath configure -editable no
-            if { [string length $input] < 3 || [string length $input] > 4 } {
-                return 0
-            }
+            #if { [string length $value] < 3 || [string length $value] > 4 } {
+            #    return 0
+            #}
+
 
             foreach tempList $populatedCommParamList {
                 set rowlist [lindex $tempList 2]
@@ -790,7 +794,7 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
         }
         2 {
             # sidx and length should be set empty after index is edited or modified
-            $tablePath cellconfigure $rowIndex,3 -text "0x00"
+            $tablePath cellconfigure $rowIndex,3 -text "Default\(0x00\)"
             $tablePath cellconfigure $rowIndex,4 -text "0x0000"
         }
         3 {
