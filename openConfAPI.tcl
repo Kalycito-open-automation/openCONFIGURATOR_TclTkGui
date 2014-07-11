@@ -17,7 +17,7 @@ proc openConfLib::ShowErrorMessage { result } {
 }
 
 proc openConfLib::PrintText { arg } {
-    puts "$arg"
+    # puts "$arg"
 }
 
 proc openConfLib::PrintResult { result } {

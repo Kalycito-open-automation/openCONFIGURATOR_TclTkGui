@@ -1278,60 +1278,55 @@ proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     global treePath
-    global nodeIdList
-    global treePath
 
-#######Getting the current cell value in the row. and converting node id to decimal val#######
-    set nodeidValhex [$tablePath cellcget $rowIndex,1 -text]
-    scan $nodeidValhex %x nodeidVal
+    # no need to get the nodeid from 18xx or 14xx
+    #set nodeidVal [$tablePath cellcget $rowIndex,1 -text]
+    #set result [regexp {[\(][0-9]+[\)]} $nodeidVal match]
+    #puts "Result: $result match: $match"
+    #set locNodeId [string range $match 1 end-1]
+    #puts "$locNodeId"
+
     set idxidVal [$tablePath cellcget $rowIndex,2 -text]
+
+    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxidVal match]
+    set locIdxId [string range $match 1 end-1]
+
     set sidxVal [$tablePath cellcget $rowIndex,3 -text]
+    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
+    set locSidxId [string range $match 1 end-1]
+
     set lengthVal [$tablePath cellcget $rowIndex,4 -text]
     set offsetVal [$tablePath cellcget $rowIndex,5 -text]
 
     set selectedNode [$treePath selection get]
-    set pdoType ""
     set pdoType "[$treePath itemcget $selectedNode -text ]"
-
     set result [Operations::GetNodeIdType $selectedNode]
-    set nodeidVal [lindex $result 0]
-    set nodeTypeVal [lindex $result 1]
+    set locNodeId [lindex $result 0]
 
     set win [$tablePath editwinpath]
     $win configure -editable no
     switch -- $columnIndex {
         1 {
-            set nodeIdListHex ""
-            set nodeIdListHex "0x0"
-
-            if { $nodeTypeVal == 1 && [string match -nocase "TPDO*" $pdoType] } {
-                #node id should be = 0 for a CN TPDO
-            } else {
-                foreach tempnodeId $nodeIdList {
-                    set hexnodeid 0x[string toupper [format %x $tempnodeId]]
-                    lappend nodeIdListHex "$hexnodeid"
-                }
-            }
-            set nodeIdListHex [lsort $nodeIdListHex]
-            $win configure -values "$nodeIdListHex"
+            set locNodeIdList [Operations::GetNodelistWithName]
+            $win configure -values "$locNodeIdList"
             $win configure -invalidcommand bell -validate key -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
         }
         2 {
-            set idxList [Operations::FuncIndexlist $nodeidVal $nodeTypeVal $pdoType]
-            set idxList [lappend idxList "0x0000"]
+            set idxList [Operations::GetIndexListWithName $locNodeId $pdoType]
+            set idxList [lappend idxList "Default\(0x0000\)"]
             set idxList [lsort $idxList]
             $win configure -values "$idxList"
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
         }
         3 {
-            set sidxList [Operations::FuncSubIndexlist $nodeidVal $idxidVal $pdoType]
-            set sidxList [lappend sidxList "0x00"]
+            set sidxList [Operations::GetSubIndexlistWithName $locNodeId $locIdxId $pdoType]
+            set sidxList [lappend sidxList "Default\(0x00\)"]
             set sidxList [lsort $sidxList]
             $win configure -values "$sidxList"
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
             }
         4 {
-            set sidxLength [Operations::FuncSubIndexLength $nodeidVal $idxidVal $sidxVal]
+            set sidxLength [Operations::FuncSubIndexLength $locNodeId $locIdxId $locSidxId]
             set sidxLength [lappend sidxLength "0x0000"]
             set sidxLength [lsort $sidxLength]
             $win configure -values "$sidxLength"
@@ -1358,55 +1353,7 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
 #  Description : to validate the entered value when focus leave the cell
 #---------------------------------------------------------------------------------------------------
 proc NoteBookManager::EndEdit {tablePath rowIndex columnIndex text} {
-
-    if { [string match -nocase "0x*" $text] } {
-        set text [string range $text 2 end]
-    } else {
-        $tablePath rejectinput
-    }
-    switch -- $columnIndex {
-        1 {
-            if {[string length $text] < 1 || [string length $text] > 2} {
-                bell
-                $tablePath rejectinput
-            } else {
-            }
-        }
-        2 {
-            if {[string length $text] != 4} {
-                bell
-                $tablePath rejectinput
-            } else {
-            }
-        }
-        3 {
-            if {[string length $text] != 2} {
-                bell
-                $tablePath rejectinput
-            } else {
-            }
-        }
-        4 {
-            if {[string length $text] != 4} {
-                bell
-                $tablePath rejectinput
-            } else {
-            }
-        }
-        5 {
-            if {[string length $text] != 4} {
-                bell
-                $tablePath rejectinput
-            } else {
-            }
-        }
-    }
-    if { $text == "" } {
-        return $text
-    } else {
-        return 0x$text
-    }
-
+    return $text
 }
 
 #---------------------------------------------------------------------------------------------------

@@ -208,7 +208,7 @@ proc WrapperInteractions::GetIndexId {nodeId type} {
     set returnList ""
     set result [openConfLib::GetIndices $nodeId]
     if { [Result_IsSuccessful [lindex $result 0]] } {
-        set indexList [lsort -ascii [lindex $result 2]]
+        set indexList [lsort [lindex $result 2]]
         foreach index $indexList {
             set indexIdHex "[format %4.4X $index]"
             switch $type {
