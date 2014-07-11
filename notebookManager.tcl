@@ -663,7 +663,7 @@ proc NoteBookManager::ConvertDec {framePath0 framePath1} {
             set userPrefList [lreplace $userPrefList $schRes $schRes [list $nodeSelect dec] ]
         }
         $framePath0.en_idx1 configure -state normal
-        set indexId [string range [$framePath0.en_idx1 get] 2 end]
+        set indexId [$framePath0.en_idx1 get]
         $framePath0.en_idx1 configure -state disabled
         if { [expr $indexId <= 0x1fff] } {
             $framePath1.en_data1 configure -state normal
@@ -744,7 +744,7 @@ proc NoteBookManager::ConvertHex {framePath0 framePath1} {
            set userPrefList [lreplace $userPrefList $schRes $schRes [list $nodeSelect hex] ]
         }
         $framePath0.en_idx1 configure -state normal
-        set indexId [string range [$framePath0.en_idx1 get] 2 end]
+        set indexId [$framePath0.en_idx1 get]
         $framePath0.en_idx1 configure -state disabled
         if { [expr $indexId <= 0x1fff] } {
             $framePath1.en_data1 configure -state normal
