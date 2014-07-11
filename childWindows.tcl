@@ -1334,34 +1334,3 @@ proc ChildWindows::PropertiesWindow {} {
     Operations::centerW $winProp
     focus $winProp
 }
-
-#---------------------------------------------------------------------------------------------------
-#  ChildWindows::CopyScript
-#
-#  Arguments : -
-#
-#  Results : -
-#
-#  Description : Copies the transfer script file
-#---------------------------------------------------------------------------------------------------
-proc ChildWindows::CopyScript { pjtFldr } {
-    global tcl_platform
-    global rootDir
-
-    if {"$tcl_platform(platform)" == "windows"} {
-        set sptFile Transfer.bat
-    } elseif {"$tcl_platform(platform)" == "unix"} {
-        set sptFile Transfer.sh
-    }
-
-    set scriptFile [file join $rootDir $sptFile]
-
-    if { [file exists $scriptFile] && [file isfile $scriptFile] } {
-        #file exists
-        catch {file copy -force $scriptFile [file join $pjtFldr scripts]}
-        return pass
-    } else {
-        tk_messageBox -parent . -icon info -message "file $sptFile at location $rootDir is missing\nTransfer feature will not work"
-        return fail
-    }
-}
