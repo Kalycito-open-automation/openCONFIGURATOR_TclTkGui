@@ -922,8 +922,6 @@ proc Operations::BasicFrames { } {
             {command "&Build Project    F7" {noFile} "Generate CDC and XAP" {} -command Operations::BuildProject }
             {command "&Clean Project" {noFile} "Clean" {} -command Operations::CleanProject }
             {separator}
-            {command "&Transfer         F6" {noFile} "Transfer CDC and XAP" {} -command Operations::Transfer }
-            {separator}
             {command "Project &Settings..." {}  "Project Settings" {} -command ChildWindows::ProjectSettingWindow }
         }
         "&View" all options 0 {
@@ -971,7 +969,6 @@ proc Operations::BasicFrames { } {
     set Operations::options(DisplayConsole) 1
     set Operations::viewType "SIMPLE"
     set lastVideoModeSel 0
-    bind . <Key-F6> "Operations::Transfer"
     #shortcut keys for project
     bind . <Key-F7> "Operations::BuildProject"
     # short cut key for help
@@ -1017,7 +1014,6 @@ proc Operations::BasicFrames { } {
     image create photo img_find -file "$image_dir/find.gif"
     image create photo img_build -file "$image_dir/build.gif"
     image create photo img_clean -file "$image_dir/clean.gif"
-    image create photo img_transfer -file "$image_dir/transfer.gif"
     image create photo img_kalycito_icon -file "$image_dir/kalycito_icon.gif"
     #image create photo clean -file "$image_dir/clean.gif"
 
@@ -1073,20 +1069,6 @@ proc Operations::BasicFrames { } {
     pack $bb_clean -side left -padx 4
     set sep2 [Separator::create $toolbar.sep2 -orient vertical]
     pack $sep2 -side left -fill y -padx 4 -anchor w
-
-    set bbox [ButtonBox::create $toolbar.bbox4 -spacing 1 -padx 1 -pady 1]
-    pack $bbox -side left -anchor w
-    set bb_build [ButtonBox::add $bbox -image img_transfer \
-            -height 21\
-            -width 21\
-            -helptype balloon\
-            -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-            -helptext "Transfer cdc and xap"\
-        -command "Operations::Transfer"]
-    pack $bb_build -side left -padx 4
-
-    set sep3 [Separator::create $toolbar.sep3 -orient vertical]
-    pack $sep3 -side left -fill y -padx 4 -anchor w
 
     set bbox [ButtonBox::create $toolbar.bbox7 -spacing 1 -padx 1 -pady 1]
     pack $bbox -side right
@@ -1839,8 +1821,7 @@ proc Operations::SingleClickNode {node} {
             lappend populatedCommParamList [list $indexId [lindex $finalMappList $count]  $popCountList]
             set popCountList ""
         }
-       # puts  "F2: $f2"
-       # puts "lindexxx:  [lindex $f2 0]"
+
         pack forget [lindex $f0 0]
         pack forget [lindex $f1 0]
         if {$st_autogen == 1 } {
@@ -3343,7 +3324,6 @@ proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     } else {
         set result [openConfLib::GetIndexAttribute $nodeIdparm $idxIdparm $::DATATYPE]
     }
-    # TODO Get index attribute if it has no subindex
 
     openConfLib::ShowErrorMessage [lindex $result 0]
     if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
@@ -4009,66 +3989,6 @@ proc Operations::CleanProject {} {
     if { $cleanMsg != "" } {
         Console::DisplayInfo "files$cleanMsg at [file join $projectDir cdc_xap] are deleted"
     }
-}
-
-#---------------------------------------------------------------------------------------------------
-#  Operations::Transfer
-#
-#  Arguments : -
-#
-#  Results : -
-#
-#  Description : Executes the script for transfer
-#---------------------------------------------------------------------------------------------------
-proc Operations::Transfer {} {
-    global tcl_platform
-    global rootDir
-    global projectDir
-    global projectName
-
-    if { $projectDir == "" || $projectName == "" } {
-        Console::DisplayInfo "No project present"
-        return
-    }
-    if {"$tcl_platform(platform)" == "windows"} {
-        set sptFile Transfer.bat
-    } elseif {"$tcl_platform(platform)" == "unix"} {
-        set sptFile Transfer.sh
-        #Console::DisplayInfo "Yet To be Implemented"
-
-    }
-    set scriptFile [file join $projectDir scripts $sptFile]
-    if { [file exists $scriptFile] && [file isfile $scriptFile] } {
-        #file exists
-    } else {
-        set result [ChildWindows::CopyScript $projectDir]
-        if { $result == "fail" } {
-            #msg will be displayed in ChildWindows::CopyScript procedure
-            return
-        }
-    }
-
-    if {"$tcl_platform(platform)" == "windows"} {
-        set runcmd [list exec $scriptFile >& temp.log]
-        catch $runcmd res
-
-        set fid [open "temp.log" r]
-            while {[gets $fid line] != -1} {
-                Console::DisplayInfo $line
-            }
-        close $fid
-                catch { file delete -force temp.log }
-    } elseif {"$tcl_platform(platform)" == "unix"} {
-                set runcmd [list exec $scriptFile >& /tmp/temp.log]
-                catch $runcmd res
-        set fid [open "/tmp/temp.log" r]
-            while {[gets $fid line] != -1} {
-                Console::DisplayInfo $line
-            }
-        close $fid
-                catch { file delete -force /tmp/temp.log }
-    }
-
 }
 
 #---------------------------------------------------------------------------------------------------
