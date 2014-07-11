@@ -1778,11 +1778,12 @@ proc Operations::SingleClickNode {node} {
                     foreach tempPdo [list offset length listIndex listSubIndex] {
                         if {[subst $[subst $tempPdo]] != ""} {
                             set $tempPdo 0x[subst $[subst $tempPdo]]
+                        } else {
+                            set $tempPdo 0x0
                         }
                     }
 
                     if {$st_autogen == 1 } {
-
                         set result [openConfLib::GetSubIndexAttribute $nodeId $listIndex $listSubIndex $::NAME]
                         if {[Result_IsSuccessful [lindex $result 0]]} {
                             set listSubIndex "[lindex $result 1]\($listSubIndex\)"
@@ -3330,7 +3331,20 @@ proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     set mappingSidxLength ""
     set nodeId ""
 
-    set result [openConfLib::GetSubIndexAttribute $nodeIdparm $idxIdparm $sidxparm $::DATATYPE]
+    set result [openConfLib::GetIndexAttribute $nodeIdparm $idxIdparm $::OBJECTTYPE]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        return $mappingSidxLength
+    }
+    set idxObjType [lindex $result 1]
+
+    if {[string match -nocase $idxObjType "ARRAY"] || [string match -nocase $idxObjType "RECORD"]} {
+        set result [openConfLib::GetSubIndexAttribute $nodeIdparm $idxIdparm $sidxparm $::DATATYPE]
+    } else {
+        set result [openConfLib::GetIndexAttribute $nodeIdparm $idxIdparm $::DATATYPE]
+    }
+    # TODO Get index attribute if it has no subindex
+
     openConfLib::ShowErrorMessage [lindex $result 0]
     if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
          return $mappingSidxLength

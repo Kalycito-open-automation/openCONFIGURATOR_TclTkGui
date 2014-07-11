@@ -1371,6 +1371,7 @@ proc NoteBookManager::SaveTable {tableWid} {
     global status_save
     global populatedPDOList
     global populatedCommParamList
+    global st_autogen
 
     set result [$tableWid finishediting]
     if {$result == 0} {
@@ -1381,45 +1382,49 @@ proc NoteBookManager::SaveTable {tableWid} {
     # should save entered values to corresponding subindex
     set result [Operations::GetNodeIdType $nodeSelect]
     set nodeId [lindex $result 0]
-    set nodeType [lindex $result 1]
     set rowCount 0
     set flag 0
 
-    set nodePos [new_intp]
-    set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeId $nodeType $nodePos $ExistfFlag]
-    set nodePos [intp_value $nodePos]
-    set ExistfFlag [boolp_value $ExistfFlag]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode == 0 && $ExistfFlag == 1 } {
-        #the node exist continue
-    } else {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]\nValues not saved" -parent . -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error\nValues not saved" -parent . -title Error -icon error
-        }
+    set result [openConfLib::IsExistingNode $nodeId]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if {[lindex $result 1] == 0 && [Result_IsSuccessful [lindex $result 0]] != 1} {
         Validation::ResetPromptFlag
         return
     }
+
     #sort the tablelist based on the No column
     $tableWid sortbycolumn 0 -increasing
     update
+
     foreach childIndex $populatedPDOList {
         set indexId [string range [$treePath itemcget $childIndex -text] end-4 end-1]
         foreach childSubIndex [$treePath nodes $childIndex] {
             set subIndexId [string range [$treePath itemcget $childSubIndex -text] end-2 end-1]
             if {[string match "00" $subIndexId]} {
-                SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId "0x0" "NumberOfEntries" 1
+                # Reset the 00th subindex of a Mapping index
+                set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId "0x00" "0x00"]
             } else {
-                set name [string range [$treePath itemcget $childSubIndex -text] 0 end-6]
                 set offset [string range [$tableWid cellcget $rowCount,5 -text] 2 end]
                 set length [string range [$tableWid cellcget $rowCount,4 -text] 2 end]
                 set reserved 00
-                set index [string range [$tableWid cellcget $rowCount,2 -text] 2 end]
-                set subindex [string range [$tableWid cellcget $rowCount,3 -text] 2 end]
-                set value $length$offset$reserved$subindex$index
-                #0x is appended when saving value to indicate it is a hexa decimal number
+
+                if {$st_autogen == 1 } {
+                    set sidxVal [$tableWid cellcget $rowCount,3 -text]
+                    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
+                    set locSidxId [string range $match 3 end-1]
+
+                    set idxVal [$tableWid cellcget $rowCount,2 -text]
+                    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxVal match]
+                    set locIdxId [string range $match 3 end-1]
+                    #set index [string range [$tableWid cellcget $rowCount,2 -text] end-4 end-1]
+                    #set subindex [string range [$tableWid cellcget $rowCount,3 -text] end-2 end-1]
+                } else {
+                    set locIdxId [string range [$tableWid cellcget $rowCount,2 -text] 2 end]
+                    set locSidxId [string range [$tableWid cellcget $rowCount,3 -text] 2 end]
+                }
+
+                set value $length$offset$reserved$locSidxId$locIdxId
+                puts "value:::: $value"
                 if { [string length $value] != 16 } {
                     set flag 1
                     incr rowCount
@@ -1427,27 +1432,16 @@ proc NoteBookManager::SaveTable {tableWid} {
                 } else {
                     set value 0x$value
                 }
-                set indexPos [new_intp]
-                set subIndexPos [new_intp]
-                set catchErrCode [IfSubIndexExists $nodeId $nodeType $indexId $subIndexId $subIndexPos $indexPos]
-                if { [ocfmRetCode_code_get $catchErrCode] == 0 } {
-                    set indexPos [intp_value $indexPos]
-                    set subIndexPos [intp_value $subIndexPos]
-                    #to get include subindex in cdc generation
-                    set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 9 ]
-            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-            if {$ErrCode == 0} {
-                set incFlag [lindex $tempIndexProp 1]
-            } else {
-                set incFlag 0
-            }
-                } else {
-                    set incFlag 0
+                set result [openConfLib::IsExistingSubIndex $nodeId 0x$indexId 0x$subIndexId]
+                if { [lindex $result 1] } {
+                    set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId 0x$subIndexId $value]
+
+                    if { [expr [expr 0x$locIdxId > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
+                        # if The value is valid and the 00th subindex is set to the subindex id. But Spec says: Number of mapped objects.
+                        # TODO Need to discuss.
+                        set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId "0x00" "0x$subIndexId"]
+                    }
                 }
-        if { [expr [expr 0x$index > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
-            SetBasicSubIndexAttributes $nodeId $nodeType $indexId "00" "0x$subIndexId" "NumberOfEntries" 1
-        }
-                SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $name $incFlag
                 incr rowCount
             }
         }
@@ -1469,35 +1463,29 @@ proc NoteBookManager::SaveTable {tableWid} {
                 if { $rowCount == ""} {
                     break
                 }
-                set enteredNodeId [string range [$tableWid cellcget $rowCount,1 -text] 2 end]
-                set value $enteredNodeId
+                if {$st_autogen == 1 } {
+                    set enteredNodeIdstr [$tableWid cellcget $rowCount,1 -text]
+                    set result [regexp {[\(][0-9]+[\)]} $enteredNodeIdstr match]
+                    set value [string range $match 1 end-1]
+                } else {
+                    set value [string range [$tableWid cellcget $rowCount,1 -text] 2 end]
+                }
+
+                puts "value: $value"
+
                 #0x is appended when saving value to indicate it is a hexa decimal number
-                if { ([string length $value] < 1) || ([string length $value] > 2) } {
-                    set flag 1
+                #if { ([string length $value] < 1) || ([string length $value] > 2) } {
+                #    #set flag 1
+                #    break
+                #} else {
+                #    set value 0x$value
+                #}
+
+                set result [openConfLib::IsExistingSubIndex $nodeId 0x$indexId 0x$subIndexId]
+                if { [lindex $result 1] } {
+                    set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId "0x$subIndexId" $value]
                     break
-                } else {
-                    set value 0x$value
                 }
-                set indexPos [new_intp]
-                set subIndexPos [new_intp]
-                set catchErrCode [IfSubIndexExists $nodeId $nodeType $indexId $subIndexId $subIndexPos $indexPos]
-                if { [ocfmRetCode_code_get $catchErrCode] == 0 } {
-                    set indexPos [intp_value $indexPos]
-                    set subIndexPos [intp_value $subIndexPos]
-                    #to get include subindex in cdc generation
-                    set tempIndexProp [GetSubIndexAttributesbyPositions $nodePos $indexPos $subIndexPos 9 ]
-            set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-            if {$ErrCode == 0} {
-                set incFlag [lindex $tempIndexProp 1]
-            } else {
-                set incFlag 0
-            }
-                } else {
-                    set incFlag 0
-                }
-                SetBasicSubIndexAttributes $nodeId $nodeType $indexId $subIndexId $value $name $incFlag
-                #incr rowCount
-                break
             }
         }
     }
