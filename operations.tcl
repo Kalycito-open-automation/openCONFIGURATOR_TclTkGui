@@ -2169,6 +2169,7 @@ proc Operations::SingleClickNode {node} {
     }
     return
 }
+
 #---------------------------------------------------------------------------------------------------
 #  Operations::MNProperties
 #
@@ -2348,19 +2349,15 @@ proc Operations::MNProperties {node nodeId} {
 #  Operations::CNProperties
 #
 #  Arguments : node       - select tree node path
-#              nodePos    - positoion of node in collection
 #              nodeId     - id of the node
-#              nodeType   - indicates the type as MN or CN
 #
 #  Results :  -
 #
 #  Description : displays the properties of selected CN
 #---------------------------------------------------------------------------------------------------
-proc Operations::CNProperties {node nodePos nodeId nodeType} {
+proc Operations::CNProperties {node nodeId} {
     global f4
     global savedValueList
-    global lastConv
-    global userPrefList
     global nodeSelect
     global CNDatalist
     global cnPropSaveBtn
@@ -2370,35 +2367,12 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
     set tmpInnerf1 [lindex $f4 2]
     set tmpInnerf2 [lindex $f4 4]
 
-    #get the MN node id and node position
-    #API for IfNodeExists
-    set mnNodeId 240
-    set mnNodeType 0
-    set mnNodePos [new_intp]
-    set mnExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $mnNodeId $mnNodeType $mnNodePos $mnExistfFlag]
-    set mnNodePos [intp_value $mnNodePos]
-    set mnExistfFlag [boolp_value $mnExistfFlag]
-    set mnErrCode [ocfmRetCode_code_get $catchErrCode]
-
-    #get node name and display it
-    set dummyNodeId [new_intp]
-    set tmp_stationType [new_StationTypep]
-    set tmp_forceCycleFlag [new_boolp]
-
-    #API for GetNodeAttributesbyNodePos
-    set catchErrCode [GetNodeAttributesbyNodePos $nodePos $dummyNodeId $tmp_stationType $tmp_forceCycleFlag]
-
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-        return
+    set cnName ""
+    set result [openConfLib::GetNodeParameter $nodeId $::NAME]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
+        set cnName [lindex $result 1]
     }
-    set prevSelCycleNo [lindex $catchErrCode 2]
-    set tmp_forceCycleFlag [boolp_value $tmp_forceCycleFlag]
 
     if {[lsearch $savedValueList $node] != -1} {
         set savedBg #fdfdd4
@@ -2406,13 +2380,12 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
         set savedBg white
     }
 
-    set nodeName [lindex $catchErrCode 1]
     $tmpInnerf0.en_nodeName delete 0 end
-    $tmpInnerf0.en_nodeName insert 0 $nodeName
+    $tmpInnerf0.en_nodeName insert 0 $cnName
     $tmpInnerf0.en_nodeName configure -bg $savedBg
 
     #configure the save button
-    $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodePos $nodeId $nodeType $tmpInnerf0 $tmpInnerf1 $tmpInnerf2"
+    $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodeId $tmpInnerf0 $tmpInnerf1 $tmpInnerf2"
 
     #insert nodenumber
     $tmpInnerf0.sp_nodeNo set $nodeId
@@ -2426,227 +2399,215 @@ proc Operations::CNProperties {node nodePos nodeId nodeType} {
     $tmpInnerf0.cycleframe.en_time configure -state disabled
 
     set nodeIdSidx [lindex [Validation::InputToHex $nodeId INTEGER8] 0]
-    set nodeIdSidx [ string range $nodeIdSidx 2 end ]
-    if { [string length $nodeIdSidx] < 2 } {
-        set nodeIdSidx 0$nodeIdSidx
+    puts "nodeIdSidx:$nodeIdSidx"
+    set Operations::PRES_TIMEOUT_OBJ [list 0x1F92 $nodeIdSidx]
+
+
+
+
+    set pResCycleTimeLimitValue 25
+    set pResCycleTimeLimitAct 25
+    set result [openConfLib::GetSubIndexAttribute $nodeId [lindex $Operations::PRES_TIMEOUT_LIMIT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_LIMIT_OBJ 1] $::ACTUALVALUE ]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
+        set pResCycleTimeLimitAct [lindex $result 1]
+    } else {
+        set pResCycleTimeLimitDef 25
+        set result [openConfLib::GetSubIndexAttribute $nodeId [lindex $Operations::PRES_TIMEOUT_LIMIT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_LIMIT_OBJ 1] $::DEFAULTVALUE ]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set pResCycleTimeLimitDef [lindex $result 1]
+        }
+        set pResCycleTimeLimitAct $pResCycleTimeLimitDef
     }
-    set Operations::PRES_TIMEOUT_OBJ [list 1F92 $nodeIdSidx]
 
-    set presponseLimitCycleTimeResult [GetObjectValueData $nodePos $nodeId $nodeType [list 2 4 5 ] [lindex $Operations::PRES_TIMEOUT_LIMIT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_LIMIT_OBJ 1] ]
-    if {[string equal "pass" [lindex $presponseLimitCycleTimeResult 0]] == 1} {
-        set presponseLimitMinimumCycleTimeValue [lindex $presponseLimitCycleTimeResult 2]
-        if {$presponseLimitMinimumCycleTimeValue == ""} {
-            set presponseLimitMinimumCycleTimeValue 0
+    if { [ catch { set pResCycleTimeLimitValue [expr $pResCycleTimeLimitAct / 1000] } ] } {
+        #if error has occured set it to default 25 micro seconds
+        set pResCycleTimeLimitValue 25
+    }
+
+    set mnNodeId 240
+    set mnExists 0
+    set result [openConfLib::IsExistingNode $mnNodeId]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
+        set mnExists [lindex $result 1]
+    }
+
+    if {$mnExists} {
+        set presTimeoutVal 0
+        set presTimeoutAct 0
+        set result [openConfLib::GetSubIndexAttribute $mnNodeId [lindex $Operations::PRES_TIMEOUT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_OBJ 1] $::ACTUALVALUE ]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set presTimeoutAct [lindex $result 1]
         } else {
-            if { [ catch { set presponseLimitMinimumCycleTimeValue [expr $presponseLimitMinimumCycleTimeValue / 1000] } ] } {
-                #if error has occured set it to default 0
-                set presponseLimitMinimumCycleTimeValue 0
+            set presTimeoutDef $pResCycleTimeLimitValue
+            set result [openConfLib::GetSubIndexAttribute $mnNodeId [lindex $Operations::PRES_TIMEOUT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_OBJ 1] $::DEFAULTVALUE ]
+            if { [Result_IsSuccessful [lindex $result 0]] } {
+                set presTimeoutDef [lindex $result 1]
             }
+            set presTimeoutAct $presTimeoutDef
         }
 
-        set presponseLimitActualCycleTimeValue [lindex $presponseLimitCycleTimeResult 3]
-        if { $presponseLimitActualCycleTimeValue == "" } {
-            #if the actual is empty assign the default value and add 25 microseconds
-            set presponseLimitActualCycleTimeValue [expr $presponseLimitMinimumCycleTimeValue + 25]
-        } else {
-            # the value of Presponse timeout is in nanoseconds divide it by 1000 to
-            #display it as microseconds
-            if { [ catch { set presponseLimitActualCycleTimeValue [expr $presponseLimitActualCycleTimeValue / 1000] } ] } {
-                #if error has occured set it to default 25 micro seconds
-                set presponseLimitActualCycleTimeValue 25
-            }
+        if { [ catch { set presTimeoutVal [expr $presTimeoutAct / 1000] } ] } {
+            #if error has occured set it to default 25 micro seconds
+            set presTimeoutVal 25
+            # TODO verify
         }
 
-        set presponseLimitCycleTimeDatatype [lindex $presponseLimitCycleTimeResult 1]
-    if { $mnErrCode == 0 && $mnExistfFlag == 1 } {
-            #the node exist continue
-            set presponseCycleTimeResult [GetObjectValueData $mnNodePos $mnNodeId $mnNodeType [list 2 5] [lindex $Operations::PRES_TIMEOUT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_OBJ 1] ]
-            if {[string equal "pass" [lindex $presponseCycleTimeResult 0]] == 1} {
-#NO NULL CHECK FOr THE VALUE RETURNED
-        set presponseActualCycleTimeValue [lindex $presponseCycleTimeResult 2]
-        # the value of Presponse timeout is in nanoseconds divide it by 1000 to
-        #display it as microseconds
-        if { [ catch { set presponseActualCycleTimeValue [expr $presponseActualCycleTimeValue / 1000] } ] } {
-            #if error has occured set it to the calculated
-            set presponseLimitActualCycleTimeValue $presponseLimitActualCycleTimeValue
+        set presTimeoutDataType ""
+        set result [openConfLib::GetSubIndexAttribute $mnNodeId [lindex $Operations::PRES_TIMEOUT_OBJ 0] [lindex $Operations::PRES_TIMEOUT_OBJ 1] $::DATATYPE ]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set presTimeoutDataType [lindex $result 1]
         }
-#Validation of the Value for the PResTimeOut// Not equivalent to the setting time
-#       if { ([ catch { $presponseActualCycleTimeValue < $presponseLimitActualCycleTimeValue} ]) \
-#           && ($presponseActualCycleTimeValue < $presponseLimitActualCycleTimeValue) } {
-#
-#           set presponseActualCycleTimeValue $presponseLimitActualCycleTimeValue
-#       }
-        set presponseCycleTimeDatatype [lindex $presponseCycleTimeResult 1]
-
-
         $tmpInnerf0.cycleframe.en_time configure -state normal -validate none -bg white
         $tmpInnerf0.cycleframe.en_time delete 0 end
-        $tmpInnerf0.cycleframe.en_time insert 0 $presponseActualCycleTimeValue
+        $tmpInnerf0.cycleframe.en_time insert 0 $presTimeoutVal
 
-        Operations::CheckConvertValue $tmpInnerf0.cycleframe.en_time $presponseCycleTimeDatatype "dec"
+        Operations::CheckConvertValue $tmpInnerf0.cycleframe.en_time $presTimeoutDataType "dec"
         # the user cannot enter value which is less than the obtained minimum value
         #NOTE:: the minimum value is shown from the vcmd cmd if vcmd then look into
         #savecnvalue to modify the same
 
         $tmpInnerf0.cycleframe.en_time configure -validate key -vcmd "Validation::ValidatePollRespTimeoutMinimum \
-                %P $tmpInnerf0.cycleframe.en_time %d %i %V $presponseLimitActualCycleTimeValue $presponseLimitMinimumCycleTimeValue $presponseCycleTimeDatatype 0"
+                %P $tmpInnerf0.cycleframe.en_time %d %i %V $presTimeoutVal $pResCycleTimeLimitValue $presTimeoutDataType 0"
 
-        lappend CNDatalist [list presponseCycleTimeDatatype $presponseCycleTimeDatatype]
-        }
-    }
-    } else {
+        lappend CNDatalist [list presponseCycleTimeDatatype $presTimeoutDataType]
     }
 
-   $tmpInnerf2.ch_adv deselect
-   $tmpInnerf2.ch_adv configure -state disabled
-   set spinVar [$tmpInnerf2.sp_cycleNo cget -textvariable]
-   global $spinVar
-   set $spinVar ""
-   $tmpInnerf2.sp_cycleNo configure -state disabled
+    $tmpInnerf2.ch_adv deselect
+    $tmpInnerf2.ch_adv configure -state disabled
+    set spinVar [$tmpInnerf2.sp_cycleNo cget -textvariable]
+    global $spinVar
+    set $spinVar ""
+    $tmpInnerf2.sp_cycleNo configure -state disabled
 
-   set stationType [StationTypep_value $tmp_stationType]
-   set lastRadioVal "StNormal"
-   $tmpInnerf1.ra_StMulti deselect
-   $tmpInnerf1.ra_StMulti configure -state disabled
-   $tmpInnerf1.ra_StChain deselect
-   $tmpInnerf1.ra_StChain configure -state disabled
-   $tmpInnerf1.ra_StNormal select
-   #Normal operation always enabled
-
-   #API for GetFeatureValue
-    set MN_FEATURES 1
-    set CN_FEATURES 2
-    set catchErrCode [GetFeatureValue 240 0 $MN_FEATURES "DLLMNFeatureMultiplex" ]
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
+    set cnStationType ""
+    set result [openConfLib::GetNodeParameter $nodeId $::STATIONTYPE]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
+        set cnStationType [lindex $result 1]
     }
-    set MNFeatureMultiplexFlag [lindex $catchErrCode 1]
 
-    #API for GetFeatureValue
-    set catchErrCode [GetFeatureValue $nodeId $nodeType $CN_FEATURES "DLLCNFeatureMultiplex" ]
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-    }
-    set CNFeatureMultiplexFlag [lindex $catchErrCode 1]
+    set lastRadioVal "StNormal"
+    $tmpInnerf1.ra_StMulti deselect
+    $tmpInnerf1.ra_StMulti configure -state disabled
+    $tmpInnerf1.ra_StChain deselect
+    $tmpInnerf1.ra_StChain configure -state disabled
+    $tmpInnerf1.ra_StNormal select
+    #Normal operation always enabled
 
-    #API for GetFeatureValue
-    set catchErrCode [GetFeatureValue 240 0 $MN_FEATURES "DLLMNPResChaining" ]
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-    }
-    set MNFeatureChainFlag [lindex $catchErrCode 1]
 
-    #API for GetFeatureValue
-    set catchErrCode [GetFeatureValue $nodeId $nodeType $CN_FEATURES "DLLCNPResChaining" ]
-    if { [ocfmRetCode_code_get [lindex $catchErrCode 0] ] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-    }
-    set CNFeatureChainFlag [lindex $catchErrCode 1]
+    set result [openConfLib::GetFeatureValue $mnNodeId $::DLLMNFeatureMultiplex]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    set MNFeatureMultiplexFlag [lindex $result 1]
 
-    set errMultiFlag 0
-    if { ( [string match -nocase "TRUE" $MNFeatureMultiplexFlag] == 1 ) && ( [string match -nocase "TRUE" $CNFeatureMultiplexFlag] == 1 ) } {
-        #check the value of MN multiplex prescaler if it is zero disable the multiplex radiobutton
-        #even if the features are available. The value of force cycle list starts from 1 and lists
-        #upto the multiplex prescaler value
 
-        if { $mnErrCode == 0 && $mnExistfFlag == 1 } {
-            #the node exist continue
+    set result [openConfLib::GetFeatureValue $nodeId $::DLLCNFeatureMultiplex]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    set CNFeatureMultiplexFlag [lindex $result 1]
 
-            set multiPrescaler [GetObjectValueData $mnNodePos $mnNodeId $mnNodeType [list 2 5] [lindex $Operations::MULTI_PRESCAL_OBJ 0] [lindex $Operations::MULTI_PRESCAL_OBJ 1] ]
-            if {[string equal "pass" [lindex $multiPrescaler 0]] == 1} {
-                if {[lindex $multiPrescaler 2] == "" } {
-                    #value is empty disable the muliplex radio button
-                    set errMultiFlag 1
-                } else {
-                    set multiPrescalerValue [lindex $multiPrescaler 2]
-                    #configure the cn save button with multiplex prescalar datatype
-                    $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodePos $nodeId \
-                        $nodeType $tmpInnerf0 $tmpInnerf1 $tmpInnerf2 [lindex $multiPrescaler 1]"
+    puts "MNFeatureMultiplexFlag:$MNFeatureMultiplexFlag CNFeatureMultiplexFlag:$CNFeatureMultiplexFlag"
+    if { $MNFeatureMultiplexFlag && $CNFeatureMultiplexFlag } {
+        if {$mnExists} {
+            set errMultiFlag 0
 
-                    #check whether it is Hex or Dec and get the decimal value
-                    if { [string match -nocase "0X*" $multiPrescalerValue] == 1 } {
-                        #it must be hex convert it to dec
-                        set multiPrescalerValue [string range $multiPrescalerValue 2 end]
-                        set convResult [Validation::InputToDec $multiPrescalerValue [lindex $multiPrescaler 1] ]
-                        #check the result of conversion
-                        if { [string match -nocase "pass" [lindex $convResult 1]] == 0 } {
-                            #error in conversion
-                            set errMultiFlag 1
-                        } else {
-                            #set the converted decimal no
-                            set multiPrescalerDecValue [lindex $convResult 0]
-                        }
-                    } else {
-                        #check whether it is a decimal value
-                        if { [Validation::CheckDecimalNumber $multiPrescalerValue] == 0 } {
-                            set errMultiFlag 1
-                        } else {
-                            #value is a decimal no
-                            set multiPrescalerDecValue $multiPrescalerValue
-                        }
-                    }
-                }
-                # enable the radio button if no error flag is set and the
-                #value of multiplex prescaler is greater than zero
-                if { ($errMultiFlag == 0) && ($multiPrescalerDecValue > 0) } {
-                    #passed all validation enable the radio button
-                    $tmpInnerf1.ra_StMulti configure -state normal
-                    #configure the cycle no list
-                    $tmpInnerf2.sp_cycleNo configure -values [Operations::GenerateCycleNo $multiPrescalerDecValue] \
-                        -validate key -vcmd "Validation::CheckForceCycleNumber %P $multiPrescalerDecValue"
-                    # the saved force cycle no will be in hexa decimal convert it to decimal
-                    set prevSelCycleNoDec [Validation::InputToDec $prevSelCycleNo [lindex $multiPrescaler 1] ]
-                    if { [string match -nocase "pass" [lindex $prevSelCycleNoDec 1]] == 0 } {
+            set locMultiPreScalarValue ""
+            set locMultiPrescalerDatatype ""
+            set result [Operations::GetObjectValueData $mnNodeId [lindex $Operations::MULTI_PRESCAL_OBJ 0] [lindex $Operations::MULTI_PRESCAL_OBJ 1] ]
+            if { [lindex $result 0] } {
+                set locMultiPrescalerDatatype [lindex $result 1]
+                set locMultiPreScalarValue [lindex $result 2]
+            } else {
+                #fail
+                Console::DisplayErrMsg "[lindex $result 3]" error
+            }
+
+            if {$locMultiPreScalarValue == "" } {
+                #value is empty disable the muliplex radio button
+                set errMultiFlag 1
+            } else {
+                #configure the cn save button with multiplex prescalar datatype
+                $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodeId \
+                    $tmpInnerf0 $tmpInnerf1 $tmpInnerf2 $locMultiPreScalarValue"
+
+                #check whether it is Hex or Dec and get the decimal value
+                if { [string match -nocase "0x*" $locMultiPreScalarValue] == 1 } {
+                    #it must be hex convert it to dec
+                    set $locMultiPreScalarValue [string range $locMultiPreScalarValue 2 end]
+                    set convResult [Validation::InputToDec $locMultiPreScalarValue $locMultiPrescalerDatatype ]
+                    #check the result of conversion
+                    if { [string match -nocase "pass" [lindex $convResult 1]] == 0 } {
                         #error in conversion
-                        set prevSelCycleNoDec ""
+                        set errMultiFlag 1
                     } else {
                         #set the converted decimal no
-                        set prevSelCycleNoDec [lindex $prevSelCycleNoDec 0]
+                        set multiPrescalerDecValue [lindex $convResult 0]
                     }
-                    #set the previously saved force cycle number
-                    set $spinVar $prevSelCycleNoDec
-                    if {$stationType == 1} {
-                        set lastRadioVal "StMulti"
-                        # it is multiplexed operation
-                        $tmpInnerf1.ra_StMulti select
-                        $tmpInnerf2.ch_adv configure -state normal
-                        if { $tmp_forceCycleFlag == 1 } {
-                            $tmpInnerf2.ch_adv select
-                        }
-                        $tmpInnerf2.sp_cycleNo configure -state normal
+                } else {
+                    #check whether it is a decimal value
+                    if { [Validation::CheckDecimalNumber $locMultiPreScalarValue] == 0 } {
+                        set errMultiFlag 1
+                    } else {
+                        #value is a decimal no
+                        set multiPrescalerDecValue $locMultiPreScalarValue
                     }
                 }
-            } ; # checking the result of GetObjectValueData function for multiplex Prescaler
-        } else {
-            #error in ifnodeexist API
+            }
+            # enable the radio button if no error flag is set and the
+            #value of multiplex prescaler is greater than zero
+            if { ($errMultiFlag == 0) && ($multiPrescalerDecValue > 0) } {
+                #passed all validation enable the radio button
+                $tmpInnerf1.ra_StMulti configure -state normal
+                #configure the cycle no list
+                $tmpInnerf2.sp_cycleNo configure -values [Operations::GenerateCycleNo $multiPrescalerDecValue] \
+                    -validate key -vcmd "Validation::CheckForceCycleNumber %P $multiPrescalerDecValue"
+                # the saved force cycle no will be in hexa decimal convert it to decimal
+                set cnForcedCycleValue ""
+                set result [openConfLib::GetNodeParameter $nodeId $::FORCEDMULTIPLEXEDCYCLE]
+                if { [Result_IsSuccessful [lindex $result 0]] } {
+                    set cnForcedCycleValue [lindex $result 1]
+                }
+                set prevSelCycleNoDec [Validation::InputToDec $cnForcedCycleValue $locMultiPrescalerDatatype ]
+                if { [string match -nocase "pass" [lindex $prevSelCycleNoDec 1]] == 0 } {
+                    #error in conversion
+                    set prevSelCycleNoDec ""
+                } else {
+                    #set the converted decimal no
+                    set prevSelCycleNoDec [lindex $prevSelCycleNoDec 0]
+                }
+                #set the previously saved force cycle number
+                set $spinVar $prevSelCycleNoDec
+                if {$cnStationType == 1} {
+                    set lastRadioVal "StMulti"
+                    # it is multiplexed operation
+                    $tmpInnerf1.ra_StMulti select
+                    $tmpInnerf2.ch_adv configure -state normal
+                    if { [expr {"$prevSelCycleNoDec" > "0"}] } {
+                        $tmpInnerf2.ch_adv select
+                    }
+                    $tmpInnerf2.sp_cycleNo configure -state normal
+                }
+                puts "cnStationType:$cnStationType"
+            }
         }
+    }
 
-    } ; #end of the condition checking multiplex feature flag of mn and cn
+    set result [openConfLib::GetFeatureValue $mnNodeId $::DLLMNPResChaining]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    set MNFeatureChainFlag [lindex $result 1]
 
-    if { ( [string match -nocase "TRUE" $MNFeatureChainFlag] == 1 ) && ( [string match -nocase "TRUE" $CNFeatureChainFlag] == 1 ) } {
+    set result [openConfLib::GetFeatureValue $nodeId $::DLLCNPResChaining]
+    openConfLib::ShowErrorMessage [lindex $result 0]
+    set CNFeatureChainFlag [lindex $result 1]
+
+    puts "MNFeatureChainFlag:$MNFeatureChainFlag  CNFeatureChainFlag:$CNFeatureChainFlag"
+    if { $MNFeatureChainFlag && $CNFeatureChainFlag } {
         $tmpInnerf1.ra_StChain configure -state normal
-        if {$stationType == 2} {
+        if {$cnStationType == 2} {
             set lastRadioVal "StChain"
             # it is chained operation
             $tmpInnerf1.ra_StChain select
         }
     }
+
     Validation::ResetPromptFlag
 }
 

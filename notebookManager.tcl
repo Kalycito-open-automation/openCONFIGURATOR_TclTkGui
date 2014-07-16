@@ -1060,7 +1060,7 @@ proc NoteBookManager::SaveMNValue { frame0 frame1 } {
 #
 #  Description : save the entered value for MN property window
 #---------------------------------------------------------------------------------------------------
-proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 {multiPrescalDatatype ""}} {
+proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalDatatype ""}} {
     global nodeSelect
     global nodeIdList
     global treePath
@@ -1080,15 +1080,44 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
         Validation::ResetPromptFlag
         return
     }
+
     # check whether the node is changed or not
     if { $nodeId != $newNodeId } {
-        #chec k that the node id is not an existing node id
-        set schDataRes [lsearch $nodeIdList $newNodeId]
-        if { $schDataRes != -1 } {
+        #check that the node id is not an existing node id
+        set result [openConfLib::IsExistingNode $newNodeId]
+        if { [lindex $result 1] } {
             tk_messageBox -message "The node number \"$newNodeId\" already exists" -title Warning -icon warning -parent .
             Validation::ResetPromptFlag
             return
         }
+        set result [openConfLib::SetNodeParameter $nodeId $::NODEID $newNodeId]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] == 0 } {
+            Validation::ResetPromptFlag
+            return
+        }
+    }
+
+    set newNodeName [$frame0.en_nodeName get]
+    set result [openConfLib::SetNodeParameter $newNodeId $::NAME $newNodeName]
+    openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful $result] == 0 } {
+        Validation::ResetPromptFlag
+        return
+    }
+
+    #save is success reconfigure tree, cnSaveButton and nodeIdlist
+    set schDataRes [lsearch $nodeIdList $nodeId]
+    set nodeIdList [lreplace $nodeIdList $schDataRes $schDataRes $newNodeId]
+    set nodeId $newNodeId
+    $treePath itemconfigure $nodeSelect -text "$newNodeName\($nodeId\)"
+
+    set stationType [NoteBookManager::RetStationEnumValue]
+    set result [openConfLib::SetNodeParameter $nodeId $::STATIONTYPE $stationType]
+    openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful $result] == 0 } {
+        Validation::ResetPromptFlag
+        return
     }
 
     #validate whether the entered cycle reponse time is greater tha 1F98 03 value
@@ -1124,8 +1153,52 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
             }
         }
     }
-    set newNodeName [$frame0.en_nodeName get]
-    set stationType [NoteBookManager::RetStationEnumValue]
+
+
+    set CNDatatypeObjectPathList [list \
+        [list presponseCycleTimeDatatype $Operations::PRES_TIMEOUT_OBJ $frame0.cycleframe.en_time] ]
+
+    set validValue ""
+    foreach tempDatatype $CNDatalist {
+        set schDataRes [lsearch $CNDatatypeObjectPathList [list [lindex $tempDatatype 0] * *]]
+        if {$schDataRes  != -1 } {
+            set dataType [lindex $tempDatatype 1]
+            set entryPath [lindex [lindex $CNDatatypeObjectPathList $schDataRes] 2]
+
+            # if entry is disabled no need to save it
+            set entryState [$entryPath cget -state]
+            if { $entryState != "normal" } {
+                # if entry is disabled no need to save it"
+                set validValue ""
+                continue
+            }
+            set objectList [lindex [lindex $CNDatatypeObjectPathList $schDataRes] 1]
+            set value [$entryPath get]
+            set result [Validation::CheckDatatypeValue $entryPath $dataType "dec" $value]
+            if { [lindex $result 0] == "pass" } {
+                #get the flag and name of the object
+                set validValue [lindex $result 1]
+                if { $validValue != "" } {
+                    if { [ catch { set validValue [expr $validValue * 1000] } ] } {
+                        set validValue ""
+                    }
+                }
+            } else {
+                set validValue ""
+            }
+        }
+    }
+
+    if { $validValue != "" } {
+        set result [openConfLib::SetSubIndexActualValue 240 [lindex $Operations::PRES_TIMEOUT_OBJ 0] $nodeId $validValue]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] == 0 } {
+            Validation::ResetPromptFlag
+            return
+        }
+    }
+
+
     set saveSpinVal ""
     #if the check button is enabled and a valid value is obtained from spin box call the API
     set chkState [$frame2.ch_adv cget -state]
@@ -1151,50 +1224,15 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
         }
     }
 
-    set CNDatatypeObjectPathList [list \
-        [list presponseCycleTimeDatatype $Operations::PRES_TIMEOUT_OBJ $frame0.cycleframe.en_time] ]
-
-    foreach tempDatatype $CNDatalist {
-        set schDataRes [lsearch $CNDatatypeObjectPathList [list [lindex $tempDatatype 0] * *]]
-        if {$schDataRes  != -1 } {
-            set dataType [lindex $tempDatatype 1]
-            set entryPath [lindex [lindex $CNDatatypeObjectPathList $schDataRes] 2]
-
-            # if entry is disabled no need to save it
-            set entryState [$entryPath cget -state]
-            if { $entryState != "normal" } {
-                # if entry is disabled no need to save it"
-                set validValue ""
-                continue
-            }
-            set objectList [lindex [lindex $CNDatatypeObjectPathList $schDataRes] 1]
-            set value [$entryPath get]
-            set result [Validation::CheckDatatypeValue $entryPath $dataType "dec" $value]
-            if { [lindex $result 0] == "pass" } {
-                #get the flag and name of the object
-                set validValue [lindex $result 1]
-                if { $validValue != "" } {
-                    if { [ catch { set validValue [expr $validValue * 1000] } ] } {
-                    set validValue ""
-                    }
-                }
-            } else {
-                set validValue ""
-            }
+    if { $saveSpinVal != "" } {
+        set result [openConfLib::SetNodeParameter $nodeId $::FORCEDMULTIPLEXEDCYCLE $saveSpinVal]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] == 0 } {
+            Validation::ResetPromptFlag
+            return
         }
     }
 
-    set catchErrCode [UpdateNodeParams $nodeId $newNodeId $nodeType $newNodeName $stationType $saveSpinVal $chkVal $validValue]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-        Validation::ResetPromptFlag
-        return
-    }
     set status_save 1
     #if the forced cycle no is changed and saved subobjects will be added to MN
     #based on the internal logic so need to rebuild the mn tree
@@ -1220,12 +1258,8 @@ proc NoteBookManager::SaveCNValue {nodePos nodeId nodeType frame0 frame1 frame2 
     }
     thread::send  [tsv::set application importProgress] "StopProgress"
 
-    #save is success reconfigure tree, cnSaveButton and nodeIdlist
-    set schDataRes [lsearch $nodeIdList $nodeId]
-    set nodeIdList [lreplace $nodeIdList $schDataRes $schDataRes $newNodeId]
-    set nodeId $newNodeId
-    $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodePos $nodeId $nodeType $frame0 $frame1 $frame2 $multiPrescalDatatype"
-    $treePath itemconfigure $nodeSelect -text "$newNodeName\($nodeId\)"
+    $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodeId $frame0 $frame1 $frame2 $multiPrescalDatatype"
+
     Validation::ResetPromptFlag
 }
 
