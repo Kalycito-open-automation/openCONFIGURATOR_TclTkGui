@@ -71,8 +71,6 @@ namespace eval Operations {
     variable cnMenuIndex
     variable projMenu
     variable obdMenu
-    variable idxMenu
-    variable idxMenuDel
     variable mnCount
     variable cnCount
     variable notebook
@@ -754,7 +752,9 @@ proc Operations::openProject {projectfilename} {
     }
 
     set result [openConfLib::GetActiveView]
+    openConfLib::ShowErrorMessage [lindex $result 0]
     set st_viewType [lindex $result 1]
+    puts "st_viewType:$st_viewType"
     if {$st_viewType} {
         set Operations::viewType "EXPERT"
     } else {
@@ -876,8 +876,6 @@ proc Operations::BasicFrames { } {
     global lastVideoModeSel
     global image_dir
 
-    variable bb_connect
-    variable mainframe
     variable notebook
     variable tree_notebook
     variable infotabs_notebook
@@ -891,11 +889,6 @@ proc Operations::BasicFrames { } {
     variable Button
     variable cnMenu
     variable mnMenu
-    variable IndexaddMenu
-    variable obdMenu
-    variable pdoMenu
-    variable idxMenu
-    variable sidxMenu
 
     set image_dir "$rootDir/images"
 
@@ -999,13 +992,11 @@ proc Operations::BasicFrames { } {
     $Operations::projMenu insert 1 command -label "Open Project..." -command {Operations::OpenProjectWindow}
 
     set Operations::prgressindicator 6
-    set mainframe [MainFrame::create .mainframe \
-            -menu $descmenu  ]
+    set mainframe [MainFrame::create .mainframe -menu $descmenu  ]
 
-        # toolbar  creation
+    # toolbar  creation
     set toolbar  [MainFrame::addtoolbar $mainframe]
     pack $toolbar -expand yes -fill x
-
 
     image create photo img_page_white -file "$image_dir/page_white.gif"
     image create photo img_disk -file "$image_dir/disk.gif"
@@ -1015,7 +1006,6 @@ proc Operations::BasicFrames { } {
     image create photo img_build -file "$image_dir/build.gif"
     image create photo img_clean -file "$image_dir/clean.gif"
     image create photo img_kalycito_icon -file "$image_dir/kalycito_icon.gif"
-    #image create photo clean -file "$image_dir/clean.gif"
 
     set bbox [ButtonBox::create $toolbar.bbox1 -spacing 0 -padx 1 -pady 1]
     set Buttons(new) [ButtonBox::add $bbox -image img_page_white \
@@ -1025,11 +1015,11 @@ proc Operations::BasicFrames { } {
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Save Project" -command Operations::Saveproject]
     set Buttons(saveAll) [ButtonBox::add $bbox -image img_disk_multiple \
-                -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-                -helptext "Save Project as" -command ChildWindows::SaveProjectAsWindow]
-        set toolbarButtons(Operations::OpenProjectWindow) [ButtonBox::add $bbox -image img_openfolder \
-                -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-                -helptext "Open Project" -command Operations::OpenProjectWindow]
+            -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
+            -helptext "Save Project as" -command ChildWindows::SaveProjectAsWindow]
+    set toolbarButtons(Operations::OpenProjectWindow) [ButtonBox::add $bbox -image img_openfolder \
+            -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
+            -helptext "Open Project" -command Operations::OpenProjectWindow]
 
     pack $bbox -side left -anchor w
     set prgressindicator 8
@@ -1044,7 +1034,7 @@ proc Operations::BasicFrames { } {
             -helptype balloon\
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Search Network Browser for text"\
-        -command "FindSpace::ToggleFindWin"]
+            -command "FindSpace::ToggleFindWin"]
     pack $bb_find -side left -padx 4
     set sep4 [Separator::create $toolbar.sep4 -orient vertical]
     pack $sep4 -side left -fill y -padx 4 -anchor w
@@ -1057,7 +1047,7 @@ proc Operations::BasicFrames { } {
             -helptype balloon\
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Build Project"\
-        -command "Operations::BuildProject"]
+            -command "Operations::BuildProject"]
     pack $bb_build -side left -padx 4
     set bb_clean [ButtonBox::add $bbox -image img_clean \
             -height 21\
@@ -1146,7 +1136,7 @@ proc Operations::BasicFrames { } {
         bind . <KeyPress-Return> ""
     }
     bind [lindex $f0 3] <Enter> {
-    global f0
+        global f0
         if {"$tcl_platform(platform)" == "unix"} {
         bind . <Button-4> "[lindex $f0 3] yview scroll -5 units"
             bind . <Button-5> "[lindex $f0 3] yview scroll 5 units"
@@ -3835,9 +3825,9 @@ proc Operations::BuildProject {} {
     openConfLib::ShowErrorMessage $result
     if { [Result_IsSuccessful $result] != 1 } {
         if { [ string is ascii [Result_GetErrorString $result] ] } {
-            set msg "Code:[Result_GetErrorCode $result]\nMsg0:[Result_GetErrorString $result]"
+            set msg "Code:[Result_GetErrorCode $result] Msg:[Result_GetErrorString $result]"
         } else {
-            set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
+            set msg "Code:[Result_GetErrorCode $result] Msg:Unknown Error"
         }
         Console::DisplayErrMsg $msg error
         thread::send [tsv::get application importProgress] "StopProgress"
@@ -3886,9 +3876,9 @@ proc Operations::BuildProject {} {
         openConfLib::ShowErrorMessage $result
         if { [Result_IsSuccessful $result] != 1 } {
             if { [ string is ascii [Result_GetErrorString $result] ] } {
-                set msg "Code:[Result_GetErrorCode $result]\nMsg1:[Result_GetErrorString $result]"
+                set msg "Code:[Result_GetErrorCode $result] Msg1:[Result_GetErrorString $result]"
             } else {
-                set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
+                set msg "Code:[Result_GetErrorCode $result] Msg:Unknown Error"
             }
             Console::DisplayErrMsg $msg error
             thread::send [tsv::get application importProgress] "StopProgress"
@@ -3899,9 +3889,9 @@ proc Operations::BuildProject {} {
         openConfLib::ShowErrorMessage $result
         if { [Result_IsSuccessful $result] != 1 } {
             if { [ string is ascii [Result_GetErrorString $result] ] } {
-                set msg "Code:[Result_GetErrorCode $result]\nMsg2:[Result_GetErrorString $result]"
+                set msg "Code:[Result_GetErrorCode $result] Msg2:[Result_GetErrorString $result]"
             } else {
-                set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
+                set msg "Code:[Result_GetErrorCode $result] Msg:Unknown Error"
             }
             Console::DisplayErrMsg $msg error
             thread::send [tsv::get application importProgress] "StopProgress"
@@ -3912,9 +3902,9 @@ proc Operations::BuildProject {} {
         openConfLib::ShowErrorMessage $result
         if { [Result_IsSuccessful $result] != 1 } {
             if { [ string is ascii [Result_GetErrorString $result] ] } {
-                set msg "Code:[Result_GetErrorCode $result]\nMsg3:[Result_GetErrorString $result]"
+                set msg "Code:[Result_GetErrorCode $result] Msg3:[Result_GetErrorString $result]"
             } else {
-                set msg "Code:[Result_GetErrorCode $result]\nMsg:Unknown Error"
+                set msg "Code:[Result_GetErrorCode $result] Msg:Unknown Error"
             }
             Console::DisplayErrMsg $msg error
             thread::send [tsv::get application importProgress] "StopProgress"
@@ -3946,14 +3936,14 @@ proc Operations::CleanProject {} {
     }
     set cleanMsg ""
     foreach tempFile [list mnobd.txt mnobd.cdc xap.xml xap.h ProcessImage.cs] {
-        set CleanFile [file join $projectDir cdc_xap $tempFile]
-            if {[file exists [file join $projectDir cdc_xap $tempFile]]} {
+        set CleanFile [file join $projectDir output $tempFile]
+            if {[file exists [file join $projectDir output $tempFile]]} {
                 catch {file delete -force -- $CleanFile}
                 set cleanMsg "$cleanMsg $tempFile"
             }
     }
     if { $cleanMsg != "" } {
-        Console::DisplayInfo "files$cleanMsg at [file join $projectDir cdc_xap] are deleted"
+        Console::DisplayInfo "files$cleanMsg at [file join $projectDir output] are deleted"
     }
 }
 
@@ -3986,30 +3976,29 @@ proc Operations::ReImport {} {
         set node OBD$tmpNode-1
         set res [lsearch $child "OBD$tmpNode-1*"]
         set nodeId 240
-        set nodeType 0
-
     } else {
         #gets the nodeId and Type of selected node
         set result [Operations::GetNodeIdType $node]
         if {$result != "" } {
             set nodeId [lindex $result 0]
-            set nodeType [lindex $result 1]
         } else {
             return
         }
-
     }
+
     set cursor [. cget -cursor]
     set types {
             {{XDC/XDD Files} {.xd*} }
             {{XDD Files}     {.xdd} }
         {{XDC Files}     {.xdc} }
     }
+
     if {![file isdirectory $lastXD] && [file exists $lastXD] } {
         set tmpImpDir [tk_getOpenFile -title "Import XDC/XDD" -initialfile $lastXD -filetypes $types -parent .]
     } else {
         set tmpImpDir [tk_getOpenFile -title "Import XDC/XDD" -filetypes $types -parent .]
     }
+
     if {$tmpImpDir != ""} {
         set lastXD $tmpImpDir
 
@@ -4024,34 +4013,13 @@ proc Operations::ReImport {} {
              }
         }
 
-        #Check XDC for schema compliance if existing
-        if {$tmpImpDir != ""} {
-        set catchErrCode [ValidateXDDFile $tmpImpDir]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                Console::DisplayErrMsg "XDD/XDC validation error: [ocfmRetCode_errorString_get $catchErrCode]"
-                tk_messageBox -message "The imported XDD/XDC is not compliant to XDD schema version 0.13: [ocfmRetCode_errorString_get $catchErrCode]" -title "XDD/XDC import validation error" -icon error -type ok
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error
-        }
-        return
-        }
-        }
-
-        set catchErrCode [ReImportXML $tmpImpDir $nodeId $nodeType]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
+        set result [openConfLib::ReplaceXdd $nodeId [file dirname $tmpImpDir] [file tail $tmpImpDir]]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] != 1 } {
             return
         } else {
             Console::DisplayInfo "Imported file $tmpImpDir for Node ID:$nodeId"
         }
-
 
         Operations::RemoveAllFrames
         #xdc/xdd is reimported need to save
@@ -4099,48 +4067,24 @@ proc Operations::DeleteTreeNode {} {
 
     set node [$treePath selection get]
 
-    if { [string match "ProjectNode" $node] || [string match "PDO*" $node]|| [string match "?PDO*" $node] } {
+    if { [string match "ProjectNode" $node] || [string match "PDO*" $node]|| [string match "?PDO*" $node] \
+        || [string match "MN*" $node] || [string match "OBD*" $node]} {
         #should not delete when pjt, mn, pdo, tpdo or rpdo is selected
         return
-    }
-    set MNnode ""
-    set OBDnode ""
-    if {[string match "MN*" $node]} {
-        set MNnode $node
-        set nodePos [split $node -]
-        set nodePos [lrange $nodePos 1 end]
-        set nodePos [join $nodePos -]
-
-        # always OBD node ends with -1
-        set node OBD-$nodePos-1
-        set OBDnode $node
-        set exist [$treePath exists $node]
-        if {$exist} {
-            #has OBD node continue processing
-        } elseif { ($exist == 0) && ([string match "EXPERT" $Operations::viewType ] == 1) } {
-            #does not have any OBD exit from procedure  for EXPERT viewtype
-            return
-        } elseif { ($exist == 0) && ([string match "SIMPLE" $Operations::viewType ] == 1) } {
-            #the OBD icon is not present but the view type is SIMPLE so can continue
-            set node $MNnode
-        } else {
-            return
-        }
     }
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $node]
     if {$result != "" } {
         set nodeId [lindex $result 0]
-        set nodeType [lindex $result 1]
     } else {
         return
     }
 
     set nodeList ""
     set nodeList [Operations::GetNodeList]
-    if { ([lsearch -exact $nodeList $node ]!= -1) || ([string match "MN*" $MNnode]) } {
+    if { ([lsearch -exact $nodeList $node ]!= -1) } {
         set result [tk_messageBox -message "Do you want to delete node?" -type yesno -icon question -title "Question" -parent .]
-         switch -- $result {
+        switch -- $result {
              yes {
                  #continue with process
             }
@@ -4149,136 +4093,48 @@ proc Operations::DeleteTreeNode {} {
             }
         }
 
-        if {$nodeType == 0} {
-        ### node object dict cannot be deleted.
-            tk_messageBox -message "MN object dictionary cannot be deleted." -title "info" -icon info -parent .
-            return
-        } elseif {$nodeType == 1} {
-            #it is a CN so delete the node entirely
-            set catchErrCode [DeleteNode $nodeId $nodeType]
-            # If the CN is deleted ater build using autogenerate the MN mappings should be removed. To prompt for the user to autogenerate the MNobd
-            set ErrCode [ocfmRetCode_code_get $catchErrCode]
-            if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
-            } else {
-                #a condition to be set Atlease once build process happen
-                set node_present [lsearch -exact $build_nodesList $nodeId]
-                if { ($node_present != -1) } {
-                #Remove the node id from the build list
-#puts "build_NOdeList: $build_nodesList"
-                    set build_nodesList [lreplace $build_nodesList $node_present $node_present]
-#puts "build_nodesListAFTER: $build_nodesList"
-#puts "[llength $build_nodesList]"
-                    if { [llength $build_nodesList] > 0 } {
-                    set result [tk_messageBox -message "CN node deleted successfully. The MN Mappings might be corrupted. Do you want fix it by autogenerating the MN object dictionary? \n Note: Any user edited MN values will be lost" -type yesno -icon question -title "Question" -parent .]
-                    switch -- $result {
-                        yes {
-                                set catchErrCode [GenerateMNOBD]
-                                set ErrCode [ocfmRetCode_code_get $catchErrCode]
-                                if { $ErrCode != 0 } {
-                                    if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                                        #tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-                                } else {
-                                    #tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-                                }
-                            }
-                            }
-                        no {
-                               #continue with process to populate the tree for deleted node
-                            }
-                    }
-                    } else {
-                    #No CN nodes present. Autogenerate will not be success
-                    }
-                } else {
-                #node is not build for cdc generation. So MN mappings will not be corrupted
-                }
-            }
-        } else {
+        thread::send [tsv::get application importProgress] "StartProgress"
+        #it is a CN so delete the node entirely
+        set result [openConfLib::DeleteNode $nodeId]
+        openConfLib::ShowErrorMessage $result
+        if { [Result_IsSuccessful $result] == 0 } {
+            thread::send [tsv::get application importProgress] "StopProgress"
             return
         }
-
 
         #node is deleted need to save
         set status_save 1
 
-
-        if {[string match "OBD*" $node] || ([string match "MN*" $MNnode])} {
-            #should not delete nodeId from list since it is mn
-        } else {
-            set nodeIdList [Operations::DeleteList $nodeIdList $nodeId 0]
-            set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
-            set tmpNode [string range $MnTreeNode 2 end]
-            #there can be one OBD in MN so -1 is hardcoded
-            set ObdTreeNode OBD$tmpNode-1
-            catch {$treePath delete $ObdTreeNode}
-            #insert the OBD ico only for expert view mode
-            if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-            image create photo img_pdo -file "$image_dir/pdo.gif"
-            $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
-            }
-            set mnNodeId 240
-            thread::send [tsv::get application importProgress] "StartProgress"
-            if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
-            # error has occured
-            thread::send  [tsv::set application importProgress] "StopProgress"
-            Operations::CloseProject
-            return 0
-            }
-            thread::send  [tsv::set application importProgress] "StopProgress"
-        }
-
-        #to clear the list from child of the node from saved value list
+        set nodeIdList [Operations::DeleteList $nodeIdList $nodeId 0]
+        #    #to clear the list from child of the node from saved value list
         Operations::CleanList $node 0
         Operations::CleanList $node 1
     } else {
-    return
+        return
     }
 
     #clear the savedValueList of the deleted node
     catch { set savedValueList [Operations::DeleteList $savedValueList $node 0] }
     catch { set userPrefList [Operations::DeleteList $userPrefList $node 1] }
 
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-        return
-    }
-
     #index or subindex is deleted need to save
     set status_save 1
 
-    if { ([string match "OBD*" $OBDnode]) && ([string match "SIMPLE" $Operations::viewType ] == 1) } {
-        #for MN OBD in the SIMPLE view mode the OBD node doesnot exist so exit from the function
-        #to clear the list from child of the node from saved value list
-        Operations::CleanList $OBDnode 0
-        Operations::CleanList $OBDnode 1
-        Operations::RemoveAllFrames
-        Validation::ResetPromptFlag
-        return
-    }
-
     set parent [$treePath parent $node]
     set nxtSelList [$treePath nodes $parent]
-
+puts "parent:$parent  nxtSelList:$nxtSelList"
     # to highlight the next logical node after the deleted node
+    puts "llenth: [llength $nxtSelList]"
+
     if {[llength $nxtSelList] == 1} {
         #it is the only node so select parent
         $treePath selection set $parent
         catch {$treePath delete $node}
         Validation::ResetPromptFlag
         Operations::SingleClickNode $parent
-        return
     } else {
         set nxtSelCnt [expr [lsearch $nxtSelList $node]+1]
+puts "nxtSelCnt:$nxtSelCnt"
         if {$nxtSelCnt >= [llength $nxtSelList]} {
             #it is the last node select previous node
             set nxtSelCnt [expr $nxtSelCnt-2]
@@ -4286,15 +4142,16 @@ proc Operations::DeleteTreeNode {} {
             #select next node since nxtSelCnt already incremented do nothing
         } else {
         }
-            catch {set nxtSel [lindex $nxtSelList $nxtSelCnt] }
-            catch {$treePath selection set $nxtSel}
-            catch {$treePath delete $node}
-            #should display logical next node after deleting currently highlighted node
-            Validation::ResetPromptFlag
-            Operations::SingleClickNode $nxtSel
-            return
+
+        catch {set nxtSel [lindex $nxtSelList $nxtSelCnt] }
+        puts "nxtSel:$nxtSel"
+        catch {$treePath selection set $nxtSel}
+        catch {$treePath delete $node}
+        #should display logical next node after deleting currently highlighted node
+        Validation::ResetPromptFlag
+        Operations::SingleClickNode $nxtSel
     }
-    catch {$treePath delete $node}
+    thread::send [tsv::get application importProgress] "StopProgress"
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -4385,26 +4242,6 @@ proc Operations::CleanList {node choice} {
     } else {
         set userPrefList $tempFinalList
     }
-}
-
-#---------------------------------------------------------------------------------------------------
-#  Operations::NodeCreate
-#
-#  Arguments : NodeID   - node id
-#              NodeType - indicate MN or CN
-#              NodeName - node name
-#
-#  Results : -
-#
-#  Description : Creates a node with given data
-#---------------------------------------------------------------------------------------------------
-proc Operations::NodeCreate {NodeID NodeType NodeName} {
-    set catchErrCode [CreateNode $NodeID $NodeType $NodeName]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode != 0 } {
-        return $catchErrCode
-    }
-    return $catchErrCode
 }
 
 #---------------------------------------------------------------------------------------------------
@@ -4697,15 +4534,15 @@ proc Operations::AutoGenerateMNOBD {} {
         set nodeId 240
         set nodeType 0
         set result [tk_messageBox -message "Do you want to Auto Generate object dictionary for MN?" -type yesno -icon question -title "Question" -parent .]
-         switch -- $result {
-             yes {
-               Console::DisplayInfo "Auto Generating object dictionary for MN"
-             }
-             no  {
-               Console::DisplayInfo "Auto Generation of object dictionary is cancelled for MN"
-               return
-             }
-         }
+        switch -- $result {
+            yes {
+              Console::DisplayInfo "Auto Generating object dictionary for MN"
+            }
+            no  {
+              Console::DisplayInfo "Auto Generation of object dictionary is cancelled for MN"
+              return
+            }
+        }
         set catchErrCode [GenerateMNOBD]
         set ErrCode [ocfmRetCode_code_get $catchErrCode]
         if { $ErrCode != 0 } {
@@ -4797,7 +4634,7 @@ proc Operations::Uniqkey { } {
      set key   [ string range $key end-8 end-3 ]
      set key   [ clock seconds ]$key
      return $key
- }
+}
 
 #---------------------------------------------------------------------------------------------------
 #  Operations::Sleep
@@ -4814,7 +4651,7 @@ proc Operations::Sleep { ms } {
      after $ms set ::__sleep__tmp__$uniq 1
      vwait ::__sleep__tmp__$uniq
      unset ::__sleep__tmp__$uniq
- }
+}
 
 #---------------------------------------------------------------------------------------------------
 #  Operations::ViewModeChanged
@@ -4866,6 +4703,10 @@ proc Operations::ViewModeChanged {} {
 
     set result [openConfLib::SetActiveView $st_viewType]
     openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful $result] != 1 } {
+
+    }
+
 #TODO if error:     set Operations::viewType "SIMPLE" and return
 
     #remove all the frames
@@ -4893,75 +4734,6 @@ proc Operations::SetVideoType {videoMode} {
     } else {
         set Operations::viewType "SIMPLE"
     }
-}
-
-#---------------------------------------------------------------------------------------------------
-#  Operations::CheckIndexObjecttype
-#
-#  Arguments : node - node of selected index
-#
-#  Results : -
-#
-#  Description : returns the object type of index
-#---------------------------------------------------------------------------------------------------
-proc Operations::PopupIndexMenu {node x y} {
-    global treePath
-    #getting Id and Type of node
-    set result [Operations::GetNodeIdType $node]
-    if {$result == ""} {
-        #the node is not an index, subindex, TPDO or RPDO do nothing
-        return
-    } else {
-        # it is index or subindex
-        set nodeId [lindex $result 0]
-        set nodeType [lindex $result 1]
-    }
-
-    set nodePos [new_intp]
-    set ExistfFlag [new_boolp]
-    set catchErrCode [IfNodeExists $nodeId $nodeType $nodePos $ExistfFlag]
-    set nodePos [intp_value $nodePos]
-    set ExistfFlag [boolp_value $ExistfFlag]
-    set ErrCode [ocfmRetCode_code_get $catchErrCode]
-    if { $ErrCode == 0 && $ExistfFlag == 1 } {
-        #the node exist continue
-    } else {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -parent . -title Error -icon error
-        } else {
-            tk_messageBox -message "Unknown Error" -parent . -title Error -icon error
-        }
-        return
-    }
-    set indexId [string range [$treePath itemcget $node -text] end-4 end-1]
-    set indexPos [new_intp]
-    set catchErrCode [IfIndexExists $nodeId $nodeType $indexId $indexPos]
-    if { [ocfmRetCode_code_get $catchErrCode] != 0 } {
-        if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-            tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-        } else {
-            tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-        }
-        return
-    }
-    set indexPos [intp_value $indexPos]
-    #get the object type of index
-    set tempIndexProp [GetIndexAttributesbyPositions $nodePos $indexPos 1 ]
-    set ErrCode [ocfmRetCode_code_get [lindex $tempIndexProp 0]]
-    if {$ErrCode == 0} {
-        set objectType [lindex $tempIndexProp 1]
-    } else {
-        return
-    }
-
-    if { ([string match -nocase "ARRAY" $objectType] == 1) || ([string match -nocase "RECORD" $objectType] == 1) } {
-        #it has subindex
-        tk_popup $Operations::idxMenu $x $y
-    } else {
-        #it has no subindex
-        tk_popup $Operations::idxMenuDel $x $y
-    }
-
 }
 
 #---------------------------------------------------------------------------------------------------

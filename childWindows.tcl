@@ -513,7 +513,6 @@ proc ChildWindows::AddCNWindow {} {
     Operations::centerW $winAddCN
 }
 
-
 #---------------------------------------------------------------------------------------------------
 #  ChildWindows::GenerateCNname
 #
@@ -613,8 +612,6 @@ proc ChildWindows::SaveProjectAsWindow {} {
         catch {file mkdir [file join $saveProjectAs cdc_xap]}
         catch {file mkdir [file join $saveProjectAs octx]}
         catch {file mkdir [file join $saveProjectAs scripts]}
-
-        ChildWindows::CopyScript $saveProjectAs
 
         thread::send [tsv::set application importProgress] "StartProgress"
         set catchErrCode [SaveProject $tempProjectDir $tempProjectNameNoExtn]
@@ -1229,60 +1226,9 @@ proc ChildWindows::PropertiesWindow {} {
         set title2 "Location"
         set display2 $projectDir
         set message "$title1$display1\n$title2$display2"
-    } elseif { [string match "MN-*" $node] || [string match "CN-*" $node] } {
-        if { [string match "MN-*" $node] } {
-            wm title $winProp "MN Properties"
-            set title "MN Properties"
-            set nodeId 240
-            set nodeType 0
-            set title1 "Managing Node"
-            set display1 "openPOWERLINK_MN"
-            set title3 "Number of CN"
-            set count [new_intp]
-            set catchErrCode [GetNodeCount 240 $count]
-            set ErrCode [ocfmRetCode_code_get $catchErrCode]
-            if { $ErrCode == 0 } {
-                set display3 [expr [intp_value $count]-1]
-            } else {
-                set display3 ""
-            }
-            label $frame1.la_title3 -text $title3
-            label $frame1.la_sep3 -text ":"
-            label $frame1.la_display3 -text $display3
-        } else {
-            wm title $winProp "CN Properties"
-            set title "CN Properties"
-            set result [Operations::GetNodeIdType $node]
-            if {$result != "" } {
-                set nodeId [lindex $result 0]
-                set nodeType [lindex $result 1]
-            } else {
-                #must be some other node this condition should never reach
-                return
-            }
-            set title1 "Name"
-            set display1 [string range [$treePath itemcget $node -text] 0 end-[expr [string length $nodeId]+2]]
-
-        }
-        set title2 "NodeId"
-        set display2 $nodeId
-
-        set title4 "Number of Indexes"
-        set count [new_intp]
-        set catchErrCode [GetIndexCount $nodeId $nodeType $count]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode == 0 } {
-            set display4 [intp_value $count]
-        } else {
-            set display4 ""
-        }
-        label $frame1.la_title4 -text $title4
-        label $frame1.la_sep4 -text ":"
-        label $frame1.la_display4 -text $display4
     } else {
         return
     }
-
 
     label $frame1.la_title1 -text $title1
     label $frame1.la_sep1 -text ":"
@@ -1308,21 +1254,6 @@ proc ChildWindows::PropertiesWindow {} {
     grid config $frame1.la_display2 -row 2 -column 2 -sticky w
     if { $node == "ProjectNode" } {
         grid config $frame1.la_empty2 -row 3 -column 0 -columnspan 1
-        pack configure $winProp.bt_ok -pady 10
-    } elseif { [string match "MN-*" $node] } {
-        grid config $frame1.la_title3 -row 3 -column 0 -sticky w
-        grid config $frame1.la_sep3 -row 3 -column 1
-        grid config $frame1.la_display3 -row 3 -column 2 -sticky w
-        grid config $frame1.la_title4 -row 4 -column 0 -sticky w
-        grid config $frame1.la_sep4 -row 4 -column 1
-        grid config $frame1.la_display4 -row 4 -column 2 -sticky w
-        grid config $frame1.la_empty2 -row 5 -column 0 -columnspan 1
-        pack configure $winProp.bt_ok -pady 10
-    } elseif { [string match "CN-*" $node] } {
-        grid config $frame1.la_title4 -row 3 -column 0 -sticky w
-        grid config $frame1.la_sep4 -row 3 -column 1
-        grid config $frame1.la_display4 -row 3 -column 2 -sticky w
-        grid config $frame1.la_empty2 -row 4 -column 0 -columnspan 1
         pack configure $winProp.bt_ok -pady 10
     } else {
         #should not occur
