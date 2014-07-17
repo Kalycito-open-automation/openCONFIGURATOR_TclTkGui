@@ -3282,39 +3282,44 @@ proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     }
 
     set sidxDataType [lindex $result 1]
+    if {sidxDataType == ""} {
+        return $mappingSidxLength
+    }
+
     set dtType -1
     switch -nocase $sidxDataType {
-        BOOLEAN {set dtType 0}
-        INTEGER8 {set dtType 1}
-        INTEGER16 {set dtType 2}
-        INTEGER32 {set dtType 3}
-        UNSIGNED8 {set dtType 4}
-        UNSIGNED16 {set dtType 5}
-        UNSIGNED32 {set dtType 6}
-        REAL32 {set dtType 7}
-        VISIBLE_STRING {set dtType 8}
-        OCTET_STRING {set dtType 9}
-        UNICODE_STRING {set dtType 10}
-        TIME_OF_DAY {set dtType 11}
-        TIME_DIFF {set dtType 12}
-        Domain {set dtType 13}
-        INTEGER24 {set dtType 14}
-        REAL64 {set dtType 15}
-        INTEGER40 {set dtType 16}
-        INTEGER48 {set dtType 17}
-        INTEGER56 {set dtType 18}
-        INTEGER64 {set dtType 19}
-        UNSIGNED24 {set dtType 20}
-        UNSIGNED40 {set dtType 21}
-        UNSIGNED48 {set dtType 22}
-        UNSIGNED56 {set dtType 23}
-        UNSIGNED64 {set dtType 24}
-        MAC_ADDRESS {set dtType 25}
-        IP_ADDRESS {set dtType 26}
-        NETTIME {set dtType 27}
+        BOOLEAN {set dtType $::BOOLEAN}
+        INTEGER8 {set dtType $::INTEGER8}
+        INTEGER16 {set dtType $::INTEGER16}
+        INTEGER32 {set dtType $::INTEGER32}
+        UNSIGNED8 {set dtType $::UNSIGNED8}
+        UNSIGNED16 {set dtType $::UNSIGNED16}
+        UNSIGNED32 {set dtType $::UNSIGNED32}
+        REAL32 {set dtType $::REAL32}
+        VISIBLE_STRING {set dtType $::VISIBLE_STRING}
+        OCTET_STRING {set dtType $::OCTET_STRING}
+        UNICODE_STRING {set dtType $::UNICODE_STRING}
+        TIME_OF_DAY {set dtType $::TIME_OF_DAY}
+        TIME_DIFF {set dtType $::TIME_DIFF}
+        Domain {set dtType $::Domain}
+        INTEGER24 {set dtType $::INTEGER24}
+        REAL64 {set dtType $::REAL64}
+        INTEGER40 {set dtType $::INTEGER40}
+        INTEGER48 {set dtType $::INTEGER48}
+        INTEGER56 {set dtType $::INTEGER56}
+        INTEGER64 {set dtType $::INTEGER64}
+        UNSIGNED24 {set dtType $::UNSIGNED24}
+        UNSIGNED40 {set dtType $::UNSIGNED40}
+        UNSIGNED48 {set dtType $::UNSIGNED48}
+        UNSIGNED56 {set dtType $::UNSIGNED56}
+        UNSIGNED64 {set dtType $::UNSIGNED64}
+        MAC_ADDRESS {set dtType $::MAC_ADDRESS}
+        IP_ADDRESS {set dtType $::IP_ADDRESS}
+        NETTIME {set dtType $::NETTIME}
     }
 
     set result [openConfLib::GetDataTypeSize $dtType]
+    openConfLib::ShowErrorMessage [lindex $result 0]
     if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
          return $mappingSidxLength
     }
