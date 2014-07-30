@@ -63,18 +63,8 @@
 
 #!/bin/sh
 #\
-exec wish8.5 "$0" ${1+"$@"}
+exec wish "$0" ${1+"$@"}
 
-global version
-set version 1.3.1
-
-if { $argc == 1 && ( $argv == "--version" || $argv == "-V" ) } {
-    puts "\nDeveloped by Kalycito Powerlink Team\nopenCONFIGURATOR version $version\n"
-    exit
-} elseif { $argc != 0 } {
-    puts "\noption $argv not supported\n"
-    exit
-}
 
 if { [ catch { package require Tk } ] } {
     puts "\nPackage TK not found \nPlease install Tk to run the tool\n\npress Enter key to exit"
@@ -114,7 +104,8 @@ set linksDiscussionHelp "http://sourceforge.net/p/openconf/discussion/help/"
 if {"$tcl_platform(platform)" == "windows"} {
     set rootDir [pwd]
 } elseif {"$tcl_platform(platform)" == "unix"} {
-    set rootDir /usr/share/openCONFIGURATOR-$version
+    #set rootDir /usr/share/openCONFIGURATOR-$version
+    set rootDir /usr/share/openconfigurator-tcltk
 }
 
 #set libsDir $rootDir/$tcl_platform(platform)/libs
@@ -140,6 +131,18 @@ source [file join $tclSrcDir wrapperInteractions.tcl]
 source [file join $tclSrcDir childWindows.tcl]
 source [file join $tclSrcDir validation.tcl]
 source [file join $tclSrcDir operations.tcl]
+source [file join $tclSrcDir version.tcl]
+
+
+
+if { $argc == 1 && ( $argv == "--version" || $argv == "-V" ) } {
+    puts "\nDeveloped by Kalycito Powerlink Team\nopenCONFIGURATOR version $version\n"
+    exit
+} elseif { $argc != 0 } {
+    puts "\noption $argv not supported\n"
+    exit
+}
+
 
 #-------------------------
 #	Package Definition

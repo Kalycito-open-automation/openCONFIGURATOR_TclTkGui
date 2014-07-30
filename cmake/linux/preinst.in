@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+if [ "$1" = "install" ]; then
+	echo "preinst"
+	rm -rf /usr/share/openCONFIGURATOR*
+	rm -f /usr/bin/openCONFIGURATOR
+	rm -f /usr/share/applications/openCONFIGURATOR.desktop
+	rm -f /usr/share/pixmaps/flair.svg
+	rm -f /usr/bin/openCONFIGURATOR-uninstall
+	rm -f /usr/lib/openCONFIGURATOR.so
+fi
