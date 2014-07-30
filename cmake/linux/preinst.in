@@ -1,5 +1,14 @@
 #!/bin/sh
 set -e
+if [ "$1" = "upgrade" ]; then
+	echo "upgrade"
+	rm -rf /usr/share/openconfigurator-tcltk
+	rm -f /usr/bin/openCONFIGURATOR
+	rm -f /usr/share/applications/openCONFIGURATOR.desktop
+	rm -f /usr/share/pixmaps/flair.svg
+	rm -f /usr/lib/openCONFIGURATOR.so
+fi
+
 if [ "$1" = "install" ]; then
 	echo "preinst"
 	rm -rf /usr/share/openCONFIGURATOR*
