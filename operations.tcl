@@ -1040,7 +1040,6 @@ proc Operations::BasicFrames { } {
     pack $sep4 -side left -fill y -padx 4 -anchor w
 
     set bbox [ButtonBox::create $toolbar.bbox5 -spacing 1 -padx 1 -pady 1]
-    pack $bbox -side left -anchor w
     set bb_build [ButtonBox::add $bbox -image img_build \
             -height 21\
             -width 21\
@@ -1048,7 +1047,7 @@ proc Operations::BasicFrames { } {
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Build Project"\
             -command "Operations::BuildProject"]
-    pack $bb_build -side left -padx 4
+
     set bb_clean [ButtonBox::add $bbox -image img_clean \
             -height 21\
             -width 21\
@@ -1056,7 +1055,7 @@ proc Operations::BasicFrames { } {
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "clean Project"\
             -command "Operations::CleanProject"]
-    pack $bb_clean -side left -padx 4
+    pack $bbox -side left -anchor w
     set sep2 [Separator::create $toolbar.sep2 -orient vertical]
     pack $sep2 -side left -fill y -padx 4 -anchor w
 
