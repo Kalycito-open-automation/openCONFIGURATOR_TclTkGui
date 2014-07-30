@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if [ "$1" = "remove" ]; then
+	#ldconfig
+	echo "postrm"
+	rm -f /usr/bin/openCONFIGURATOR
+	rm -f /usr/share/applications/openCONFIGURATOR.desktop
+	rm -f /usr/share/pixmaps/flair.svg
+	rm -f /usr/lib/openCONFIGURATOR.so
+fi
