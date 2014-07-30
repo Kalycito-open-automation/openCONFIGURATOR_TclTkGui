@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if [ "$1" = "configure" ]; then
+	#ldconfig
+	echo "postinst"
+	cd /usr/share/openconfigurator-tcltk/
+	ln -s /usr/share/openconfigurator-tcltk/openCONFIGURATOR /usr/bin/openCONFIGURATOR
+	ln -s /usr/share/openconfigurator-tcltk/openCONFIGURATOR.so /usr/lib/openCONFIGURATOR.so
+	chmod 755 -R * .
+fi
