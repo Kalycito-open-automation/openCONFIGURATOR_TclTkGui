@@ -2851,7 +2851,6 @@ proc Operations::CloseProject {} {
         }
     }
 
-
     Operations::ResetGlobalData
 
     catch {$treePath delete ProjectNode}
@@ -2986,7 +2985,7 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
         set treeNodeCN CN-$parentId-$cnCount
 
         lappend nodeIdList $nodeId
-        #creating the GUI for CN
+        #Creating the GUI for CN
         image create photo img_cn -file "$image_dir/cn.gif"
         image create photo img_pdo -file "$image_dir/pdo.gif"
 
@@ -3039,6 +3038,10 @@ proc Operations::InsertTree { } {
     $treePath insert end root ProjectNode -text "POWERLINK Network" -open 1 -image img_network
 }
 
+#---------------------------------------------------------------------------------------------------
+#  Operations::GetNodelistWithName
+#  Description : Returns the name list of nodes available in the format (NAME(NODE_ID))
+#---------------------------------------------------------------------------------------------------
 proc Operations::GetNodelistWithName {} {
     list retNodeIdList
     set retNodeIdList ""
@@ -3281,7 +3284,7 @@ proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     }
 
     set sidxDataType [lindex $result 1]
-    if {sidxDataType == ""} {
+    if {$sidxDataType == ""} {
         return $mappingSidxLength
     }
 
