@@ -153,6 +153,13 @@ proc openConfLib::SaveProject { } {
     return $result
 }
 
+#Result SaveProjectAs(const std::string, const std::string);
+proc openConfLib::SaveProjectAs { newProjectName newProjectPath} {
+    openConfLib::PrintText "::SaveProjectAs: $newProjectName $newProjectPath"
+    set result [::SaveProjectAs $newProjectName $newProjectPath]
+    return $result
+}
+
 #Result  CloseProject();
 proc openConfLib::CloseProject { } {
     set result [::CloseProject]

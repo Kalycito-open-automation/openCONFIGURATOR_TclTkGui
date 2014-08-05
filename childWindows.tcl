@@ -608,34 +608,28 @@ proc ChildWindows::SaveProjectAsWindow {} {
         set tempProjectDir [file dirname $saveProjectAs]
         set tempProjectName [file tail $saveProjectAs]
         set tempProjectNameNoExtn [string range $tempProjectName 0 end-[string length [file extension $tempProjectName]]]
-        catch {file mkdir $saveProjectAs}
-        catch {file mkdir [file join $saveProjectAs cdc_xap]}
-        catch {file mkdir [file join $saveProjectAs octx]}
-        catch {file mkdir [file join $saveProjectAs scripts]}
-
+        #catch {file mkdir $saveProjectAs}
+        #catch {file mkdir [file join $saveProjectAs cdc_xap]}
+        #catch {file mkdir [file join $saveProjectAs octx]}
+        #catch {file mkdir [file join $saveProjectAs scripts]}
+        puts "saveProjectAs:$saveProjectAs tempProjectDir:$tempProjectDir tempProjectName:$tempProjectName tempProjectNameNoExtn:$tempProjectNameNoExtn"
         thread::send [tsv::set application importProgress] "StartProgress"
-        set catchErrCode [SaveProject $tempProjectDir $tempProjectNameNoExtn]
+        set result [openConfLib::SaveProjectAs $tempProjectName $saveProjectAs]
 
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
             thread::send [tsv::set application importProgress] "StopProgress"
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
+            openConfLib::ShowErrorMessage [lindex $result 0]
             Console::DisplayErrMsg "Error in saving project $saveProjectAs"
             return
         } else {
             #since the .oct file will be saved with same name as folder variable 'tempProjectNameNoExtn' is used twice
-            set openResult [Operations::openProject [file join $tempProjectDir $tempProjectNameNoExtn $tempProjectNameNoExtn].oct]
+            set openResult [Operations::openProject [file join $saveProjectAs $tempProjectName].xml]
             if {$openResult == 1} {
                 Console::ClearMsgs
                 Console::DisplayInfo "project $tempPreviousProjectName is saved as $saveProjectAs and opened"
             }
             thread::send  [tsv::set application importProgress] "StopProgress"
         }
-
     }
 }
 
