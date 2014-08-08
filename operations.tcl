@@ -641,7 +641,7 @@ proc Operations::OpenProjectWindow { } {
                 }
                  no  {
                     Console::DisplayInfo "Project $projectName not saved" info
-                                    if { ![file exists [file join $projectDir $projectName].xml ] } {
+                    if { ![file exists [file join $projectDir $projectName].xml ] } {
                         catch { file delete -force -- $projectDir }
                     }
                 }
@@ -983,8 +983,8 @@ proc Operations::BasicFrames { } {
     set Operations::mnMenu [menu  .mnMenu -tearoff 0]
     $Operations::mnMenu add command -label "Add CN..." -command "ChildWindows::AddCNWindow"
     $Operations::mnMenu add command -label "Replace with XDC/XDD..." -command "Operations::ReImport"
-    $Operations::mnMenu add separator
-    $Operations::mnMenu add command -label "Auto Generate" -command {Operations::AutoGenerateMNOBD}
+    #$Operations::mnMenu add separator
+    #$Operations::mnMenu add command -label "Auto Generate" -command {Operations::AutoGenerateMNOBD}
 
     # Menu for the Project
     set Operations::projMenu [menu  .projMenu -tearoff 0]
@@ -3939,10 +3939,10 @@ proc Operations::CleanProject {} {
     set cleanMsg ""
     foreach tempFile [list mnobd.txt mnobd.cdc xap.xml xap.h ProcessImage.cs] {
         set CleanFile [file join $projectDir output $tempFile]
-            if {[file exists [file join $projectDir output $tempFile]]} {
-                catch {file delete -force -- $CleanFile}
-                set cleanMsg "$cleanMsg $tempFile"
-            }
+        if {[file exists [file join $projectDir output $tempFile]]} {
+            catch {file delete -force -- $CleanFile}
+            set cleanMsg "$cleanMsg $tempFile"
+        }
     }
     if { $cleanMsg != "" } {
         Console::DisplayInfo "files$cleanMsg at [file join $projectDir output] are deleted"
@@ -4510,77 +4510,75 @@ proc Operations::ArrowRight {} {
 }
 
 #---------------------------------------------------------------------------------------------------
-#  Operations::AutoGenerateMNOBD
-#
+#  Operations::AutoGenerateMNOBD ---- This function is currently deprecated shall
+#                                      be used for AutoGenerate MN obd sub menu
 #  Arguments : -
-#
 #  Results : -
-#
 #  Description : Auto generates object dictionary for MN and populates the tree.
 #---------------------------------------------------------------------------------------------------
-proc Operations::AutoGenerateMNOBD {} {
-    global treePath
-    global nodeIdList
-    global status_save
-    global f0
-    global f1
-    global f2
-    global image_dir
-
-    set node [$treePath selection get]
-    if {[string match "MN*" $node]} {
-        set child [$treePath nodes $node]
-        set tmpNode [string range $node 2 end]
-        set node OBD$tmpNode-1
-        set res [lsearch $child "OBD$tmpNode-1*"]
-        set nodeId 240
-        set nodeType 0
-        set result [tk_messageBox -message "Do you want to Auto Generate object dictionary for MN?" -type yesno -icon question -title "Question" -parent .]
-        switch -- $result {
-            yes {
-              Console::DisplayInfo "Auto Generating object dictionary for MN"
-            }
-            no  {
-              Console::DisplayInfo "Auto Generation of object dictionary is cancelled for MN"
-              return
-            }
-        }
-        set catchErrCode [GenerateMNOBD]
-        set ErrCode [ocfmRetCode_code_get $catchErrCode]
-        if { $ErrCode != 0 } {
-            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
-                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
-            } else {
-                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
-            }
-            return
-        }
-
-        #OBD for MN is auto generated need to save
-        set status_save 1
-
-        catch {
-            if { ($res == -1) && ( [string match "EXPERT" $Operations::viewType ] == 1 ) } {
-                #there can be one OBD in MN so -1 is hardcoded insert the OBD icon only for expert view
-                image create photo img_pdo -file "$image_dir/pdo.gif"
-                $treePath insert 0 MN$tmpNode OBD$tmpNode-1 -text "OBD" -open 0 -image img_pdo
-            }
-        }
-        catch {$treePath delete [$treePath nodes OBD$tmpNode-1]}
-        catch {$treePath itemconfigure $node -open 0}
-
-        thread::send  [tsv::set application importProgress] "StartProgress"
-        set result [WrapperInteractions::Import $node $nodeId]
-        thread::send  [tsv::set application importProgress] "StopProgress"
-        if { $result == "fail" } {
-            return
-        }
-        #to clear the list from child of the node from savedvaluelist and userpreflist
-        Operations::CleanList $node 0
-        Operations::CleanList $node 1
-
-    }
-}
+#proc Operations::AutoGenerateMNOBD {} {
+#    global treePath
+#    global nodeIdList
+#    global status_save
+#    global f0
+#    global f1
+#    global f2
+#    global image_dir
+#
+#    set node [$treePath selection get]
+#    if {[string match "MN*" $node]} {
+#        set child [$treePath nodes $node]
+#        set tmpNode [string range $node 2 end]
+#        set node OBD$tmpNode-1
+#        set res [lsearch $child "OBD$tmpNode-1*"]
+#        set nodeId 240
+#        set nodeType 0
+#        set result [tk_messageBox -message "Do you want to Auto Generate object dictionary for MN?" -type yesno -icon question -title "Question" -parent .]
+#        switch -- $result {
+#            yes {
+#              Console::DisplayInfo "Auto Generating object dictionary for MN"
+#            }
+#            no  {
+#              Console::DisplayInfo "Auto Generation of object dictionary is cancelled for MN"
+#              return
+#            }
+#        }
+#        set catchErrCode [GenerateMNOBD]
+#        set ErrCode [ocfmRetCode_code_get $catchErrCode]
+#        if { $ErrCode != 0 } {
+#            if { [ string is ascii [ocfmRetCode_errorString_get $catchErrCode] ] } {
+#                tk_messageBox -message "[ocfmRetCode_errorString_get $catchErrCode]" -title Error -icon error -parent .
+#            } else {
+#                tk_messageBox -message "Unknown Error" -title Error -icon error -parent .
+#            }
+#            return
+#        }
+#
+#        #OBD for MN is auto generated need to save
+#        set status_save 1
+#
+#        catch {
+#            if { ($res == -1) && ( [string match "EXPERT" $Operations::viewType ] == 1 ) } {
+#                #there can be one OBD in MN so -1 is hardcoded insert the OBD icon only for expert view
+#                image create photo img_pdo -file "$image_dir/pdo.gif"
+#                $treePath insert 0 MN$tmpNode OBD$tmpNode-1 -text "OBD" -open 0 -image img_pdo
+#            }
+#        }
+#        catch {$treePath delete [$treePath nodes OBD$tmpNode-1]}
+#        catch {$treePath itemconfigure $node -open 0}
+#
+#        thread::send  [tsv::set application importProgress] "StartProgress"
+#        set result [WrapperInteractions::Import $node $nodeId]
+#        thread::send  [tsv::set application importProgress] "StopProgress"
+#        if { $result == "fail" } {
+#            return
+#        }
+#        #to clear the list from child of the node from savedvaluelist and userpreflist
+#        Operations::CleanList $node 0
+#        Operations::CleanList $node 1
+#
+#    }
+#}
 
 #---------------------------------------------------------------------------------------------------
 #  Operations::GenerateAutoName
