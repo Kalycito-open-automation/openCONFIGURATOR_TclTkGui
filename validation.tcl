@@ -1,84 +1,53 @@
-####################################################################################################
+################################################################################
+# \file   validation.tcl
 #
+# \brief  Contains the child window displayed in application.
 #
-# NAME:     validation.tcl
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-# PURPOSE:  Contains the validations used in application
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-# AUTHOR:   Kalycito Infotech Pvt Ltd
-#
-# COPYRIGHT NOTICE:
-#
-#***************************************************************************************************
-# (c) Kalycito Infotech Private Limited
-#
-#  Project:      openCONFIGURATOR
-#
-#  License:
-#
-#    Redistribution and use in source and binary forms, with or without
-#    modification, are permitted provided that the following conditions
-#    are met:
-#
-#    1. Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#
-#    2. Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#
-#    3. Neither the name of Kalycito Infotech Private Limited nor the names of
-#       its contributors may be used to endorse or promote products derived
-#       from this software without prior written permission. For written
-#       permission, please contact info@kalycito.com.
-#
-#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#    COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#    POSSIBILITY OF SUCH DAMAGE.
-#
-#    Severability Clause:
-#
-#        If a provision of this License is or becomes illegal, invalid or
-#        unenforceable in any jurisdiction, that shall not affect:
-#        1. the validity or enforceability in that jurisdiction of any other
-#           provision of this License; or
-#        2. the validity or enforceability in other jurisdictions of that or
-#           any other provision of this License.
-#
-#***************************************************************************************************
-#
-#  REVISION HISTORY:
-# $Log:      $
-####################################################################################################
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+################################################################################
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NameSpace Declaration
 #
-#  namespace : Validation
-#---------------------------------------------------------------------------------------------------
+#  namespace: Validation
+#-------------------------------------------------------------------------------
 namespace eval Validation {
 
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsIp
 #
-#  Arguments : str  - string to be validate
-#              type - Type for validation
+#  Arguments: str  - String to be validated
+#             type - Type for validation
 #
-#  Results : 0  or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is IP address
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is a valid IP address
+#-------------------------------------------------------------------------------
 proc Validation::IsIP {str type} {
     # modify these if you want to check specific ranges for
     # each portion - now it look for 0 - 255 in each
@@ -109,16 +78,16 @@ proc Validation::IsIP {str type} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsMAC
 #
-#  Arguments : str  - string to be validate
-#              type - Type for validation
+#  Arguments: str  - String to be validated
+#             type - Type for validation
 #
-#  Results : 0  or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is MAC address
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is a valid MAC address
+#-------------------------------------------------------------------------------
 proc Validation::IsMAC {str type} {
     set macnum {[0-9a-fA-F]}
     set len [string length $str]
@@ -160,16 +129,16 @@ proc Validation::IsMAC {str type} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsInt
 #
-#  Arguments : input - string to be validate
-#              type  - Type for validation
+#  Arguments: input - String to be validate
+#              type - Type for validation
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is integer and length is 3 used to validate CN node entry
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is integer and length is 3 used to validate CN node entry
+#-------------------------------------------------------------------------------
 proc Validation::IsInt {input type} {
     if {[expr {[string length $input] <= 3} && {[string is int $input]}]} {
         return 1
@@ -178,15 +147,15 @@ proc Validation::IsInt {input type} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsValidStr
 #
-#  Arguments : input - string to be validate
+#  Arguments: input - String to be validated
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry contains only alphanumeric character and underscore
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry contains only alphanumeric character and underscore
+#-------------------------------------------------------------------------------
 proc Validation::IsValidStr {input} {
     if { [string is wordchar $input] == 0 || [string length $input] > 32 } {
         return 0
@@ -196,15 +165,15 @@ proc Validation::IsValidStr {input} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsValidEntryData
 #
-#  Arguments : input - string to be validate
+#  Arguments: input - String to be validated
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry contains only alphanumeric character and underscore
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry contains only alphanumeric character and underscore
+#-------------------------------------------------------------------------------
 proc Validation::IsValidEntryData {input} {
     if { ([string is wordchar $input] == 1 || [string match "*.*" $input] || [string match "*:*" $input]) && [string length $input] <= 32 } {
         Validation::SetPromptFlag
@@ -213,15 +182,16 @@ proc Validation::IsValidEntryData {input} {
         return 0
     }
 }
-#---------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
 #  Validation::IsValidName
 #
-#  Arguments : input - string (project name)
+#  Arguments: input - String (project name)
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether the string is valid project name.
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether the string is a valid project name.
+#-------------------------------------------------------------------------------
 proc Validation::IsValidName { input } {
     if { [string is wordchar $input] == 0 || [string length $input] > 32 } {
         return 0
@@ -230,18 +200,18 @@ proc Validation::IsValidName { input } {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsDec
 #
-#  Arguments : input     - string (project name)
-#              entryPath - path of the entry widget
-#              mode      - Mode of the entry (insert - 1 / delete - 0)
-#              idx       - Index where the character was inserted or deleted
+#  Arguments: input     - String (project name)
+#             entryPath - Path of the entry widget
+#             mode      - Mode of the entry (insert - 1 / delete - 0)
+#             idx       - Index where the character was inserted or deleted
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is an integer and does not exceed specified range.
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is an integer and does not exceed specified range.
+#-------------------------------------------------------------------------------
 proc Validation::IsDec {input entryPath mode idx {dataType ""}} {
     global UPPER_LIMIT
     global LOWER_LIMIT
@@ -365,15 +335,15 @@ proc Validation::IsDec {input entryPath mode idx {dataType ""}} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::CheckDecimalNumber
 #
-#  Arguments : input - string to be validated
+#  Arguments: input - String to be validated
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates string is containing only numbers 0 to 9
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates string to check if it contains only numbers from 0 to 9
+#-------------------------------------------------------------------------------
 proc Validation::CheckDecimalNumber {input} {
     set firstExp {-|[0-9]}
     set exp {[0-9]}
@@ -392,15 +362,15 @@ proc Validation::CheckDecimalNumber {input} {
     return 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::CheckHexaNumber
 #
-#  Arguments : input - string to be validated
+#  Arguments: input - String to be validated
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates string is containing only numbers 0 to 9 and characters a to f
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates string is containing only numbers 0 to 9 and characters a to f
+#-------------------------------------------------------------------------------
 proc Validation::CheckHexaNumber {input} {
     set exp {[0-9]|[a-f]|[A-F]}
     for {set checkCount 0} {$checkCount < [string length $input]} {incr checkCount} {
@@ -414,15 +384,15 @@ proc Validation::CheckHexaNumber {input} {
     return 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::CheckBitNumber
 #
-#  Arguments : input - string to be validated
+#  Arguments: input - string to be validated
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates string is containing only 0 and 1
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates string is containing only 0 and 1
+#-------------------------------------------------------------------------------
 proc Validation::CheckBitNumber {input} {
     if { [string length $input] > 8 } {
     return 0
@@ -439,14 +409,14 @@ proc Validation::CheckBitNumber {input} {
     return 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::BintoHex
 #
 # Arguments:  bin - number in binary format
 #
 # Results: hexadecimal number
 #
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc Validation::BintoHex {binNo} {
     ## No sanity checking is done
     array set template {
@@ -462,14 +432,14 @@ proc Validation::BintoHex {binNo} {
     return [subst $hex]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::HextoBin
 #
 # Arguments:  hexNo - number in hexadecimal format
 #
 # Results: binary number
 #
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc Validation::HextoBin {hexNo} {
     set t [list 0 0000 1 0001 2 0010 3 0011 4 0100 \
         5 0101 6 0110 7 0111 8 1000 9 1001 \
@@ -479,18 +449,18 @@ proc Validation::HextoBin {hexNo} {
     return [string map -nocase $t $hexNo]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsHex
 #
-#  Arguments : input     - string
+#  Arguments: input     - string
 #              preinput  - valid previous entry
 #              mode      - Mode of the entry (insert - 1 / delete - 0)
 #              idx       - Index where the character was inserted or deleted
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is an integer and does not exceed specified range.
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is an integer and does not exceed specified range.
+#-------------------------------------------------------------------------------
 proc Validation::IsHex {input preinput entryPath mode idx {dataType ""}} {
     global LOWER_LIMIT
     global UPPER_LIMIT
@@ -629,18 +599,18 @@ proc Validation::IsHex {input preinput entryPath mode idx {dataType ""}} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::SetValue
 #
-#  Arguments : entryPath - entry widget path in which value is inserted
-#              mode      - indicaties deletion or insertion of character
-#              idx       - index where cursor is set
-#              str       - string to be inserted
+#  Arguments: entryPath - entry widget path in which value is inserted
+#              mode     - indicaties deletion or insertion of character
+#              idx      - index where cursor is set
+#              str      - string to be inserted
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Inserts the string in entry widget and placing the cursor in required place
-#---------------------------------------------------------------------------------------------------
+#  Description: Inserts the string in entry widget and placing the cursor in required place
+#-------------------------------------------------------------------------------
 proc Validation::SetValue {entryPath mode idx {str no_input}  } {
     set tmpVar [$entryPath cget -textvariable]
     set state [$entryPath cget -state]
@@ -661,16 +631,16 @@ proc Validation::SetValue {entryPath mode idx {str no_input}  } {
     $entryPath configure -state $state -validate key
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsValidIdx
 #
-#  Arguments : input       - input to be validated
+#  Arguments: input       - input to be validated
 #              indexLength - required length
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is a index and does not exceed specified range
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is a index and does not exceed specified range
+#-------------------------------------------------------------------------------
 proc Validation::IsValidIdx {input indexLength} {
     if {[string is xdigit $input] == 0 || [string length $input] > $indexLength } {
         return 0
@@ -679,10 +649,10 @@ proc Validation::IsValidIdx {input indexLength} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::IsTableHex
 #
-#  Arguments : input       - input to be validated
+#  Arguments: input       - input to be validated
 #              preinput    - previous validated input
 #              mode        - indicaties deletion or insertion of character
 #              idx         - index where cursor is set
@@ -692,10 +662,10 @@ proc Validation::IsValidIdx {input indexLength} {
 #              columnIndex - column of the edited cell
 #              entryPath   - embedded entry in tablelist
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Validates whether an entry is a hexadecimal value and does not exceed specified range
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is a hexadecimal value and does not exceed specified range
+#-------------------------------------------------------------------------------
 proc Validation::IsTableHex {input preinput mode idx reqLen tablePath rowIndex columnIndex entryPath} {
 
     if {[string match -nocase "0x*" $input]} {
@@ -730,18 +700,18 @@ proc Validation::IsTableHex {input preinput mode idx reqLen tablePath rowIndex c
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::SetTableValue
 #
-#  Arguments : entryPath - embedded entry in tablelist
+#  Arguments: entryPath - embedded entry in tablelist
 #              mode      - indicaties deletion or insertion of character
 #              idx       - index where cursor is set
 #              input     - input to be validated
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Validates whether an entry is a hexadecimal value and does not exceed specified range
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is a hexadecimal value and does not exceed specified range
+#-------------------------------------------------------------------------------
 proc Validation::SetTableValue { entryPath mode idx input } {
 
     #puts "SetTableValue::: entryPath:$entryPath, mode:$mode, idx:$idx, input:$input "
@@ -899,16 +869,16 @@ proc Validation::SetTableValueNodeid {tablePath rowIndex columnIndex entryPath m
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Validation::InputToHex
 #
-#  Arguments : input    - input to be validated
+#  Arguments: input    - input to be validated
 #              dataType - data type of the input
 #
-#  Results : converted value
+#  Results: converted value
 #
-#  Description : converts the input decimal value into hexadecimal value
-#---------------------------------------------------------------------------------------------------
+#  Description: converts the input decimal value into hexadecimal value
+#-------------------------------------------------------------------------------
 proc Validation::InputToHex {input dataType} {
     set stdDataType [ string toupper $dataType ]
     if { $input == 0 } {
@@ -995,16 +965,16 @@ proc Validation::InputToHex {input dataType} {
     return [list $input pass]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Validation::InputToDec
 #
-#  Arguments : input    - input to be validated
-#              dataType - data type of the input
+#  Arguments: input    - input to be validated
+#             dataType - data type of the input
 #
-#  Results : converted value
+#  Results: converted value
 #
-#  Description : converts the input hexadecimal value into decimal value
-#---------------------------------------------------------------------------------------------------
+#  Description: Converts the input hexadecimal value into decimal value
+#-------------------------------------------------------------------------------
 proc Validation::InputToDec {input dataType} {
     set stdDataType [string toupper $dataType]
     set signFlag 0
@@ -1072,46 +1042,46 @@ proc Validation::InputToDec {input dataType} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Validation::SetPromptFlag
 #
-#  Arguments :-
+#  Arguments:-
 #
-#  Results : -
+#  Results: -
 #
-#  Description : set the flag checked during prompt
-#---------------------------------------------------------------------------------------------------
+#  Description: Set the flag checked during prompt
+#-------------------------------------------------------------------------------
 proc Validation::SetPromptFlag {} {
     global chkPrompt
     set chkPrompt 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Validation::ResetPromptFlag
 #
-#  Arguments :-
+#  Arguments:-
 #
-#  Results : -
+#  Results: -
 #
-#  Description : reset the flag checked during prompt
-#---------------------------------------------------------------------------------------------------
+#  Description: Reset the flag checked during prompt
+#-------------------------------------------------------------------------------
 proc Validation::ResetPromptFlag {} {
     global chkPrompt
     set chkPrompt 0
 }
 
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Validation::CheckDatatypeValue
 #
-#  Arguments : dataType - datatype against which value to be checked
-#              radioSel - radiobutton selection
-#              value    - vlaue to be checked
+#  Arguments: dataType - Datatype against which value to be checked
+#             radioSel - Radiobutton selection
+#             value    - Value to be checked
 #
-#  Results : fail and error message or pass with value
+#  Results: fail and error message or pass with value
 #
-#  Description : reset the flag checked during prompt
-#---------------------------------------------------------------------------------------------------
+#  Description: Reset the flag checked during prompt
+#-------------------------------------------------------------------------------
 proc Validation::CheckDatatypeValue {entryPath dataType radioSel value} {
     if { [string match -nocase "INTEGER*" $dataType] || [string match -nocase "UNSIGNED*" $dataType] || [string match -nocase "BOOLEAN" $dataType ] } {
         #need to convert
@@ -1176,15 +1146,15 @@ proc Validation::CheckDatatypeValue {entryPath dataType radioSel value} {
     return [list pass $value]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::CheckCnNodeNumber
 #
-#  Arguments : input - string to be validated
+#  Arguments: input - String to be validated
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates string is containing only numbers 1 to 239
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether string is containing only numbers 1 to 239
+#-------------------------------------------------------------------------------
 proc Validation::CheckCnNodeNumber {input} {
 
     #
@@ -1201,16 +1171,16 @@ proc Validation::CheckCnNodeNumber {input} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::CheckForceCycleNumber
 #
-#  Arguments : input - string to be validated
-#              prescalerLimit - the vale of multiplex prescaler value
+#  Arguments: input - string to be validated
+#             prescalerLimit - the vale of multiplex prescaler value
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates string is containing only numbers 1 to prescalerLimit
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether string is containing only numbers 1 to prescalerLimit
+#-------------------------------------------------------------------------------
 proc Validation::CheckForceCycleNumber {input prescalerLimit} {
     if { ( ([string is int $input] == 1) && ($input >= 1) && ($input <= $prescalerLimit) ) || ($input == "") } {
         if { $input != "" } {
@@ -1222,18 +1192,18 @@ proc Validation::CheckForceCycleNumber {input prescalerLimit} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::ValidatePollRespTimeoutMinimum
 #
-#  Arguments : input     - string (project name)
-#              entryPath - path of the entry widget
-#              mode      - Mode of the entry (insert - 1 / delete - 0)
-#              idx       - Index where the character was inserted or deleted
+#  Arguments: input     - string (project name)
+#             entryPath - path of the entry widget
+#             mode      - Mode of the entry (insert - 1 / delete - 0)
+#             idx       - Index where the character was inserted or deleted
 #
-#  Results : 0 or 1
+#  Results: 0 or 1
 #
-#  Description : Validates whether an entry is an integer and does not exceed specified range.
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether an entry is an integer and does not exceed specified range.
+#-------------------------------------------------------------------------------
 proc Validation::ValidatePollRespTimeoutMinimum {input entryPath mode idx validationType presponseActualCycleTimeValue presponseLimitMinimumCycleTimeValue {dataType ""} InterchangeParameterFlag} {
 
     if { $InterchangeParameterFlag == "1" } {
@@ -1267,18 +1237,18 @@ proc Validation::ValidatePollRespTimeoutMinimum {input entryPath mode idx valida
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::CheckAgainstLimits
 #
-#  Arguments : input     - input string
-#          entryPath - path of the entry widget(Actual alue text box)
-#              dataType  - datatype of the input
-#              idx       - Index where the character was inserted or deleted
+#  Arguments: input     - input string
+#             entryPath - path of the entry widget(Actual alue text box)
+#             dataType  - datatype of the input
+#             idx       - Index where the character was inserted or deleted
 #
-#  Results : 0 with error message or 1
+#  Results: 0 with error message or 1
 #
-#  Description : Validates the input value is within the limit range
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates whether the input value is within the limit range
+#-------------------------------------------------------------------------------
 proc Validation::CheckAgainstLimits {entryPath input {dataType ""} } {
     global LOWER_LIMIT
     global UPPER_LIMIT
@@ -1491,17 +1461,17 @@ proc Validation::CheckValueIsInRange {input valueFormat {dataType ""}} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Validation::validateValueandLimit
 #
-#  Arguments : input       - value input
-#          lowerlimit  - lower limit value
-#              upperlimit  - uppper limit value
+#  Arguments: input      - value input
+#             lowerlimit - lower limit value
+#             upperlimit - uppper limit value
 #
-#  Results : 0 with error message or 1
+#  Results: 0 with error message or 1
 #
-#  Description : Validates the limits against each other and the value is in range
-#---------------------------------------------------------------------------------------------------
+#  Description: Validates the limits against each other and the value is in range
+#-------------------------------------------------------------------------------
 proc Validation::validateValueandLimit {input lowerlimit upperlimit} {
     global LOWER_LIMIT
     global UPPER_LIMIT

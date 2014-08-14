@@ -1,72 +1,43 @@
-####################################################################################################
+################################################################################
+# \file   console.tcl
 #
+# \brief  Contains the procedures for Information, Warning and Error window
 #
-#  NAME:     console.tcl
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-#  PURPOSE:  Contains the procedures for Information, Warning and Error window
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-#  AUTHOR:   Kalycito Infotech Pvt Ltd
-#
-#  Copyright :(c) Kalycito Infotech Private Limited
-#
-#***************************************************************************************************
-#  COPYRIGHT NOTICE:
-#
-#  Project:      openCONFIGURATOR
-#
-#  License:
-#
-#    Redistribution and use in source and binary forms, with or without
-#    modification, are permitted provided that the following conditions
-#    are met:
-#
-#    1. Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#
-#    2. Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#
-#    3. Neither the name of Kalycito Infotech Private Limited nor the names of
-#       its contributors may be used to endorse or promote products derived
-#       from this software without prior written permission. For written
-#       permission, please contact info@kalycito.com.
-#
-#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#    COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#    POSSIBILITY OF SUCH DAMAGE.
-#
-#    Severability Clause:
-#
-#        If a provision of this License is or becomes illegal, invalid or
-#        unenforceable in any jurisdiction, that shall not affect:
-#        1. the validity or enforceability in that jurisdiction of any other
-#           provision of this License; or
-#        2. the validity or enforceability in other jurisdictions of that or
-#           any other provision of this License.
-#
-#***************************************************************************************************
-#
-#  REVISION HISTORY:
-#
-####################################################################################################
-#---------------------------------------------------------------------------------------------------
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+################################################################################
+
+#-------------------------------------------------------------------------------
 #  NameSpace Declaration
 #
 #  namespace : Console
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 namespace eval Console {
 
 }
+
 #-------------------------
 #   Global variables
 #-------------------------
@@ -74,17 +45,17 @@ global infoWindow
 global warWindow
 global errWindow
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::InitInfoWindow
 #
-#  Arguments : win - path of the window where the text widget is created
-#              width  - width of the text widget
-#              height - height of the text widget
+#  Arguments: win - path of the window where the text widget is created
+#             width - width of the text widget
+#             height - height of the text widget
 #
-#  Results : textwidget - path of the text widget
+#  Results: textwidget - path of the text widget
 #
-#  Description : Creates the Information window and returns the path of the text widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the information window and returns the path of the text widget
+#-------------------------------------------------------------------------------
 proc Console::InitInfoWindow {win {width 60} {height 5}} {
     set windowPath $win
     set promptChar $
@@ -106,18 +77,18 @@ proc Console::InitInfoWindow {win {width 60} {height 5}} {
     return $windowPath.t
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::DisplayInfo
 #
-#  Arguments : var - string to be displayed
-#              tag - tag binded with text widget
-#              win - path of text widget
-#              see - to view the inserted text
+#  Arguments: var - string to be displayed
+#             tag - tag binded with text widget
+#             win - path of text widget
+#             see - to view the inserted text
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Display the information message
-#---------------------------------------------------------------------------------------------------
+#  Description: Display the information message
+#-------------------------------------------------------------------------------
 proc Console::DisplayInfo {var {tag output} {win {}} {see 1}} {
     global infoWindow
 
@@ -142,17 +113,17 @@ proc Console::DisplayInfo {var {tag output} {win {}} {see 1}} {
     return
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::InitErrorWindow
 #
-#  Arguments : win - path of the window where the text widget is created
-#              width - width of the text widget
-#              height - height of the text widget
+#  Arguments: win - path of the window where the text widget is created
+#             width - width of the text widget
+#             height - height of the text widget
 #
-#  Results : textwidget - path of the text widget
+#  Results: textwidget - path of the text widget
 #
-#  Description : Creates the Error window and returns the path of the text widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the error window and returns the path of the text widget
+#-------------------------------------------------------------------------------
 proc Console::InitErrorWindow {win {width 60} {height 5}} {
     set windowPath $win
     set promptChar $
@@ -175,18 +146,18 @@ proc Console::InitErrorWindow {win {width 60} {height 5}} {
     return $windowPath.t
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::DisplayErrMsg
 #
-#  Arguments : var - string to be displayed
-#              tag - tag binded with text widget
-#              win - path of text widget
-#              see - to view the inserted text
+#  Arguments: var - string to be displayed
+#             tag - tag binded with text widget
+#             win - path of text widget
+#             see - to view the inserted text
 #
-#  Results : -
+#  Results: -
 #
-#  Description :  Display the error message
-#---------------------------------------------------------------------------------------------------
+#  Description:  Display the error message
+#-------------------------------------------------------------------------------
 proc Console::DisplayErrMsg {var {tag output} {win {}} {see 1}} {
     global errWindow
 
@@ -211,17 +182,17 @@ proc Console::DisplayErrMsg {var {tag output} {win {}} {see 1}} {
     return
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::InitWarnWindow
 #
-#  Arguments : win - path of the window where the text widget is created
-#              width  - width of the text widget
-#              height - height of the text widget
+#  Arguments: win - path of the window where the text widget is created
+#             width - width of the text widget
+#             height - height of the text widget
 #
-#  Results : textwidget - path of the text widget
+#  Results: textwidget - path of the text widget
 #
-#  Description : Creates the warning window and returns the path of the text widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the warning window and returns the path of the text widget
+#-------------------------------------------------------------------------------
 proc Console::InitWarnWindow {win {width 60} {height 5}} {
     set windowPath $win
     set promptChar $
@@ -245,18 +216,18 @@ proc Console::InitWarnWindow {win {width 60} {height 5}} {
     return $windowPath.t
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::DisplayWarning
 #
-#  Arguments : var - string to be displayed
-#              tag - tag binded with text widget
-#              win - path of text widget
-#              see - to view the inserted text
+#  Arguments: var - string to be displayed
+#             tag - tag bound with text widget
+#             win - path of text widget
+#             see - to view the inserted text
 #
-#  Results : -
+#  Results: -
 #
-#  Description :  Display the warning message
-#---------------------------------------------------------------------------------------------------
+#  Description: Display the warning message
+#-------------------------------------------------------------------------------
 proc Console::DisplayWarning {var {tag output} {win {}} {see 1}} {
 
     global warWindow
@@ -283,15 +254,15 @@ proc Console::DisplayWarning {var {tag output} {win {}} {see 1}} {
     return
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::ClearMsgs
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description :  Clear information, error and warning message
-#---------------------------------------------------------------------------------------------------
+#  Description: Clears information, error and warning messages
+#-------------------------------------------------------------------------------
 proc Console::ClearMsgs {} {
     global infoWindow
     global warWindow
@@ -306,15 +277,15 @@ proc Console::ClearMsgs {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Console::BlinkText
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description :  Clear information, error and warning message
-#---------------------------------------------------------------------------------------------------
+#  Description:  Clear information, error and warning message
+#-------------------------------------------------------------------------------
 proc Console::BlinkText {{win {}} {tag {}} } {
     if {$win == ""} {
         return

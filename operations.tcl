@@ -1,70 +1,39 @@
-####################################################################################################
+################################################################################
+# \file   operations.tcl
 #
+# \brief  Contains the major functionality of the tool
 #
-# NAME:     operations.tcl
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-# PURPOSE:  Contains the major functionality of the tool
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-# AUTHOR:   Kalycito Infotech Pvt Ltd
-#
-# COPYRIGHT NOTICE:
-#
-#***************************************************************************************************
-# (c) Kalycito Infotech Private Limited
-#
-#  Project:      openCONFIGURATOR
-#
-#  License:
-#
-#    Redistribution and use in source and binary forms, with or without
-#    modification, are permitted provided that the following conditions
-#    are met:
-#
-#    1. Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#
-#    2. Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#
-#    3. Neither the name of Kalycito Infotech Private Limited nor the names of
-#       its contributors may be used to endorse or promote products derived
-#       from this software without prior written permission. For written
-#       permission, please contact info@kalycito.com.
-#
-#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#    COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#    POSSIBILITY OF SUCH DAMAGE.
-#
-#    Severability Clause:
-#
-#        If a provision of this License is or becomes illegal, invalid or
-#        unenforceable in any jurisdiction, that shall not affect:
-#        1. the validity or enforceability in that jurisdiction of any other
-#           provision of this License; or
-#        2. the validity or enforceability in other jurisdictions of that or
-#           any other provision of this License.
-#
-#***************************************************************************************************
-#
-#  REVISION HISTORY:
-# $Log:      $
-####################################################################################################
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+################################################################################
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NameSpace Declaration
 #
-#  namespace : Validation
-#---------------------------------------------------------------------------------------------------
+#  namespace: Validation
+#-------------------------------------------------------------------------------
 namespace eval Operations {
     variable mnMenu
     variable cnMenu
@@ -210,7 +179,7 @@ set Operations::ASYNC_TIMEOUT_OBJ [list 0x1F8A 0x02]
 set Operations::MULTI_PRESCAL_OBJ [list 0x1F98 0x07]
 set Operations::PRES_TIMEOUT_LIMIT_OBJ [list 0x1F98 0x03]
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::about
 #
 #  Arguments : -
@@ -218,7 +187,7 @@ set Operations::PRES_TIMEOUT_LIMIT_OBJ [list 0x1F98 0x03]
 #  Results : -
 #
 #  Description : Information about tool developer
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc Operations::about {} {\
     global version
     global rootDir
@@ -237,7 +206,7 @@ proc Operations::about {} {\
     set framea [frame $aboutWindow.framea]
 
     label $framea.title -text "openCONFIGURATOR" -font $titleFont
-    label $framea.sub -text "An open-source ethernet POWERLINK configuration tool"
+    label $framea.sub -text "An open-source Ethernet POWERLINK configuration tool"
     label $framea.01 -text "Version:" -justify left
     label $framea.02 -text "$version" -justify left
     label $framea.11 -text "Designed by:" -justify left
@@ -276,7 +245,6 @@ proc Operations::about {} {\
     #grid config $frameb.txt -row 1 -column 0
     }
 
-
     grid config $framea -row 0 -column 0 -sticky w -padx 10 -pady 10
     grid config $framea.title -row 0 -column 0 -columnspan 2
     grid config $framea.sub -row 1 -column 0 -columnspan 2
@@ -296,16 +264,16 @@ proc Operations::about {} {\
     Operations::centerW .about
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::openFILE
 #
-#  Arguments :  path        path where the file resides
-#       file name   file name to be opened
+#  Arguments: path      - Path where the file resides
+#             file name - File name to be opened
 #
-#  Results : -
+#  Results: -
 #
-#  Description : opens the file with a in a new window (read only)
-#---------------------------------------------------------------------------------------------------
+#  Description: Opens the file in a new window (read only)
+#-------------------------------------------------------------------------------
 proc Operations::openFILE { path filename } {\
     global rootDir
     global projectDir
@@ -384,15 +352,15 @@ proc Operations::openFILE { path filename } {\
     grab $openFileWindow
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::LocateUrl
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : opens the web browser
-#---------------------------------------------------------------------------------------------------
+#  Description: Opens the web browser
+#-------------------------------------------------------------------------------
 proc Operations::LocateUrl {webAddress} {
     global tcl_platform
     set browser ""
@@ -412,17 +380,17 @@ proc Operations::LocateUrl {webAddress} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::OpenDocument
 #
-#  Arguments : path 1 - Root dir
-#           2 - cdc_xap folder
-#  Arguments : filename  filename of the doucment with extension
+#  Arguments: path     -  1 - Points to the root directory.
+#                         2 - Points to the output folder in the projects.
+#  Arguments: filename - filename of the document with extension.
 #
-#  Results : -
+#  Results: -
 #
-#  Description : opens the document in appropriate tool
-#---------------------------------------------------------------------------------------------------
+#  Description: Opens the document in appropriate tool
+#-------------------------------------------------------------------------------
 proc Operations::OpenDocument { path filename } {
     global tcl_platform
     global rootDir
@@ -461,29 +429,29 @@ proc Operations::OpenDocument { path filename } {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::centerW
 #
-#  Arguments : windowPath - path of toplevel window
+#  Arguments: windowPath - path of toplevel window
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Place the toplevel window center to application
-#---------------------------------------------------------------------------------------------------
+#  Description: Place the toplevel window center to application
+#-------------------------------------------------------------------------------
 proc Operations::centerW windowPath {
     BWidget::place $windowPath 0 0 center
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::tselectright
 #
-#  Arguments : x    - x position
-#              y    - y position
-#              node - selected node in tree widget
-#  Results : -
+#  Arguments: x    - x position
+#             y    - y position
+#             node - selected node in tree widget
+#  Results: -
 #
-#  Description : Displays right click menu to appropriate node
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays the 'right click' menu for appropriate node
+#-------------------------------------------------------------------------------
 proc Operations::tselectright {x y node} {
     variable treeWindow
 
@@ -502,15 +470,15 @@ proc Operations::tselectright {x y node} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::DisplayConsole
 #
-#  Arguments : option - user selected preference
+#  Arguments: option - User selected preference
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays or hide Console window according to option
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays or hides console window according to selected option
+#-------------------------------------------------------------------------------
 proc Operations::DisplayConsole {option} {
     variable infotabs_notebook
 
@@ -530,15 +498,15 @@ proc Operations::DisplayConsole {option} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::DisplayTreeWin
 #
-#  Arguments : option - user selected preference
+#  Arguments: option - User selected preference
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays or hide Tree window according to option
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays or hides the tree window according to selected option
+#-------------------------------------------------------------------------------
 proc Operations::DisplayTreeWin {option} {
     variable tree_notebook
 
@@ -565,15 +533,15 @@ proc Operations::DisplayTreeWin {option} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::exit_app
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : prompts to save project when application is exited
-#---------------------------------------------------------------------------------------------------
+#  Description: Prompts to save project when application is exited
+#-------------------------------------------------------------------------------
 proc Operations::exit_app {} {
     variable notebook
     variable index
@@ -611,15 +579,15 @@ proc Operations::exit_app {} {
     exit
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::OpenProjectWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
 #  Description : Prompts to save the current project gets an already existing project
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc Operations::OpenProjectWindow { } {
     global projectDir
     global projectName
@@ -705,15 +673,15 @@ proc Operations::OpenProjectWindow { } {
     Operations::openProject $projectfilename
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::openProject
 #
-#  Arguments : projectfilename - path of project to be opened
+#  Arguments: projectfilename - Path of project to be opened
 #
-#  Results : -
+#  Results: -
 #
-#  Description : opens the project and populates the gui
-#---------------------------------------------------------------------------------------------------
+#  Description: Opens the project and populates the GUI
+#-------------------------------------------------------------------------------
 proc Operations::openProject {projectfilename} {
     global projectDir
     global projectName
@@ -775,16 +743,16 @@ proc Operations::openProject {projectfilename} {
     return 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::RePopulate
 #
-#  Arguments : projectDir  - path of the project
-#              projectName - name of the project
+#  Arguments: projectDir  - Path of the project
+#             projectName - Name of the project
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Rebuilds the the tree with updated values for all nodes
-#---------------------------------------------------------------------------------------------------
+#  Description: Rebuilds the tree with updated values for all nodes
+#-------------------------------------------------------------------------------
 proc Operations::RePopulate { projectDir projectName } {
     global treePath
     global nodeIdList
@@ -854,15 +822,15 @@ proc Operations::RePopulate { projectDir projectName } {
     return 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::BasicFrames
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the GUI for application when launched
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the GUI for application when launched
+#-------------------------------------------------------------------------------
 proc Operations::BasicFrames { } {
     global tcl_platform
     global rootDir
@@ -1361,15 +1329,15 @@ proc Operations::BasicFrames { } {
     return 1
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::_tool_intro
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays image during launching of application
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays image during launch of application
+#-------------------------------------------------------------------------------
 proc Operations::_tool_intro {ImageName} {
     global rootDir
 
@@ -1393,15 +1361,15 @@ proc Operations::_tool_intro {ImageName} {
     after 100
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::BindTree
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Binds various functions to tree widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Binds various functions to tree widget
+#-------------------------------------------------------------------------------
 proc Operations::BindTree {} {
     global treePath
     global tcl_platform
@@ -1422,15 +1390,15 @@ proc Operations::BindTree {} {
     $treePath configure -selectbackground #678db2
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::UnbindTree
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Unbinds various functions binded to tree widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Unbinds various functions bound to tree widget
+#-------------------------------------------------------------------------------
 proc Operations::UnbindTree {} {
     global tcl_platform
     global treePath
@@ -1447,15 +1415,15 @@ proc Operations::UnbindTree {} {
     $treePath configure -selectbackground gray
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::SingleClickNode
 #
-#  Arguments : node - selected node from treewidget
+#  Arguments: node - Selected node from tree widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays required properties when corresponding nodes are clicked
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays required properties when corresponding nodes are clicked
+#-------------------------------------------------------------------------------
 proc Operations::SingleClickNode {node} {
     variable notebook
 
@@ -2159,16 +2127,16 @@ proc Operations::SingleClickNode {node} {
     return
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::MNProperties
 #
-#  Arguments : node       - select tree node path
-#              nodeId     - id of the node
+#  Arguments: node       - Select tree node path
+#             nodeId     - Id of the node
 #
-#  Results :  -
+#  Results:  -
 #
-#  Description : displays the properties of selected MN
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays the properties of selected MN
+#-------------------------------------------------------------------------------
 proc Operations::MNProperties {node nodeId} {
     global f3
     global savedValueList
@@ -2334,16 +2302,16 @@ proc Operations::MNProperties {node nodeId} {
     Validation::ResetPromptFlag
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::CNProperties
 #
-#  Arguments : node       - select tree node path
-#              nodeId     - id of the node
+#  Arguments: node   - Select path of tree node
+#             nodeId - Id of the node
 #
-#  Results :  -
+#  Results:  -
 #
-#  Description : displays the properties of selected CN
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays the properties of selected CN
+#-------------------------------------------------------------------------------
 proc Operations::CNProperties {node nodeId} {
     global f4
     global savedValueList
@@ -2600,20 +2568,21 @@ proc Operations::CNProperties {node nodeId} {
     Validation::ResetPromptFlag
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GetObjectValueData
 #
-#  Arguments :
-#              nodeId     - id of the node
-#              indexId    - id of index object
-#              subIndexId - id of subindex object (optional)
+#  Arguments:
+#              nodeId     - Id of the node
+#              indexId    - Id of index object
+#              subIndexId - Id of subindex object (optional)
 #
-#  Results : list 0 - 1/0 pass/fail
-#            list 1 - Datatype
-#            list 2 - value (act or default if act is empty)
-#            list 3 - errormessage (if any)
-#  Description : Returns the datatype and (actualvalue/defaultvalue) value for index or subindex
-#---------------------------------------------------------------------------------------------------
+#  Results: list 0 - 1/0 pass/fail
+#           list 1 - Datatype
+#           list 2 - value (act or default if act is empty)
+#           list 3 - errormessage (if any)
+#
+#  Description: Returns the datatype and actualvalue/defaultvalue for index/subindex
+#-------------------------------------------------------------------------------
 proc Operations::GetObjectValueData {nodeId indexId {subIndexId ""} } {
 
     set retValList ""
@@ -2662,19 +2631,19 @@ proc Operations::GetObjectValueData {nodeId indexId {subIndexId ""} } {
     return $retValList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::CheckConvertValue
 #
-#  Arguments : entryPath    - positoion of node in collection
-#              dataType     - id of the node
-#              valueFormat   - indicates the type as MN or CN
-#              indexId    - id of index object
-#              subIndexId - id of subindex object (optional)
+#  Arguments: entryPath   - Position of node in collection
+#             dataType    - Id of the node
+#             valueFormat - Indicates the type as MN or CN
+#             indexId     - Id of index object
+#             subIndexId  - Id of subindex object (optional)
 #
-#  Results :  pass and actual, default and datatype value or fail
+#  Results:  pass and actual, default and datatype value or fail
 #
-#  Description : Gets the actual, default and datatype value for index or subindex
-#---------------------------------------------------------------------------------------------------
+#  Description: Gets the actual, default and datatype value for index or subindex
+#-------------------------------------------------------------------------------
 proc Operations::CheckConvertValue { entryPath dataType valueFormat } {
     set entryState [$entryPath cget -state]
     set reqValue [$entryPath get]
@@ -2700,15 +2669,15 @@ proc Operations::CheckConvertValue { entryPath dataType valueFormat } {
     $entryPath configure -state $entryState
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::DoubleClickNode
 #
-#  Arguments : node - selected node from treewidget
+#  Arguments: node - Selected node from tree widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays required properties and expands tree when corresponding nodes are clicked
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays required properties and expands tree when corresponding nodes are clicked
+#-------------------------------------------------------------------------------
 proc Operations::DoubleClickNode {node} {
     global treePath
 
@@ -2726,15 +2695,15 @@ proc Operations::DoubleClickNode {node} {
     Operations::SingleClickNode $node
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::Saveproject
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Calls the API to save projext
-#---------------------------------------------------------------------------------------------------
+#  Description: Calls the API to save project
+#-------------------------------------------------------------------------------
 proc Operations::Saveproject {} {
     global projectName
     global projectDir
@@ -2768,15 +2737,15 @@ proc Operations::Saveproject {} {
     Console::DisplayInfo "Project $projectName at location $projectDir is saved"
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::InitiateNewProject
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Save the current project and creates new project
-#---------------------------------------------------------------------------------------------------
+#  Description: Saves the current project and creates new project
+#-------------------------------------------------------------------------------
 proc Operations::InitiateNewProject {} {
     global resourcesDir
 
@@ -2794,15 +2763,15 @@ proc Operations::InitiateNewProject {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::InitiateCloseProject
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Save the current project and close the project
-#---------------------------------------------------------------------------------------------------
+#  Description: Saves the current project and closes it
+#-------------------------------------------------------------------------------
 proc Operations::InitiateCloseProject {} {
     global status_save
     global projectName
@@ -2828,16 +2797,16 @@ proc Operations::InitiateCloseProject {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::CloseProject
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Deletes the tree widget, deletes all the node in current project
-#                and resets global data
-#---------------------------------------------------------------------------------------------------
+#  Description: Deletes the tree widget, deletes all the nodes in current project
+#               and resets global data
+#-------------------------------------------------------------------------------
 proc Operations::CloseProject {} {
     global treePath
     global projectDir
@@ -2865,15 +2834,15 @@ proc Operations::CloseProject {} {
     Operations::InsertTree
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ResetGlobalData
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Resets all the globally maintained data
-#---------------------------------------------------------------------------------------------------
+#  Description: Resets all the globally maintained data
+#-------------------------------------------------------------------------------
 proc Operations::ResetGlobalData {} {
     global projectDir
     global projectName
@@ -2929,15 +2898,15 @@ proc Operations::ResetGlobalData {} {
     update
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::DeleteAllNode
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Deletes all the node in current project
-#---------------------------------------------------------------------------------------------------
+#  Description: Deletes all the nodes in current project
+#-------------------------------------------------------------------------------
 proc Operations::DeleteAllNode {} {
 
     set result openCONFIGURATOR::Library::API::CloseProject
@@ -2945,17 +2914,17 @@ proc Operations::DeleteAllNode {} {
     #TODO Handle the result
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::AddCN
 #
-#  Arguments : cnName    - name of CN
-#              tmpImpDir - file to be imported
-#              nodeId    - Id for CN
+#  Arguments: cnName    - Name of CN
+#             tmpImpDir - File to be imported
+#             nodeId    - Id for CN
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the CN node
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the CN node
+#-------------------------------------------------------------------------------
 proc Operations::AddCN {cnName tmpImpDir nodeId} {
     global treePath
     global cnCount
@@ -3017,15 +2986,15 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::InsertTree
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Inserts the initial node in tree widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Inserts the initial node in tree widget
+#-------------------------------------------------------------------------------
 proc Operations::InsertTree { } {
     global treePath
     global cnCount
@@ -3038,10 +3007,10 @@ proc Operations::InsertTree { } {
     $treePath insert end root ProjectNode -text "POWERLINK Network" -open 1 -image img_network
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GetNodelistWithName
 #  Description : Returns the name list of nodes available in the format (NAME(NODE_ID))
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc Operations::GetNodelistWithName {} {
     list retNodeIdList
     set retNodeIdList ""
@@ -3064,18 +3033,18 @@ proc Operations::GetNodelistWithName {} {
     return $retNodeIdList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GetIndexListWithName
 #
-#  Arguments    nodeIdparm  Nodeid of the node for which indexlist to be generated
-#               pdoTypeparm PDO mapping type
+#  Arguments: nodeIdparm  - Node Id of the node for which index list is to be generated
+#             pdoTypeparm - PDO mapping type
 #
-#  Results  mappingidxlist with index id list is returned.
-#       Note: Each index id has the 0x prepended for hex notation
+#  Results: mappingidxlist with index id list is returned.
+#           Note: Each index id has the 0x prepended for hex notation
 #
-#  Description : Generates the list of index id's which can be mapped as a pdo object the tree widget
-#        for the given node id
-#---------------------------------------------------------------------------------------------------
+#  Description: Generates the list of index ids which can be mapped as a pdo object for the given node id in the tree widget
+#
+#-------------------------------------------------------------------------------
 proc Operations::GetIndexListWithName {nodeIdparm pdoTypeparm} {
     global treePath
 
@@ -3172,19 +3141,19 @@ proc Operations::GetIndexListWithName {nodeIdparm pdoTypeparm} {
     return $mappingidxlist
 }
 
-#---------------------------------------------------------------------------------------------------
-#  Operations::FuncSubIndexlist
+#-------------------------------------------------------------------------------
+#  Operations::GetSubIndexlistWithName
 #
-#  Arguments    nodeIdparm  Nodeid of the node for which subindexlist to be generated
-#       idxIdparm   Indexid with 0x for whic the subindexlist to be generated
-#       pdoTypeparm PDO mapping type
+#  Arguments: nodeIdparm  - Nodeid of the node for which subindexlist to be generated
+#             idxIdparm   - Indexid with 0x for which the subindexlist to be generated
+#             pdoTypeparm - PDO mapping type
 #
-#  Results  mappingSidxList with Subindex id list is returned.
+#  Results:  mappingSidxList with Subindex id list is returned.
 #       Note: Each index id has the 0x prepended for hex notation
 #
-#  Description : Generates the list of Subindex id's which are set to pdoMapping same as the pdoTypeparm tree widget
+#  Description: Generates the list of Subindex id's which are set to pdoMapping same as the pdoTypeparm tree widget
 #        for the given node id & indexid
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 proc Operations::GetSubIndexlistWithName {nodeIdparm idxIdparm pdoTypeparm} {
     global treePath
@@ -3242,19 +3211,19 @@ proc Operations::GetSubIndexlistWithName {nodeIdparm idxIdparm pdoTypeparm} {
     return $mappingSidxList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::FuncSubIndexLength
 #
-#  Arguments    nodeIdparm  Nodeid of the node for which lengthlist to be generated
-#       idxIdparm   Indexid with 0x for which the lengthlist to be generated
-#       sidxparm    SubIndexid with 0x for which the lengthlist to be generated
+#  Arguments: nodeIdparm - Nodeid of the node for which lengthlist to be generated
+#             idxIdparm  - Indexid with 0x for which the lengthlist to be generated
+#             sidxparm   - SubIndexid with 0x for which the lengthlist to be generated
 #
-#  Results  mappingSidxLength with Subindex id list is returned.
-#       Note: Each length has the 0x prepended for hex notation
+#  Results: mappingSidxLength with Subindex id list is returned.
+#            Note: Each length has the 0x prepended for hex notation
 #
-#  Description : Generates the list of Subindex id's Datatype length from the tree widget
+#  Description: Generates the list of Subindex id's Datatype length from the tree widget
 #        for the given node id, indexid & subindexid
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     global treePath
@@ -3337,11 +3306,11 @@ proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     return $mappingSidxLength
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NameSpace Declaration
 #
 #  namespace : FindSpace
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 namespace eval FindSpace {
     variable findList
     variable searchString
@@ -3350,15 +3319,15 @@ namespace eval FindSpace {
     variable findWinStatus
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::ToggleFindWin
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Toggles the display of Find window
-#---------------------------------------------------------------------------------------------------
+#  Description: Toggles the display of Find window
+#-------------------------------------------------------------------------------
 proc FindSpace::ToggleFindWin {} {
     if { $FindSpace::findWinStatus == 1 } {
         #find window visible hide it
@@ -3369,15 +3338,15 @@ proc FindSpace::ToggleFindWin {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::FindDynWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays GUI for Find and add binding for Next button
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays GUI for Find and add binding for Next button
+#-------------------------------------------------------------------------------
 proc FindSpace::FindDynWindow {} {
     catch {
         global treeFrame
@@ -3388,15 +3357,15 @@ proc FindSpace::FindDynWindow {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::EscapeTree
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Hides GUI for Find and remove binding for Next button
-#---------------------------------------------------------------------------------------------------
+#  Description: Hides GUI for Find and remove binding for Next button
+#-------------------------------------------------------------------------------
 proc FindSpace::EscapeTree {} {
     catch {
         global treeFrame
@@ -3405,7 +3374,7 @@ proc FindSpace::EscapeTree {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::Find
 #
 #  Arguments : searchStr - search string
@@ -3415,7 +3384,7 @@ proc FindSpace::EscapeTree {} {
 #  Results : nodes containing search string
 #
 #  Description : Finds nodes containing search string
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc FindSpace::Find { searchStr {node ""} {mode 0} } {
     global treePath
 
@@ -3584,16 +3553,16 @@ proc FindSpace::Find { searchStr {node ""} {mode 0} } {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::OpenParent
 #
-#  Arguments : treePath - path to the tree widget
-#              node     - node containing search string
+#  Arguments: treePath - path to the tree widget
+#             node     - node containing search string
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Node is made visible
-#---------------------------------------------------------------------------------------------------
+#  Description: Node is made visible
+#-------------------------------------------------------------------------------
 proc FindSpace::OpenParent { treePath node } {
     if { [$treePath exists $node ] == 1 } {
         # the node exist in tree continue
@@ -3611,15 +3580,15 @@ proc FindSpace::OpenParent { treePath node } {
     $treePath see $node
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::Prev
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays previous node containing search string
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays previous node containing search string
+#-------------------------------------------------------------------------------
 proc FindSpace::Prev {} {
     global treePath
     set node [$treePath selection get]
@@ -3640,15 +3609,15 @@ proc FindSpace::Prev {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  FindSpace::Next
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays next node containing search string
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays next node containing search string
+#-------------------------------------------------------------------------------
 proc FindSpace::Next {} {
     global treePath
     set node [$treePath selection get]
@@ -3669,15 +3638,15 @@ proc FindSpace::Next {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::BuildProject
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Builds the project and generate cdc and xap files
-#---------------------------------------------------------------------------------------------------
+#  Description: Builds the project and generate cdc and xap files
+#-------------------------------------------------------------------------------
 proc Operations::BuildProject {} {
     global projectDir
     global projectName
@@ -3920,15 +3889,15 @@ proc Operations::BuildProject {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::CleanProject
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Deletes cdc and xap related files in project
-#---------------------------------------------------------------------------------------------------
+#  Description: Deletes cdc and xap related files in project
+#-------------------------------------------------------------------------------
 proc Operations::CleanProject {} {
     global projectDir
     global projectName
@@ -3949,15 +3918,15 @@ proc Operations::CleanProject {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ReImport
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Imports XDC/XDD file for MN or CN
-#---------------------------------------------------------------------------------------------------
+#  Description: Imports XDC/XDD file for MN or CN
+#-------------------------------------------------------------------------------
 proc Operations::ReImport {} {
     global treePath
     global nodeIdList
@@ -4049,15 +4018,15 @@ proc Operations::ReImport {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::DeleteTreeNode
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Deletes a node in the tree
-#---------------------------------------------------------------------------------------------------
+#  Description: Deletes a node in the tree
+#-------------------------------------------------------------------------------
 proc Operations::DeleteTreeNode {} {
     global treePath
     global nodeIdList
@@ -4156,17 +4125,17 @@ puts "nxtSelCnt:$nxtSelCnt"
     thread::send [tsv::get application importProgress] "StopProgress"
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::DeleteList
 #
-#  Arguments : tempList  - list in which value to be deleted
-#              deleteVar - value to be deleted
-#              choice    - to indicate sent list
+#  Arguments: tempList  - List in which value to be deleted
+#             deleteVar - Value to be deleted
+#             choice    - To indicate sent list
 #
-#  Results : list with deleted value
+#  Results: list with deleted value
 #
-#  Description : Deletes variable if present in list
-#---------------------------------------------------------------------------------------------------
+#  Description: Deletes variable if present in list
+#-------------------------------------------------------------------------------
 proc Operations::DeleteList {tempList deleteVar choice} {
     if { $choice == 0 } {
         set res [lsearch $tempList $deleteVar]
@@ -4190,16 +4159,16 @@ proc Operations::DeleteList {tempList deleteVar choice} {
     return $tempList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::CleanList
 #
-#  Arguments : node   - node to be deleted
-#              choice - to indicate sent list
+#  Arguments: node   - Node to be deleted
+#             choice - To indicate sent list
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Deletes node in savedValueList and userPrefList according to choice
-#---------------------------------------------------------------------------------------------------
+#  Description: Deletes node in savedValueList and userPrefList according to choice
+#-------------------------------------------------------------------------------
 proc Operations::CleanList {node choice} {
     global savedValueList
     global userPrefList
@@ -4246,15 +4215,15 @@ proc Operations::CleanList {node choice} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GetNodeList
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : list containing nodes of MN and CN from tree widget
+#  Results: list containing nodes of MN and CN from tree widget
 #
-#  Description : Creates a node with given data
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates a node with given data
+#-------------------------------------------------------------------------------
 proc Operations::GetNodeList {} {
     global treePath
 
@@ -4277,15 +4246,15 @@ proc Operations::GetNodeList {} {
     return $nodeList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GetNodeIdType
 #
-#  Arguments : node - node of tree widget for which id and type is to be found
+#  Arguments: node - Node of tree widget for which id and type is to be found
 #
-#  Results : node id and node type
+#  Results: node id and node type
 #
-#  Description : Returns the node id and node type for the node from tree widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Returns the node id and node type for the node from tree widget
+#-------------------------------------------------------------------------------
 proc Operations::GetNodeIdType {node} {
     global treePath
     global nodeIdList
@@ -4336,15 +4305,15 @@ proc Operations::GetNodeIdType {node} {
     return [list $nodeId $nodeType]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ArrowUp
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Traverse the tree widget for up arrow key
-#---------------------------------------------------------------------------------------------------
+#  Description: Traverse the tree widget for up arrow key
+#-------------------------------------------------------------------------------
 proc Operations::ArrowUp {} {
     global treePath
     set node [$treePath selection get]
@@ -4379,15 +4348,15 @@ proc Operations::ArrowUp {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::_ArrowUp
 #
-#  Arguments : node - parent node of node to be highlighted
+#  Arguments: node - Parent node of node to be highlighted
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Highlights the node for up arrow key
-#---------------------------------------------------------------------------------------------------
+#  Description: Highlights the node for up arrow key
+#-------------------------------------------------------------------------------
 proc Operations::_ArrowUp {node} {
     global treePath
 
@@ -4407,15 +4376,15 @@ proc Operations::_ArrowUp {node} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ArrowDown
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Traverse the tree widget for down arrow key
-#---------------------------------------------------------------------------------------------------
+#  Description: Traverse the tree widget for down arrow key
+#-------------------------------------------------------------------------------
 proc Operations::ArrowDown {} {
     global treePath
 
@@ -4442,15 +4411,15 @@ proc Operations::ArrowDown {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::_ArrowDown
 #
-#  Arguments : node     - parent node of node to be highlighted
-#              origNode - selected node
-#  Results : -
+#  Arguments: node     - Parent node of node to be highlighted
+#             origNode - Selected node
+#  Results: -
 #
-#  Description : Highlights the node for down arrow key
-#---------------------------------------------------------------------------------------------------
+#  Description: Highlights the node for down arrow key
+#-------------------------------------------------------------------------------
 proc Operations::_ArrowDown {node origNode} {
     global treePath
     if { $node == "root" } {
@@ -4471,15 +4440,15 @@ proc Operations::_ArrowDown {node origNode} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ArrowLeft
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Collapse the highlighted node
-#---------------------------------------------------------------------------------------------------
+#  Description: Collapse the highlighted node
+#-------------------------------------------------------------------------------
 proc Operations::ArrowLeft {} {
     global treePath
     set node [$treePath selection get]
@@ -4490,15 +4459,15 @@ proc Operations::ArrowLeft {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ArrowRight
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Expands the highlighted node
-#---------------------------------------------------------------------------------------------------
+#  Description: Expands the highlighted node
+#-------------------------------------------------------------------------------
 proc Operations::ArrowRight {} {
     global treePath
     set node [$treePath selection get]
@@ -4509,13 +4478,13 @@ proc Operations::ArrowRight {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::AutoGenerateMNOBD ---- This function is currently deprecated shall
 #                                      be used for AutoGenerate MN obd sub menu
-#  Arguments : -
-#  Results : -
-#  Description : Auto generates object dictionary for MN and populates the tree.
-#---------------------------------------------------------------------------------------------------
+#  Arguments: -
+#  Results: -
+#  Description: Auto generates object dictionary for MN and populates the tree.
+#-------------------------------------------------------------------------------
 #proc Operations::AutoGenerateMNOBD {} {
 #    global treePath
 #    global nodeIdList
@@ -4580,17 +4549,17 @@ proc Operations::ArrowRight {} {
 #    }
 #}
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GenerateAutoName
 #
-#  Arguments : dir  - directory in which name of file is auto generated
-#              name - default file name for which unique file name is generated
-#              ext  - extension of the file
+#  Arguments: dir  - Directory in which name of file is auto generated
+#             name - Default file name for which unique file name is generated
+#             ext  - Extension of the file
 #
-#  Results : auto generated file name
+#  Results: auto generated file name
 #
-#  Description : Generates unique file name in the path
-#---------------------------------------------------------------------------------------------------
+#  Description: Generates unique file name in the path
+#-------------------------------------------------------------------------------
 proc Operations::GenerateAutoName {dir name ext} {
     #should check for extension but should send back unique name without extension
     for {set loopCount 1} {1} {incr loopCount} {
@@ -4602,15 +4571,15 @@ proc Operations::GenerateAutoName {dir name ext} {
     return $name$loopCount
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::GenerateCycleNo
 #
-#  Arguments : prescalLimit - upper limit of prescaler value
+#  Arguments: prescalLimit - Upper limit of prescaler value
 #
-#  Results : auto generated file name
+#  Results: auto generated file name
 #
-#  Description : Generates unique file name in the path
-#---------------------------------------------------------------------------------------------------
+#  Description: Generates unique file name in the path
+#-------------------------------------------------------------------------------
 proc Operations::GenerateCycleNo {prescalLimit} {
     #should check for extension but should send back unique name without extension
     set cycleNoList ""
@@ -4620,15 +4589,15 @@ proc Operations::GenerateCycleNo {prescalLimit} {
     return $cycleNoList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::Uniqkey
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Calculates clock seconds
-#---------------------------------------------------------------------------------------------------
+#  Description: Calculates clock seconds
+#-------------------------------------------------------------------------------
 proc Operations::Uniqkey { } {
      set key   [ expr { pow(2,31) + [ clock clicks ] } ]
      set key   [ string range $key end-8 end-3 ]
@@ -4636,7 +4605,7 @@ proc Operations::Uniqkey { } {
      return $key
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::Sleep
 #
 #  Arguments : ms - time to sleep
@@ -4644,7 +4613,7 @@ proc Operations::Uniqkey { } {
 #  Results : -
 #
 #  Description : Provides a sleep functionality to tcl
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc Operations::Sleep { ms } {
      set uniq [ Operations::Uniqkey ]
      set ::__sleep__tmp__$uniq 0
@@ -4653,15 +4622,15 @@ proc Operations::Sleep { ms } {
      unset ::__sleep__tmp__$uniq
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::ViewModeChanged
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Rebuilds the tree when view is changed
-#---------------------------------------------------------------------------------------------------
+#  Description: Rebuilds the tree when view is changed
+#-------------------------------------------------------------------------------
 proc Operations::ViewModeChanged {} {
     global projectDir
     global projectName
@@ -4718,15 +4687,15 @@ proc Operations::ViewModeChanged {} {
 }
 
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::SetVideoType
 #
-#  Arguments : videoMode - pointer of enum ViewMode
+#  Arguments: videoMode - Pointer of enum ViewMode
 #
-#  Results : -
+#  Results: -
 #
-#  Description : sets the view radio buttons based on the viewmode value from API
-#---------------------------------------------------------------------------------------------------
+#  Description: Sets the view radio buttons based on the viewmode value from API
+#-------------------------------------------------------------------------------
 proc Operations::SetVideoType {videoMode} {
 
     if { $videoMode == 1} {
@@ -4736,15 +4705,15 @@ proc Operations::SetVideoType {videoMode} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  Operations::RemoveAllFrames
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Removes all the property frames
-#---------------------------------------------------------------------------------------------------
+#  Description: Removes all the property frames
+#-------------------------------------------------------------------------------
 proc Operations::RemoveAllFrames {} {
     global f0
     global f1

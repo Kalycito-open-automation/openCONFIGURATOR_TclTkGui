@@ -1,88 +1,56 @@
-####################################################################################################
+################################################################################
+# \file   notebookManager.tcl
 #
+# \brief  Creates the windows (tablelist, console, tabs, tree)
 #
-#  NAME:     notebookManager.tcl
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-#  PURPOSE:  Creates the windows (tablelist, console, tabs, tree)
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-#  AUTHOR:   Kalycito Infotech Pvt Ltd
-#
-#  Copyright :(c) Kalycito Infotech Private Limited
-#
-#***************************************************************************************************
-#  COPYRIGHT NOTICE:
-#
-#  Project:      openCONFIGURATOR
-#
-#  License:
-#
-#    Redistribution and use in source and binary forms, with or without
-#    modification, are permitted provided that the following conditions
-#    are met:
-#
-#    1. Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#
-#    2. Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#
-#    3. Neither the name of Kalycito Infotech Private Limited nor the names of
-#       its contributors may be used to endorse or promote products derived
-#       from this software without prior written permission. For written
-#       permission, please contact info@kalycito.com.
-#
-#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#    COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#    POSSIBILITY OF SUCH DAMAGE.
-#
-#    Severability Clause:
-#
-#        If a provision of this License is or becomes illegal, invalid or
-#        unenforceable in any jurisdiction, that shall not affect:
-#        1. the validity or enforceability in that jurisdiction of any other
-#           provision of this License; or
-#        2. the validity or enforceability in other jurisdictions of that or
-#           any other provision of this License.
-#
-#***************************************************************************************************
-#
-#  REVISION HISTORY:
-#
-####################################################################################################
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+################################################################################
 
-
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NameSpace Declaration
 #
-#  namespace : NoteBookManager
-#---------------------------------------------------------------------------------------------------
+#  namespace: NoteBookManager
+#-------------------------------------------------------------------------------
 namespace eval NoteBookManager {
     variable _pageCounter 0
     variable _consoleCounter 0
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::create_tab
 #
-#  Arguments : nbpath  - frame path to create
-#              choice  - choice for index or subindex to create frame
+#  Arguments: nbpath - frame path to create
+#             choice - choice for index or subindex to create frame
 #
-#  Results : outerFrame - Basic frame
-#            tabInnerf0 - frame containing widgets describing the object (index id, Object name, subindex id )
-#            tabInnerf1 - frame containing widgets describing properties of object
+#  Results: outerFrame - Basic frame
+#           tabInnerf0 - frame containing widgets describing the object (index id, Object name, subindex id )
+#           tabInnerf1 - frame containing widgets describing properties of object
 #
-#  Description : Creates the GUI for Index and subindex
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the GUI for index and subindex
+#-------------------------------------------------------------------------------
 proc NoteBookManager::create_tab { nbpath choice } {
     variable _pageCounter
     incr _pageCounter
@@ -249,17 +217,17 @@ proc NoteBookManager::create_tab { nbpath choice } {
     return [list $outerFrame $tabInnerf0 $tabInnerf1 $sf]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::create_nodeFrame
 #
-#  Arguments : nbpath  - frame path to create
-#              choice  - choice for pdo to create frame
+#  Arguments: nbpath - frame path to create
+#             choice - choice for pdo to create frame
 #
-#  Results : basic frame on which all widgets are created
-#            tablelist widget path
+#  Results: basic frame on which all widgets are created
+#           tablelist widget path
 #
-#  Description : Creates the tablelist for TPDO and RPDO
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the tablelist for TPDO and RPDO
+#-------------------------------------------------------------------------------
 proc NoteBookManager::create_nodeFrame {nbpath choice} {
     variable _pageCounter
     incr _pageCounter
@@ -441,17 +409,17 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
     return $resultList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::create_table
 #
-#  Arguments : nbpath  - frame path to create
-#              choice  - choice for pdo to create frame
+#  Arguments: nbpath - frame path to create
+#             choice - choice for pdo to create frame
 #
-#  Results : basic frame on which all widgets are created
-#            tablelist widget path
+#  Results: basic frame on which all widgets are created
+#           tablelist widget path
 #
-#  Description : Creates the tablelist for TPDO and RPDO
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the tablelist for TPDO and RPDO
+#-------------------------------------------------------------------------------
 proc NoteBookManager::create_table {nbpath choice} {
     variable _pageCounter
     incr _pageCounter
@@ -535,17 +503,17 @@ proc NoteBookManager::create_table {nbpath choice} {
     return  [list $outerFrame $st]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::create_infoWindow
 #
-#  Arguments : nbpath  - path of the notebook
-#              tabname - title for the created tab
-#              choice  - choice to create Information, Error and Warning windows
+#  Arguments: nbpath - path of the notebook
+#             tabname - title for the created tab
+#             choice - choice to create information, error and warning windows
 #
-#  Results : path of the inserted frame in notebook
+#  Results: Path of the inserted frame in notebook
 #
-#  Description : Creates displaying Information, Error and Warning messages windows
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates information, error and warning message windows
+#-------------------------------------------------------------------------------
 proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
     global infoWindow
     global warWindow
@@ -592,16 +560,16 @@ proc NoteBookManager::create_infoWindow {nbpath tabname choice} {
     return $frmPath
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::create_treeBrowserWindow
 #
-#  Arguments : nbpath  - path of the notebook
+#  Arguments: nbpath - path of the notebook
 #
-#  Results : path of the inserted frame in notebook
-#            path of the tree widget
+#  Results: path of the inserted frame in notebook
+#           path of the tree widget
 #
-#  Description : Creates the tree widget in notebook
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the tree widget in notebook
+#-------------------------------------------------------------------------------
 proc NoteBookManager::create_treeBrowserWindow {nbpath } {
     global treeFrame
     global treePath
@@ -638,15 +606,15 @@ proc NoteBookManager::create_treeBrowserWindow {nbpath } {
     return [list $frmPath $treeBrowser]
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::ConvertDec
 #
-#  Arguments : framePath - path of the frame containing value and default entry widget
+#  Arguments: framePath - Path of the frame containing value and default entry widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : converts value into decimal and changes validation for entry
-#---------------------------------------------------------------------------------------------------
+#  Description: Converts value into decimal and changes validation for entry
+#-------------------------------------------------------------------------------
 proc NoteBookManager::ConvertDec {framePath0 framePath1} {
     global lastConv
     global userPrefList
@@ -699,15 +667,15 @@ proc NoteBookManager::ConvertDec {framePath0 framePath1} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::InsertDecimal
 #
-#  Arguments : entryPath - path of the entry widget
+#  Arguments: entryPath - Path of the entry widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Convert the value into decimal and insert into the entry widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Convert the value into decimal and inserts it into the entry widget
+#-------------------------------------------------------------------------------
 proc NoteBookManager::InsertDecimal {entryPath dataType} {
     set entryValue [$entryPath get]
     if { [string match -nocase "0x*" $entryValue] } {
@@ -719,15 +687,15 @@ proc NoteBookManager::InsertDecimal {entryPath dataType} {
     $entryPath insert 0 $entryValue
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::ConvertHex
 #
-#  Arguments : framePath - path containing the value and default entry widget
+#  Arguments: framePath - Path containing the value and default entry widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : converts the value to hexadecimal and changes validation for entry
-#---------------------------------------------------------------------------------------------------
+#  Description: Converts the value to hexadecimal and changes validation for entry
+#-------------------------------------------------------------------------------
 proc NoteBookManager::ConvertHex {framePath0 framePath1} {
     global lastConv
     global userPrefList
@@ -779,15 +747,15 @@ proc NoteBookManager::ConvertHex {framePath0 framePath1} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::InsertHex
 #
-#  Arguments : entryPath - path of the entry widget
+#  Arguments: entryPath - Path of the entry widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Convert the value into hexadecimal and insert into the entry widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Convert the value into hexadecimal and inserts it into the entry widget
+#-------------------------------------------------------------------------------
 proc NoteBookManager::InsertHex {entryPath dataType} {
     set entryValue [$entryPath get]
     if { $entryValue != "" } {
@@ -802,15 +770,15 @@ proc NoteBookManager::InsertHex {entryPath dataType} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::AppendZero
 #
-#  Arguments : input     - string to be append with zero
-#              reqLength - length upto zero needs to be appended
-#  Results : -
+#  Arguments: input - string to be append with zero
+#             reqLength - length upto zero needs to be appended
+#  Results: -
 #
-#  Description : Append zeros into the input until the required length is reached
-#---------------------------------------------------------------------------------------------------
+#  Description: Append zeros to the input until the required length is reached
+#-------------------------------------------------------------------------------
 proc NoteBookManager::AppendZero {input reqLength} {
     while {[string length $input] < $reqLength} {
         set input 0$input
@@ -818,15 +786,15 @@ proc NoteBookManager::AppendZero {input reqLength} {
     return $input
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::CountLeadZero
 #
-#  Arguments : input - string
+#  Arguments: input - string
 #
-#  Results : loopCount - number of leading zeros in input
+#  Results: loopCount - number of leading zeros in input
 #
-#  Description : Count the leading zeros of the input
-#---------------------------------------------------------------------------------------------------
+#  Description: Count the leading zeros of the input
+#-------------------------------------------------------------------------------
 proc NoteBookManager::CountLeadZero {input} {
     for { set loopCount 0 } { $loopCount < [string length $input] } {incr loopCount} {
         if { [string match 0 [string index $input $loopCount] ] == 1 } {
@@ -838,16 +806,16 @@ proc NoteBookManager::CountLeadZero {input} {
     return $loopCount
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::SaveValue
 #
-#  Arguments : frame0 - frame containing the widgets describing the object (index id, Object name, subindex id )
-#              frame1 - frame containing the widgets describing properties of object
+#  Arguments: frame0 - frame containing the widgets describing the object (index id, Object name, subindex id )
+#             frame1 - frame containing the widgets describing properties of object
 #
-#  Results :  -
+#  Results:  -
 #
-#  Description : save the entered value for index and subindex
-#---------------------------------------------------------------------------------------------------
+#  Description: Save the entered value for index and subindex
+#-------------------------------------------------------------------------------
 proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
     global nodeSelect
     global treePath
@@ -922,16 +890,16 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
     Operations::SingleClickNode $nodeSelect
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::DiscardValue
 #
-#  Arguments : frame0 - frame containing widgets describing the object (index id, Object name, subindex id )
-#              frame1 - frame containing widgets describing properties of object
+#  Arguments: frame0 - frame containing widgets describing the object (index id, Object name, subindex id )
+#             frame1 - frame containing widgets describing properties of object
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Discards the entered values and displays last saved values
-#---------------------------------------------------------------------------------------------------
+#  Description: Discards the entered values and displays last saved values
+#-------------------------------------------------------------------------------
 proc NoteBookManager::DiscardValue {frame0 frame1} {
     global nodeSelect
     global userPrefList
@@ -942,16 +910,16 @@ proc NoteBookManager::DiscardValue {frame0 frame1} {
     return
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::SaveMNValue
 #
-#  Arguments : frame0 - frame containing the widgets describing the object (index id, Object name, subindex id )
-#              frame1 - frame containing the widgets describing properties of object
+#  Arguments: frame0 - frame containing the widgets describing the object (index id, Object name, subindex id )
+#             frame1 - frame containing the widgets describing properties of object
 #
-#  Results :  -
+#  Results: -
 #
-#  Description : save the entered value for MN property window
-#---------------------------------------------------------------------------------------------------
+#  Description: save the entered value for MN property window
+#-------------------------------------------------------------------------------
 proc NoteBookManager::SaveMNValue { frame0 frame1 } {
     global nodeSelect
     global treePath
@@ -1050,16 +1018,16 @@ proc NoteBookManager::SaveMNValue { frame0 frame1 } {
     Validation::ResetPromptFlag
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::SaveCNValue
 #
-#  Arguments : frame0 - frame containing the widgets describing the object (index id, Object name, subindex id )
-#              frame1 - frame containing the widgets describing properties of object
+#  Arguments: frame0 - frame containing the widgets describing the object (index id, Object name, subindex id )
+#             frame1 - frame containing the widgets describing properties of object
 #
-#  Results :  -
+#  Results:  -
 #
-#  Description : save the entered value for MN property window
-#---------------------------------------------------------------------------------------------------
+#  Description: Saves the entered value for MN property window
+#-------------------------------------------------------------------------------
 proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalDatatype ""}} {
     global nodeSelect
     global nodeIdList
@@ -1263,18 +1231,18 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
     Validation::ResetPromptFlag
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::StartEdit
 #
-#  Arguments : tablePath   - path of the tablelist widget
-#              rowIndex    - row of the edited cell
-#              columnIndex - column of the edited cell
-#              text        - entered value
+#  Arguments: tablePath   - Path of the tablelist widget
+#             rowIndex    - Row of the edited cell
+#             columnIndex - Column of the edited cell
+#             text        - Entered value
 #
-#  Results : text - to be displayed in tablelist
+#  Results: text - To be displayed in tablelist
 #
-#  Description : to validate the entered value
-#---------------------------------------------------------------------------------------------------
+#  Description: To validate the entered value
+#-------------------------------------------------------------------------------
 proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
 
     set win [$tablePath editwinpath]
@@ -1298,18 +1266,18 @@ proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
     return $text
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::StartEditCombo
 #
-#  Arguments :  tablePath   - path of the tablelist widget
-#       rowIndex    - row of the edited cell
-#       columnIndex - column of the edited cell
-#       text        - entered value
+#  Arguments:  tablePath   - path of the tablelist widget
+#              rowIndex    - row of the edited cell
+#              columnIndex - column of the edited cell
+#              text        - entered value
 #
-#  Results : text - to be displayed in tablelist
+#  Results: text - To be displayed in tablelist
 #
-#  Description : to validate the entered value
-#---------------------------------------------------------------------------------------------------
+#  Description: To validate the entered value
+#-------------------------------------------------------------------------------
 proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     global treePath
 
@@ -1374,31 +1342,31 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     return $text
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::EndEdit
 #
-#  Arguments : tablePath   - path of the tablelist widget
-#              rowIndex    - row of the edited cell
-#              columnIndex - column of the edited cell
-#              text        - entered value
+#  Arguments: tablePath   - Path of the tablelist widget
+#             rowIndex    - Row of the edited cell
+#             columnIndex - Column of the edited cell
+#             text        - Entered value
 #
-#  Results : text - to be displayed in tablelist
+#  Results: text - To be displayed in tablelist
 #
-#  Description : to validate the entered value when focus leave the cell
-#---------------------------------------------------------------------------------------------------
+#  Description: To validate the entered value when the focus goes out of the cell
+#-------------------------------------------------------------------------------
 proc NoteBookManager::EndEdit {tablePath rowIndex columnIndex text} {
     return $text
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::SaveTable
 #
-#  Arguments : tableWid - path of the tablelist widget
+#  Arguments: tableWid - Path of the tablelist widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : to validate and save the validated values in tablelist widget
-#---------------------------------------------------------------------------------------------------
+#  Description: To validate and save the validated values in tablelist widget
+#-------------------------------------------------------------------------------
 proc NoteBookManager::SaveTable {tableWid} {
     global nodeSelect
     global treePath
@@ -1533,15 +1501,15 @@ proc NoteBookManager::SaveTable {tableWid} {
     Validation::ResetPromptFlag
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::DiscardTable
 #
-#  Arguments : tableWid  - path of the tablelist widget
+#  Arguments: tableWid - Path of the tablelist widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Discards the entered values and displays last saved values
-#---------------------------------------------------------------------------------------------------
+#  Description: Discards the entered values and displays last saved values
+#-------------------------------------------------------------------------------
 proc NoteBookManager::DiscardTable {tableWid} {
 
     global nodeSelect
@@ -1551,15 +1519,15 @@ proc NoteBookManager::DiscardTable {tableWid} {
     Operations::SingleClickNode $nodeSelect
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::GetComboValue
 #
-#  Arguments : comboPath - path of the Combobox widget
+#  Arguments: comboPath - Path of the Combobox widget
 #
-#  Results : selected value
+#  Results: Selected value
 #
-#  Description : gets the selected index and returns the corresponding value
-#---------------------------------------------------------------------------------------------------
+#  Description: Gets the selected index and returns the corresponding value
+#-------------------------------------------------------------------------------
 proc NoteBookManager::GetComboValue {comboPath} {
     set comboState [$comboPath cget -state]
     set value [$comboPath getvalue]
@@ -1574,15 +1542,15 @@ proc NoteBookManager::GetComboValue {comboPath} {
 
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::GetEntryValue
 #
-#  Arguments : entryPath - path of the entry box widget
+#  Arguments: entryPath - Path of the entry box widget
 #
-#  Results : selected value
+#  Results: Selected value
 #
-#  Description : gets the value entered in entry widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Gets the value entered in entry box widget
+#-------------------------------------------------------------------------------
 proc NoteBookManager::GetEntryValue {entryPath} {
     set entryState [$entryPath cget -state]
     set entryValue [$entryPath get]
@@ -1590,15 +1558,15 @@ proc NoteBookManager::GetEntryValue {entryPath} {
     return $entryValue
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::SetEntryValue
 #
-#  Arguments : entryPath - path of the entry box widget
+#  Arguments: entryPath - Path of the entry box widget
 #
-#  Results : selected value
+#  Results: Selected value
 #
-#  Description : gets the value entered in entry widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Gets the value entered in entry widget
+#-------------------------------------------------------------------------------
 proc NoteBookManager::SetEntryValue {entryPath insertValue} {
     set entryState [$entryPath cget -state]
     $entryPath configure -state normal
@@ -1607,16 +1575,16 @@ proc NoteBookManager::SetEntryValue {entryPath insertValue} {
     $entryPath configure -state $entryState
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::GenerateCnNodeList
 #
-#  Arguments : comboPath  - path of the Combobox widget
-#              value      - value to set into the Combobox widget
+#  Arguments: comboPath  - Path of the Combobox widget
+#             value      - Value to set into the Combobox widget
 #
-#  Results : selected value
+#  Results: Selected value
 #
-#  Description : gets the selected value and sets the value into the Combobox widget
-#---------------------------------------------------------------------------------------------------
+#  Description: Gets the selected value and sets it into the Combobox widget
+#-------------------------------------------------------------------------------
 proc NoteBookManager::GenerateCnNodeList {} {
     set cnNodeList ""
     for { set inc 1 } { $inc < 240 } { incr inc } {
@@ -1625,16 +1593,16 @@ proc NoteBookManager::GenerateCnNodeList {} {
     return $cnNodeList
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::StationRadioChanged
 #
-#  Arguments : framePath   - path of frame containing the check button
-#              radioVal   - varaible of the radio buttons
+#  Arguments: framePath - Path of frame containing the check button
+#             radioVal  - Variable of the radio buttons
 #
-#  Results : -
+#  Results: -
 #
-#  Description : enables or disasbles the spinbox based on the check button selection
-#---------------------------------------------------------------------------------------------------
+#  Description: Enables or disables the spinbox based on the selection of check button
+#-------------------------------------------------------------------------------
 proc NoteBookManager::StationRadioChanged {framePath radioVal } {
     global lastRadioVal
     if { $lastRadioVal != $radioVal } {
@@ -1658,16 +1626,16 @@ proc NoteBookManager::StationRadioChanged {framePath radioVal } {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::forceCycleChecked
 #
-#  Arguments : framePath   - path of frame containing the check button
-#              check_var   - varaible of the check box
+#  Arguments: framePath - Path of frame containing the check button
+#             check_var - Variable of the check box
 #
-#  Results : -
+#  Results: -
 #
-#  Description : enables or disasbles the spinbox based on the check button selection
-#---------------------------------------------------------------------------------------------------
+#  Description: Enables or disasbles the spinbox based on the selection of check button
+#-------------------------------------------------------------------------------
 proc NoteBookManager::forceCycleChecked { framePath check_var } {
     global $check_var
     Validation::SetPromptFlag
@@ -1679,15 +1647,15 @@ proc NoteBookManager::forceCycleChecked { framePath check_var } {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::RetStationEnumValue
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : enables or disasbles the spinbox based on the check button selection
-#---------------------------------------------------------------------------------------------------
+#  Description: Enables or disasbles the spinbox based on the selection of check button
+#-------------------------------------------------------------------------------
 proc NoteBookManager::RetStationEnumValue {  } {
     global f4
     set radioButtonFrame [lindex $f4 2]
@@ -1712,15 +1680,15 @@ proc NoteBookManager::RetStationEnumValue {  } {
     return $returnVal
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NoteBookManager::LimitFocusChanged
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : based on the entry path it validates value with upper limit or lower limit
-#---------------------------------------------------------------------------------------------------
+#  Description: It validates value with upper limit or lower limit based on the entry path
+#-------------------------------------------------------------------------------
 proc NoteBookManager::LimitFocusChanged {framePath entryPath} {
     catch {
         global UPPER_LIMIT
@@ -1832,7 +1800,7 @@ proc NoteBookManager::ValueFocusChanged {framePath entryPath} {
         set valueState [$entryPath cget -state]
         set valueInput [$entryPath get]
         if { $valueState != "normal" || $valueInput == "" || $valueInput == "-" || [string match -nocase "0x" $valueInput] } {
-            puts "returning focus changed"
+            puts "Returning focus changed"
             return
         }
         if { [string match "*.en_value1" $entryPath] } {
