@@ -1,50 +1,32 @@
 ################################################################################
+# \file   linux.cmake
 #
-# Project: openCONFIGURATOR-TclTk
+# \brief  Linux specific CMake file for openCONFIGURATOR-TclTk package
 #
-# (c) 2014 Kalycito Infotech Pvt Ltd., http://kalycito.com
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-# Description: Linux specific CMake file for openconfigurator-tcltk package
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-# License:
-#   Redistribution and use in source and binary forms, with or without
-#   modification, are permitted provided that the following conditions
-#   are met:
-#
-#   1. Redistributions of source code must retain the above copyright
-#      notice, this list of conditions and the following disclaimer.
-#
-#   2. Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#
-#   3. Neither the name of the copyright holders nor the names of its
-#      contributors may be used to endorse or promote products derived
-#      from this software without prior written permission. For written
-#      permission, please contact info@kalycito.com.
-#
-#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#   COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#   BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#   CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#   POSSIBILITY OF SUCH DAMAGE.
-#
-#   Severability Clause:
-#
-#       If a provision of this License is or becomes illegal, invalid or
-#       unenforceable in any jurisdiction, that shall not affect:
-#       1. the validity or enforceability in that jurisdiction of any other
-#          provision of this License; or
-#       2. the validity or enforceability in other jurisdictions of that or
-#          any other provision of this License.
-#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
 SET(DESTDIR "${CMAKE_BINARY_DIR}")
@@ -114,10 +96,7 @@ FILE(RENAME "${CMAKE_CURRENT_BINARY_DIR}/postrm.in" "${CMAKE_CURRENT_BINARY_DIR}
 
 SET(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/postinst;${CMAKE_CURRENT_BINARY_DIR}/preinst;${CMAKE_CURRENT_BINARY_DIR}/postrm")
 
-
 SET(PACKAGE_EXCLUDE_PLATFORM ".dll|.bat|.exe|.desktop")
-
-
 
 SET(CPACK_STRIP_FILES "ON")
 
@@ -131,7 +110,7 @@ SET(CPACK_STRIP_FILES "ON")
 # objdump -x /usr/share/openconfigurator-tcltk/openCONFIGURATOR.so | grep NEEDED
 
 
-# use the LSB stuff if possible
+# Use the LSB stuff if possible
 EXECUTE_PROCESS(
   COMMAND cat /etc/lsb-release
   COMMAND grep DISTRIB_ID
@@ -141,6 +120,7 @@ EXECUTE_PROCESS(
   OUTPUT_VARIABLE LSB_ID
   RESULT_VARIABLE LSB_ID_RESULT
 )
+
 EXECUTE_PROCESS(
   COMMAND cat /etc/lsb-release
   COMMAND grep DISTRIB_RELEASE
@@ -150,6 +130,7 @@ EXECUTE_PROCESS(
   OUTPUT_VARIABLE LSB_VER
   RESULT_VARIABLE LSB_VER_RESULT
 )
+
 string(TOLOWER ${LSB_ID} LSB_ID)
 message("LSB output: ${LSB_ID_RESULT}:${LSB_ID} ${LSB_VER_RESULT}:${LSB_VER}")
 #if(NOT ${LSB_ID} STREQUAL "")

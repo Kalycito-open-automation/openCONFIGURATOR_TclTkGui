@@ -1,50 +1,32 @@
 ################################################################################
+# \file   windows.cmake
 #
-# Project: openCONFIGURATOR-TclTk
+# \brief  Windows specific CMake file for openCONFIGURATOR-TclTk package
 #
-# (c) 2014 Kalycito Infotech Pvt Ltd., http://kalycito.com
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-# Description: Windows specific CMake file for openconfigurator-tcltk package
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-# License:
-#   Redistribution and use in source and binary forms, with or without
-#   modification, are permitted provided that the following conditions
-#   are met:
-#
-#   1. Redistributions of source code must retain the above copyright
-#      notice, this list of conditions and the following disclaimer.
-#
-#   2. Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#
-#   3. Neither the name of the copyright holders nor the names of its
-#      contributors may be used to endorse or promote products derived
-#      from this software without prior written permission. For written
-#      permission, please contact info@kalycito.com.
-#
-#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#   COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#   BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#   CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#   POSSIBILITY OF SUCH DAMAGE.
-#
-#   Severability Clause:
-#
-#       If a provision of this License is or becomes illegal, invalid or
-#       unenforceable in any jurisdiction, that shall not affect:
-#       1. the validity or enforceability in that jurisdiction of any other
-#          provision of this License; or
-#       2. the validity or enforceability in other jurisdictions of that or
-#          any other provision of this License.
-#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
 SET(CPACK_GENERATOR "NSIS")
@@ -65,13 +47,12 @@ SET(CPACK_NSIS_CREATE_ICONS_EXTRA "CreateShortCut  \\\"$DESKTOP\\\\${ORG_PROJECT
 SET(CPACK_NSIS_DELETE_ICONS_EXTRA "Delete \\\"$SMPROGRAMS\\\\$MUI_TEMP\\\\${ORG_PROJECT_NAME}.lnk\\\" \\n Delete \\\"$DESKTOP\\\\${ORG_PROJECT_NAME}.lnk\\\"")
 SET(CPACK_NSIS_HELP_LINK "http://sourceforge.net/p/openconf/discussion/")
 SET(CPACK_NSIS_URL_INFO_ABOUT "http://www.kalycito.com")
-SET(CPACK_NSIS_CONTACT "powerlink-team@kalycito.com")            
+SET(CPACK_NSIS_CONTACT "powerlink-team@kalycito.com")
 SET(CPACK_NSIS_MUI_FINISHPAGE_RUN "..\\\\${ORG_PROJECT_NAME}.exe")
 
 SET(CPACK_PACKAGE_DEFAULT_LOCATION ".")
 
 SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL "ON")
-
 
 
 #SET(CPACK_NSIS_INSTALLER_ICON_CODE "!define MUI_ICON \\\"${CMAKE_CURRENT_SOURCE_DIR}/images/openConfig.ico\\\"")
