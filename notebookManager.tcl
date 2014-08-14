@@ -1426,7 +1426,7 @@ proc NoteBookManager::SaveTable {tableWid} {
                 }
 
                 set value $length$offset$reserved$locSidxId$locIdxId
-                puts "value:::: $value"
+                # puts "value:::: $value"
                 if { [string length $value] != 16 } {
                     set flag 1
                     incr rowCount
@@ -1473,7 +1473,7 @@ proc NoteBookManager::SaveTable {tableWid} {
                     set value [string range [$tableWid cellcget $rowCount,1 -text] 2 end]
                 }
 
-                puts "value: $value"
+                # puts "value: $value"
 
                 #0x is appended when saving value to indicate it is a hexa decimal number
                 #if { ([string length $value] < 1) || ([string length $value] > 2) } {
@@ -1800,7 +1800,7 @@ proc NoteBookManager::ValueFocusChanged {framePath entryPath} {
         set valueState [$entryPath cget -state]
         set valueInput [$entryPath get]
         if { $valueState != "normal" || $valueInput == "" || $valueInput == "-" || [string match -nocase "0x" $valueInput] } {
-            puts "Returning focus changed"
+           # puts "Returning focus changed"
             return
         }
         if { [string match "*.en_value1" $entryPath] } {

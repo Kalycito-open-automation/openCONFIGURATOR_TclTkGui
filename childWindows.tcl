@@ -577,11 +577,8 @@ proc ChildWindows::SaveProjectAsWindow {} {
         set tempProjectDir [file dirname $saveProjectAs]
         set tempProjectName [file tail $saveProjectAs]
         set tempProjectNameNoExtn [string range $tempProjectName 0 end-[string length [file extension $tempProjectName]]]
-        #catch {file mkdir $saveProjectAs}
-        #catch {file mkdir [file join $saveProjectAs cdc_xap]}
-        #catch {file mkdir [file join $saveProjectAs octx]}
-        #catch {file mkdir [file join $saveProjectAs scripts]}
-        puts "saveProjectAs:$saveProjectAs tempProjectDir:$tempProjectDir tempProjectName:$tempProjectName tempProjectNameNoExtn:$tempProjectNameNoExtn"
+
+        #puts "saveProjectAs:$saveProjectAs tempProjectDir:$tempProjectDir tempProjectName:$tempProjectName tempProjectNameNoExtn:$tempProjectNameNoExtn"
         thread::send [tsv::set application importProgress] "StartProgress"
         set result [openConfLib::SaveProjectAs $tempProjectName $saveProjectAs]
 
@@ -1035,7 +1032,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autog
         return
     }
 
-puts "importing wrapper $Operations::viewType"
+#puts "importing wrapper $Operations::viewType"
 
     set result [WrapperInteractions::Import OBD-$mnCount-1 $mnNodeId]
     thread::send  [tsv::set application importProgress] "StopProgress"
@@ -1084,7 +1081,7 @@ puts "importing wrapper $Operations::viewType"
         $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
     }
 
-    puts "$Operations::viewType :: viwe: $st_viewType"
+    #puts "$Operations::viewType :: viwe: $st_viewType"
 }
 
 #-------------------------------------------------------------------------------

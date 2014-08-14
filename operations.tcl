@@ -722,7 +722,7 @@ proc Operations::openProject {projectfilename} {
     set result [openConfLib::GetActiveView]
     openConfLib::ShowErrorMessage [lindex $result 0]
     set st_viewType [lindex $result 1]
-    puts "st_viewType:$st_viewType"
+    # puts "st_viewType:$st_viewType"
     if {$st_viewType} {
         set Operations::viewType "EXPERT"
     } else {
@@ -2356,7 +2356,7 @@ proc Operations::CNProperties {node nodeId} {
     $tmpInnerf0.cycleframe.en_time configure -state disabled
 
     set nodeIdSidx [lindex [Validation::InputToHex $nodeId INTEGER8] 0]
-    puts "nodeIdSidx:$nodeIdSidx"
+    # puts "nodeIdSidx:$nodeIdSidx"
     set Operations::PRES_TIMEOUT_OBJ [list 0x1F92 $nodeIdSidx]
 
 
@@ -2461,7 +2461,7 @@ proc Operations::CNProperties {node nodeId} {
     openConfLib::ShowErrorMessage [lindex $result 0]
     set CNFeatureMultiplexFlag [lindex $result 1]
 
-    puts "MNFeatureMultiplexFlag:$MNFeatureMultiplexFlag CNFeatureMultiplexFlag:$CNFeatureMultiplexFlag"
+    # puts "MNFeatureMultiplexFlag:$MNFeatureMultiplexFlag CNFeatureMultiplexFlag:$CNFeatureMultiplexFlag"
     if { $MNFeatureMultiplexFlag && $CNFeatureMultiplexFlag } {
         if {$mnExists} {
             set errMultiFlag 0
@@ -2542,7 +2542,7 @@ proc Operations::CNProperties {node nodeId} {
                     }
                     $tmpInnerf2.sp_cycleNo configure -state normal
                 }
-                puts "cnStationType:$cnStationType"
+                # puts "cnStationType:$cnStationType"
             }
         }
     }
@@ -2555,7 +2555,7 @@ proc Operations::CNProperties {node nodeId} {
     openConfLib::ShowErrorMessage [lindex $result 0]
     set CNFeatureChainFlag [lindex $result 1]
 
-    puts "MNFeatureChainFlag:$MNFeatureChainFlag  CNFeatureChainFlag:$CNFeatureChainFlag"
+    # puts "MNFeatureChainFlag:$MNFeatureChainFlag  CNFeatureChainFlag:$CNFeatureChainFlag"
     if { $MNFeatureChainFlag && $CNFeatureChainFlag } {
         $tmpInnerf1.ra_StChain configure -state normal
         if {$cnStationType == 2} {
@@ -3048,7 +3048,7 @@ proc Operations::GetNodelistWithName {} {
 proc Operations::GetIndexListWithName {nodeIdparm pdoTypeparm} {
     global treePath
 
-    puts "IDX: nodeIdparm:$nodeIdparm pdoTypeparm:$pdoTypeparm"
+    # puts "IDX: nodeIdparm:$nodeIdparm pdoTypeparm:$pdoTypeparm"
     #puts "treePath: $treePath"
     list mappingidxlist
     set mappingidxlist ""
@@ -3067,7 +3067,7 @@ proc Operations::GetIndexListWithName {nodeIdparm pdoTypeparm} {
                 continue
             }
             set subindexList [lindex $result 2]
-            puts "index:$index  subindexList:$subindexList"
+            # puts "index:$index  subindexList:$subindexList"
             foreach subIndex $subindexList {
                 set result [openConfLib::GetSubIndexAttribute $nodeIdparm $index $subIndex $::PDOMAPPING]
                 if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
@@ -3158,7 +3158,7 @@ proc Operations::GetIndexListWithName {nodeIdparm pdoTypeparm} {
 proc Operations::GetSubIndexlistWithName {nodeIdparm idxIdparm pdoTypeparm} {
     global treePath
 
-    puts "SIdx: nodeIdparm:$nodeIdparm idxIdparm:$idxIdparm pdoTypeparm:$pdoTypeparm"
+    # puts "SIdx: nodeIdparm:$nodeIdparm idxIdparm:$idxIdparm pdoTypeparm:$pdoTypeparm"
     #puts "treePath: $treePath"
     list mappingSidxList
     set mappingSidxList ""
@@ -3228,7 +3228,7 @@ proc Operations::GetSubIndexlistWithName {nodeIdparm idxIdparm pdoTypeparm} {
 proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     global treePath
 
-    puts "Len: nodeIdparm:$nodeIdparm idxIdparm:$idxIdparm sidxparm:$sidxparm"
+    # puts "Len: nodeIdparm:$nodeIdparm idxIdparm:$idxIdparm sidxparm:$sidxparm"
     #puts "treePath: $treePath"
     list mappingSidxLength
     set mappingSidxLength ""
@@ -4093,9 +4093,9 @@ proc Operations::DeleteTreeNode {} {
 
     set parent [$treePath parent $node]
     set nxtSelList [$treePath nodes $parent]
-puts "parent:$parent  nxtSelList:$nxtSelList"
+# puts "parent:$parent  nxtSelList:$nxtSelList"
     # to highlight the next logical node after the deleted node
-    puts "llenth: [llength $nxtSelList]"
+# puts "llenth: [llength $nxtSelList]"
 
     if {[llength $nxtSelList] == 1} {
         #it is the only node so select parent
@@ -4105,7 +4105,7 @@ puts "parent:$parent  nxtSelList:$nxtSelList"
         Operations::SingleClickNode $parent
     } else {
         set nxtSelCnt [expr [lsearch $nxtSelList $node]+1]
-puts "nxtSelCnt:$nxtSelCnt"
+#puts "nxtSelCnt:$nxtSelCnt"
         if {$nxtSelCnt >= [llength $nxtSelList]} {
             #it is the last node select previous node
             set nxtSelCnt [expr $nxtSelCnt-2]
@@ -4115,7 +4115,7 @@ puts "nxtSelCnt:$nxtSelCnt"
         }
 
         catch {set nxtSel [lindex $nxtSelList $nxtSelCnt] }
-        puts "nxtSel:$nxtSel"
+        # puts "nxtSel:$nxtSel"
         catch {$treePath selection set $nxtSel}
         catch {$treePath delete $node}
         #should display logical next node after deleting currently highlighted node
@@ -4637,7 +4637,7 @@ proc Operations::ViewModeChanged {} {
     global lastVideoModeSel
     global st_viewType
 
-    puts "projectDir:$projectDir projectName:$projectName lastVideoModeSel:$lastVideoModeSel st_viewType:$st_viewType"
+    # puts "projectDir:$projectDir projectName:$projectName lastVideoModeSel:$lastVideoModeSel st_viewType:$st_viewType"
 
     if { $projectDir == "" || $projectName == "" } {
         return
