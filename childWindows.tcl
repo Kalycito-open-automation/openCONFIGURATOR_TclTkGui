@@ -1,83 +1,52 @@
-####################################################################################################
+################################################################################
+# \file   childWindows.tcl
 #
+# \brief  Contains the child window displayed in application.
 #
-# NAME:     childWindows.tcl
+# \copyright (c) 2014, Kalycito Infotech Private Limited
+#                    All rights reserved.
 #
-# PURPOSE:  Contains the child window displayed in application
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the copyright holders nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 #
-# AUTHOR:   Kalycito Infotech Pvt Ltd
-#
-# COPYRIGHT NOTICE:
-#
-#***************************************************************************************************
-# (c) Kalycito Infotech Private Limited
-#
-#  Project:      openCONFIGURATOR
-#
-#  License:
-#
-#    Redistribution and use in source and binary forms, with or without
-#    modification, are permitted provided that the following conditions
-#    are met:
-#
-#    1. Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#
-#    2. Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#
-#    3. Neither the name of Kalycito Infotech Private Limited nor the names of
-#       its contributors may be used to endorse or promote products derived
-#       from this software without prior written permission. For written
-#       permission, please contact info@kalycito.com.
-#
-#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-#    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-#    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-#    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-#    COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-#    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-#    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-#    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-#    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#    POSSIBILITY OF SUCH DAMAGE.
-#
-#    Severability Clause:
-#
-#        If a provision of this License is or becomes illegal, invalid or
-#        unenforceable in any jurisdiction, that shall not affect:
-#        1. the validity or enforceability in that jurisdiction of any other
-#           provision of this License; or
-#        2. the validity or enforceability in other jurisdictions of that or
-#           any other provision of this License.
-#
-#***************************************************************************************************
-#
-#  REVISION HISTORY:
-# $Log:      $
-####################################################################################################
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+################################################################################
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  NameSpace Declaration
 #
-#  namespace : ChildWindows
-#---------------------------------------------------------------------------------------------------
+#  namespace: ChildWindows
+#-------------------------------------------------------------------------------
 namespace eval ChildWindows {
 
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::StartUp
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the GUI during startup
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the GUI during startup
+#-------------------------------------------------------------------------------
 proc ChildWindows::StartUp {} {
     global startVar
     global frame2
@@ -147,7 +116,7 @@ proc ChildWindows::StartUp {} {
     Operations::centerW $winStartUp
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::StartUpText
 #
 #  Arguments : t_desc - path of the text widget
@@ -156,7 +125,7 @@ proc ChildWindows::StartUp {} {
 #  Results : -
 #
 #  Description : Displays description message for StartUp window
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc ChildWindows::StartUpText {t_desc choice} {
     $t_desc configure -state normal
     $t_desc delete 1.0 end
@@ -168,15 +137,15 @@ proc ChildWindows::StartUpText {t_desc choice} {
     $t_desc configure -state disabled
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::ProjectSettingWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays description message for StartUp window
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays description message for StartUp window
+#-------------------------------------------------------------------------------
 proc ChildWindows::ProjectSettingWindow {} {
     global projectName
     global projectDir
@@ -309,15 +278,15 @@ proc ChildWindows::ProjectSettingWindow {} {
 
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::ProjectSettText
 #
-#  Arguments : t_desc - path of the text widget
+#  Arguments: t_desc - path of the text widget
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Displays description message for project settings
-#---------------------------------------------------------------------------------------------------
+#  Description: Displays description message for project settings
+#-------------------------------------------------------------------------------
 proc ChildWindows::ProjectSettText {t_desc} {
     global st_save
     global st_autogen
@@ -337,7 +306,7 @@ proc ChildWindows::ProjectSettText {t_desc} {
     if { $st_autogen == 1 } {
         set msg2 "Autogenerates MN object dictionary during build"
     } else {
-        set msg2 "User imported xdd or xdc file will be build"
+        set msg2 "User imported xdd or xdc file will be built"
     }
 
     $t_desc configure -state normal
@@ -346,15 +315,15 @@ proc ChildWindows::ProjectSettText {t_desc} {
     $t_desc configure -state disabled
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::AddCNWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window for creating CN
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window for creating CN
+#-------------------------------------------------------------------------------
 proc ChildWindows::AddCNWindow {} {
     global cnName
     global nodeId
@@ -513,15 +482,15 @@ proc ChildWindows::AddCNWindow {} {
     Operations::centerW $winAddCN
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::GenerateCNname
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Generates unique  name and node id for CN
-#---------------------------------------------------------------------------------------------------
+#  Description: Generates unique  name and node id for CN
+#-------------------------------------------------------------------------------
 proc ChildWindows::GenerateCNname {} {
     global nodeIdList
     global treePath
@@ -538,15 +507,15 @@ proc ChildWindows::GenerateCNname {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::SaveProjectWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window for save project
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window for save project
+#-------------------------------------------------------------------------------
 proc ChildWindows::SaveProjectWindow {} {
     global projectDir
     global projectName
@@ -581,15 +550,15 @@ proc ChildWindows::SaveProjectWindow {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::SaveProjectAsWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window for save as project
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window for save as project
+#-------------------------------------------------------------------------------
 proc ChildWindows::SaveProjectAsWindow {} {
 
     global projectName
@@ -608,11 +577,8 @@ proc ChildWindows::SaveProjectAsWindow {} {
         set tempProjectDir [file dirname $saveProjectAs]
         set tempProjectName [file tail $saveProjectAs]
         set tempProjectNameNoExtn [string range $tempProjectName 0 end-[string length [file extension $tempProjectName]]]
-        #catch {file mkdir $saveProjectAs}
-        #catch {file mkdir [file join $saveProjectAs cdc_xap]}
-        #catch {file mkdir [file join $saveProjectAs octx]}
-        #catch {file mkdir [file join $saveProjectAs scripts]}
-        puts "saveProjectAs:$saveProjectAs tempProjectDir:$tempProjectDir tempProjectName:$tempProjectName tempProjectNameNoExtn:$tempProjectNameNoExtn"
+
+        #puts "saveProjectAs:$saveProjectAs tempProjectDir:$tempProjectDir tempProjectName:$tempProjectName tempProjectNameNoExtn:$tempProjectNameNoExtn"
         thread::send [tsv::set application importProgress] "StartProgress"
         set result [openConfLib::SaveProjectAs $tempProjectName $saveProjectAs]
 
@@ -633,15 +599,15 @@ proc ChildWindows::SaveProjectAsWindow {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::NewProjectWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window for new project creation
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window for new project creation
+#-------------------------------------------------------------------------------
 proc ChildWindows::NewProjectWindow {} {
     global tmpPjtName
     global tmpPjtDir
@@ -956,16 +922,16 @@ proc ChildWindows::NewProjectWindow {} {
     Operations::centerW $winNewProj
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::NewProjectText
 #
-#  Arguments : t_desc - path of the text widget
+#  Arguments: t_desc - path of the text widget
 #              choice - message displayed based on choice
 #
-#  Results : -
+#  Results: -
 #
 #  Description : Displays description message for project settings
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc ChildWindows::NewProjectText {t_desc choice} {
     $t_desc configure -state normal
     switch -- $choice {
@@ -985,15 +951,15 @@ proc ChildWindows::NewProjectText {t_desc choice} {
     $t_desc configure -state disabled
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::NewProjectMNText
 #
-#  Arguments : t_desc - path of the text widget
+#  Arguments: t_desc - path of the text widget
 #
-#  Results : -
+#  Results: -
 #
 #  Description : Displays description message for imported file for mn and autogenerate
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc ChildWindows::NewProjectMNText {t_desc} {
     global conf
     global st_autogen
@@ -1016,17 +982,17 @@ proc ChildWindows::NewProjectMNText {t_desc} {
     $t_desc configure -state disabled
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::NewProjectCreate
 #
-#  Arguments : tmpPjtDir   - project location
+#  Arguments: tmpPjtDir   - project location
 #              tmpPjtName  - project name
 #              tmpImpDir   - file to be imported
 #              tempst_autogen - Auto generate ?(1 - all or 0 - none)
-#  Results : -
+#  Results: -
 #
 #  Description : creates the new project
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autogen} {
     global rootDir
     global treePath
@@ -1066,7 +1032,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autog
         return
     }
 
-puts "importing wrapper $Operations::viewType"
+#puts "importing wrapper $Operations::viewType"
 
     set result [WrapperInteractions::Import OBD-$mnCount-1 $mnNodeId]
     thread::send  [tsv::set application importProgress] "StopProgress"
@@ -1115,18 +1081,18 @@ puts "importing wrapper $Operations::viewType"
         $Operations::projMenu insert 3 command -label "Properties..." -command "ChildWindows::PropertiesWindow"
     }
 
-    puts "$Operations::viewType :: viwe: $st_viewType"
+    #puts "$Operations::viewType :: viwe: $st_viewType"
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::CloseProjectWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window to close project
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window to close project
+#-------------------------------------------------------------------------------
 proc ChildWindows::CloseProjectWindow {} {
     global projectDir
     global projectName
@@ -1151,15 +1117,15 @@ proc ChildWindows::CloseProjectWindow {} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ImportProgress
 #
-#  Arguments : stat - change the status of progressbar
+#  Arguments: stat - change the status of progressbar
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window displaying progress bar
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window displaying progress bar
+#-------------------------------------------------------------------------------
 proc ImportProgress {stat} {
     if {$stat == "start"} {
         wm deiconify .
@@ -1186,15 +1152,15 @@ proc ImportProgress {stat} {
     }
 }
 
-#---------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  ChildWindows::PropertiesWindow
 #
-#  Arguments : -
+#  Arguments: -
 #
-#  Results : -
+#  Results: -
 #
-#  Description : Creates the child window and adds the pdo index
-#---------------------------------------------------------------------------------------------------
+#  Description: Creates the child window and adds the pdo index
+#-------------------------------------------------------------------------------
 proc ChildWindows::PropertiesWindow {} {
     global treePath
     global projectDir
