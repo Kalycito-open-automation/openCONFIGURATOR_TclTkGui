@@ -30,7 +30,15 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 @ECHO OFF
+
+:: Check for the OS version 64 bit or 32 bit.
+IF NOT EXIST "%PROGRAMFILES(X86)%" (
 SET Key=HKLM\SOFTWARE\ActiveState\ActiveTcl
+)ELSE (
+SET Key=HKLM\SOFTWARE\Wow6432Node\ActiveState\ActiveTcl
+)
+
+
 REG QUERY "%Key%" /v CurrentVersion
 IF ERRORLEVEL 1 GOTO Error
 
@@ -41,9 +49,10 @@ IF NOT %VS% == 86 GOTO ERRORTCLVersion
 
 SET SubKey=%Key%\%TclVersion%
 
-FOR /F "tokens=3* delims=	 " %%A IN ('REG QUERY "%SubKey%" /v ""') DO SET TclPath=%%B
+:: FOR /F "tokens=3* delims=	 " %%A IN ('REG QUERY "%SubKey%" /v ""') DO SET TclPath=%%A
 
-START %TclPath%\bin\wish.exe openCONFIGURATOR
+tclsh86 openCONFIGURATOR
+
 
 GOTO:EOF
 
