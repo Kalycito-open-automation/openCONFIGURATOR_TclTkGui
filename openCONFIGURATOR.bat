@@ -1,64 +1,56 @@
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: © Kalycito Infotech Private Limited
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: \file   openCONFIGURATOR.bat
 ::
-::  Project:        openCONFIGURATOR - written by Kalycito 
+:: \brief  Main file converted into openCONFIGURATOR.exe
+::         which invokes the openCONFIGURATOR TCL script with the wish executable.
 ::
-::  File name:      openCONFIGURATOR.bat
+:: \copyright (c) 2014, Kalycito Infotech Private Limited
+::                    All rights reserved.
 ::
-::  Description:  
-::  Copies the file set to "Src' variable to the folder set to "Dest" variable
-::  For help on editing this file for the purpose of openCONFIGURATOR, please refer
-::  to the User Manual document of openCONFIGURATOR
+:: Redistribution and use in source and binary forms, with or without
+:: modification, are permitted provided that the following conditions are met:
+::   * Redistributions of source code must retain the above copyright
+::     notice, this list of conditions and the following disclaimer.
+::   * Redistributions in binary form must reproduce the above copyright
+::     notice, this list of conditions and the following disclaimer in the
+::     documentation and/or other materials provided with the distribution.
+::   * Neither the name of the copyright holders nor the
+::     names of its contributors may be used to endorse or promote products
+::     derived from this software without specific prior written permission.
 ::
-::  License:
-::
-::   Redistribution and use in source and binary forms, with or without
-::   modification, are permitted provided that the following conditions
-::   are met:
-::
-::   1. Redistributions of source code must retain the above copyright
-::      notice, this list of conditions and the following disclaimer.
-::
-::   2. Redistributions in binary form must reproduce the above copyright
-::      notice, this list of conditions and the following disclaimer in the
-::      documentation and/or other materials provided with the distribution.
-::
-::   3. Neither the name of Kalycito Infotech Private Limited nor the names of 
-::      its contributors may be used to endorse or promote products derived
-::      from this software without prior written permission. For written
-::      permission, please contact info@kalycito.com.
-::
-::   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-::   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-::   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-::   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-::   COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-::   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-::   BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-::   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-::   CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-::   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-::   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-::   POSSIBILITY OF SUCH DAMAGE.
-::
-::   Severability Clause:
-::
-::       If a provision of this License is or becomes illegal, invalid or
-::       unenforceable in any jurisdiction, that shall not affect:
-::       1. the validity or enforceability in that jurisdiction of any other
-::          provision of this License; or
-::       2. the validity or enforceability in other jurisdictions of that or
-::          any other provision of this License.
-::
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+:: ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+:: WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+:: DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+:: DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+:: (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+:: LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+:: ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+:: (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-@echo off
-Reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ActiveState\ActiveTcl" /s | find "CurrentVersion"
-if %errorlevel%==0 (
-@echo on
-tclsh85 openCONFIGURATOR
-@echo off
-) else (
-START displayErrorMsg.bat
-)
-@echo off
+@ECHO OFF
+SET Key=HKLM\SOFTWARE\ActiveState\ActiveTcl
+REG QUERY "%Key%" /v CurrentVersion
+IF ERRORLEVEL 1 GOTO Error
+
+FOR /F "tokens=2* delims=	 " %%A IN ('REG QUERY "%Key%" /v CurrentVersion') DO SET TclVersion=%%B
+FOR /F "DELIMS=. TOKENS=1,2" %%i IN ("%TclVersion%") DO SET vs=%%i%%j
+
+IF NOT %VS% == 86 GOTO ERRORTCLVersion
+
+SET SubKey=%Key%\%TclVersion%
+
+FOR /F "tokens=3* delims=	 " %%A IN ('REG QUERY "%SubKey%" /v ""') DO SET TclPath=%%B
+
+START %TclPath%\bin\wish.exe openCONFIGURATOR
+
+GOTO:EOF
+
+:Error
+START displayErrorMsg.bat 1
+GOTO:EOF
+
+:ERRORTCLVersion
+START displayErrorMsg.bat 2 %TclVersion%
+GOTO:EOF
