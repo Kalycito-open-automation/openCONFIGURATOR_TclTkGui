@@ -1192,6 +1192,7 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
         }
     }
 
+    puts "SaveSpin:$saveSpinVal"
     if { $saveSpinVal != "" } {
         set result [openConfLib::SetNodeParameter $nodeId $::FORCEDMULTIPLEXEDCYCLE 0x$saveSpinVal]
         openConfLib::ShowErrorMessage $result
