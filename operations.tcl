@@ -284,7 +284,7 @@ proc Operations::openFILE { path filename } {\
     #puts "rootDir: $rootDir"
     } elseif { $path == 2 } {
     #puts "$projectDir"
-    set path "$projectDir/cdc_xap"
+    set path "$projectDir/output"
     }
 
     set openFileWindow .openFILE
@@ -401,7 +401,7 @@ proc Operations::OpenDocument { path filename } {
         #puts "rootDir: $rootDir"
     } elseif { $path == 2 } {
         #puts "$projectDir"
-        set path "$projectDir/cdc_xap"
+        set path "$projectDir/output"
     }
 
     set fullPath [file join $path $filename]
@@ -3886,7 +3886,7 @@ proc Operations::BuildProject {} {
             thread::send [tsv::get application importProgress] "StopProgress"
             return
         } else {
-            Console::DisplayInfo "files mnobd.txt, mnobd.cdc, xap.xml, xap.h, ProcessImage.cs are generated at location [file join $projectDir cdc_xap]"
+            Console::DisplayInfo "files mnobd.txt, mnobd.cdc, xap.xml, xap.h, ProcessImage.cs are generated at location [file join $projectDir output]"
             thread::send  [tsv::set application importProgress] "StopProgress"
         }
         #project is built need to save
