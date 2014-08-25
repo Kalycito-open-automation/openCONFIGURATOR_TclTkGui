@@ -45,7 +45,7 @@ if { [ catch { package require Thread } ] } {
 }
 
 #-------------------------
-#	Global variables
+#   Global variables
 #-------------------------
 global rootDir
 global defaultProjectDir
@@ -64,29 +64,25 @@ global linksDiscussionHelp
 set linksDiscussionHelp "http://sourceforge.net/p/openconf/discussion/help/"
 
 #-------------------------
-#	Source files
+#   Source files
 #-------------------------
 #set rootDir [pwd]
 if {"$tcl_platform(platform)" == "windows"} {
     set rootDir [pwd]
+    set platformText "windows"
 } elseif {"$tcl_platform(platform)" == "unix"} {
     #set rootDir /usr/share/openCONFIGURATOR-$version
     set rootDir /usr/share/openconfigurator-tcltk
+    set platformText "linux"
 }
 
-#set libsDir $rootDir/$tcl_platform(platform)/libs
-#set imagesDir $rootDir/images
-#set resourcesDir $rootDir/resources
-#set docsDir $rootDir/docs
-#set tclSrcDir $rootDir/tclsources/
-#set toolsDir $rootDir/$tcl_platform(platform)/tools
-
-set libsDir $rootDir
-set imagesDir $rootDir/images
-set resourcesDir $rootDir/resources
-set docsDir $rootDir
-set tclSrcDir $rootDir
-set toolsDir $rootDir
+set platformDir [file join $rootDir $platformText]
+set libsDir [file join $platformDir libs]
+set toolsDir [file join $platformDir tools]
+set imagesDir [file join $rootDir images]
+set resourcesDir [file join $rootDir resources]
+set docsDir [file join $rootDir docs]
+set tclSrcDir [file join $rootDir tcl-sources]
 
 
 tsv::set application rootDir $rootDir
@@ -111,22 +107,72 @@ if { $argc == 1 && ( $argv == "--version" || $argv == "-V" ) } {
 
 
 #-------------------------
-#	Package Definition
+#   Package Definition
 #-------------------------
 set path_to_BWidget [file join $tclSrcDir BWidget-1.2.1]
 lappend auto_path $path_to_BWidget
 package require -exact BWidget 1.2.1
 
+# For including Tablelist Package
+set path_to_Tablelist [file join $tclSrcDir tablelist4.10.1]
+lappend auto_path $path_to_Tablelist
+package require Tablelist
+tablelist::addBWidgetComboBox
+
+
+#------------------------------------------------------------------------------
+# Loads the openCONFIGURATOR library using tcl-load
+#------------------------------------------------------------------------------
+proc LoadOpenConfiguratorLibrary {} {
+    global libsDir
+    global tcl_platform
+
+    lappend auto_path $libsDir
+
+    if {"$tcl_platform(platform)" == "windows"} {
+        set ::env(Path) $libsDir\;$::env(Path)
+    } elseif {"$tcl_platform(platform)" == "unix"} {
+        # if it is an empty string or doesn't exist, set the LD_LIBRARY_PATH
+        if { ![info exists ::env(LD_LIBRARY_PATH)] || $::env(LD_LIBRARY_PATH) == "" } {
+            set ::env(LD_LIBRARY_PATH) " "
+        }
+        set ::env(LD_LIBRARY_PATH) $libsDir:$::env(LD_LIBRARY_PATH)
+    } else {
+        tk_messageBox -message "openCONFIGURATOR core libraries are not compiled for $tcl_platform(platform) platform \
+        \nCannot proceed.\nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
+        exit
+    }
+
+    # Loading shared libraries
+    if {"$tcl_platform(platform)" == "windows"} {
+        if {[catch {load openConfiguratorWrapper.dll openConfiguratorWrapper} errormessage]} {
+            tk_messageBox -message "Error loading shared libraries\nCannot proceed\nConsult the user manual to troubleshoot.\nError: $errormessage" -title Info -icon error
+            exit
+        }
+    } elseif { "$tcl_platform(platform)" == "unix"} {
+        if { [catch {load $libsDir/openConfiguratorWrapper.so} errormessage] } {
+            tk_messageBox -message "Error loading shared libraries\nCannot proceed\nConsult the user manual to troubleshoot.\nError: $errormessage" -title Info -icon error
+            exit
+        }
+    } else {
+        tk_messageBox -message "openCONFIGURATOR core libraries are not compiled for $tcl_platform(platform) platform \
+        \nCannot proceed.\nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
+        exit
+    }
+}
+
+
+
 #-------------------------------------------------------------------------------
 #  InitOpenConfigurator
 #
 #  Arguments: argc - string to be validate
-# 	      argv - Type for validation
+#         argv - Type for validation
 #
 #  Results: -
 #
 #  Description: Creates the main GUI of the application. Also loads the shared objects or
-#				 dynamic linked libraries based on operating system.
+#                dynamic linked libraries based on operating system.
 #-------------------------------------------------------------------------------
 proc InitOpenConfigurator {argc argv} {
 
@@ -135,9 +181,7 @@ proc InitOpenConfigurator {argc argv} {
     global treePath
     global projectDir
     global projectName
-    global rootDir
     global imagesDir
-    global libsDir
     global resourcesDir
     global defaultProjectDir
     global homeVar
@@ -146,8 +190,8 @@ proc InitOpenConfigurator {argc argv} {
     lappend auto_path ..
 
     if {"$tcl_platform(platform)" != "windows"} {
-	    # Background color based on OS
-	    option add *background #d7d5d3 userDefault
+        # Background color based on OS
+        option add *background #d7d5d3 userDefault
     }
 
     # Title frame font set for tablelist widget
@@ -195,27 +239,12 @@ proc InitOpenConfigurator {argc argv} {
     BWidget::place . 0 0 center
     update idletasks
     after idle {
-	    wm deiconify .
-	    raise .
-	    focus .
+        wm deiconify .
+        raise .
+        focus .
     }
 
-    # Loading shared libraries
-    if {"$tcl_platform(platform)" == "windows"} {
-        if {[catch {load $libsDir/openConfiguratorWrapper.dll Openconfiguratorwrapper} errormessage]} {
-            tk_messageBox -message "Error loading Shared Library\nCannot proceed\nConsult the user manual to troubleshoot.\nError: $errormessage" -title Info -icon error
-            exit
-        }
-    } elseif { "$tcl_platform(platform)" == "unix"} {
-        if { [catch {load $libsDir/openConfiguratorWrapper.so} errormessage] } {
-            tk_messageBox -message "Error loading Shared Library\nCannot proceed\nConsult the user manual to troubleshoot.\nError: $errormessage" -title Info -icon error
-            exit
-        }
-    } else {
-        tk_messageBox -message "openCONFIGURATOR core libraries are not compiled for $tcl_platform(platform) platform \
-        \nCannot proceed.\nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
-        exit
-    }
+    LoadOpenConfiguratorLibrary
 
     $treePath delete end root ProjectNode
     set projectDir ""
@@ -232,9 +261,11 @@ proc InitOpenConfigurator {argc argv} {
 
     # TODO check for other dependencies here.
 
-    if {![file isfile $odXML] || ![file isfile $cnXDD] || ![file isfile $mnXDD] || ![file isfile $logSettings]} {
-        tk_messageBox -message "The dependent resources could not be found.\nCannot proceed\nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
-        exit
+    if {![file isfile $odXML] || ![file isfile $cnXDD] \
+    || ![file isfile $mnXDD] || ![file isfile $logSettings]} {
+        tk_messageBox -message "The dependent resources could not be found.\nCannot proceed \
+        \nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
+        #exit
     } else {
         #od.xml is present continue
         ChildWindows::StartUp

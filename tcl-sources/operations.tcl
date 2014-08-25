@@ -61,18 +61,14 @@ namespace eval Operations {
     variable LOSS_SOC_TOLERANCE
 }
 
-
-# For including Tablelist Package
-set path_to_Tablelist [file join $rootDir tablelist4.10.1]
-lappend auto_path $path_to_Tablelist
-package require Tablelist
-tablelist::addBWidgetComboBox
 #Initiating thread for progress bar
 package require Thread
+
 tsv::set application main [thread::id]
 tsv::set application importProgress [thread::create -joinable {
     package require Tk
     set rootDir [tsv::get application rootDir]
+    set rootDir "$rootDir/tcl-sources"
     set path_to_BWidget [file join $rootDir BWidget-1.2.1]
     lappend auto_path $path_to_BWidget
     package require -exact BWidget 1.2.1
@@ -384,7 +380,8 @@ proc Operations::LocateUrl {webAddress} {
 #  Operations::OpenDocument
 #
 #  Arguments: path     -  1 - Points to the root directory.
-#                         2 - Points to the output folder in the projects.
+#                         2 - Points to the docs directory.
+#                         3 - Points to the output folder in the projects.
 #  Arguments: filename - filename of the document with extension.
 #
 #  Results: -
@@ -394,13 +391,14 @@ proc Operations::LocateUrl {webAddress} {
 proc Operations::OpenDocument { path filename } {
     global tcl_platform
     global rootDir
+    global docsDir
     global projectDir
 
     if {$path == 1 } {
         set path $rootDir
-        #puts "rootDir: $rootDir"
     } elseif { $path == 2 } {
-        #puts "$projectDir"
+        set path $docsDir
+    } elseif { $path == 3 } {
         set path "$projectDir/output"
     }
 
@@ -413,18 +411,9 @@ proc Operations::OpenDocument { path filename } {
     }
 
     if {$tcl_platform(platform)=="unix"} {
-    #    set ext [file extension $filename]
-    #    if {![string compare $ext ".pdf"]} {
-    #   evince $path/$filename &
-    #    } elseif {![string compare $ext ".txt"]} {
-    #   gedit $path/$filename &
-    #    } else {
         exec xdg-open $path/$filename &
-    #    }
     } elseif {$tcl_platform(platform)=="windows"} {
-        #puts "Path: $path"
         set path [file nativename $fullPath]
-        #puts "WinPath: $path"
         eval exec [auto_execok start] [list "" "$path" ] &
     }
 }
@@ -843,6 +832,7 @@ proc Operations::BasicFrames { } {
     global LastTableFocus
     global lastVideoModeSel
     global image_dir
+    global imagesDir
 
     variable notebook
     variable tree_notebook
@@ -862,7 +852,7 @@ proc Operations::BasicFrames { } {
 
     set progressmsg "Please wait while loading ..."
     set prgressindicator -1
-    set ImageKalycito Splash
+    set ImageKalycito $imagesDir/Splash
 
     set prgressindicator 2
     Operations::_tool_intro $ImageKalycito
@@ -915,8 +905,8 @@ proc Operations::BasicFrames { } {
             }
         }
         "&Help" {} {} 0 {
-       {command "&Getting Started" {noFile} "Quick start guide" {} -command "Operations::OpenDocument 1 QuickStartGuide.pdf" }
-       {command "User &Manual       F1" {noFile} "User manual    F1" {} -command "Operations::OpenDocument 1 UserManual.pdf" }
+       {command "&Getting Started" {noFile} "Quick start guide" {} -command "Operations::OpenDocument 2 QuickStartGuide.pdf" }
+       {command "User &Manual       F1" {noFile} "User manual    F1" {} -command "Operations::OpenDocument 2 UserManual.pdf" }
        {command "&Release Note" {noFile} "Release note" {} -command "Operations::openFILE 1 ReleaseNote.txt" }
        {separator}
        {command "&Online Support" {noFile} "Online Support" {} -command "Operations::LocateUrl http://sourceforge.net/p/openconf/discussion/" }
@@ -933,7 +923,7 @@ proc Operations::BasicFrames { } {
     #shortcut keys for project
     bind . <Key-F7> "Operations::BuildProject"
     # short cut key for help
-    bind . <Key-F1> "Operations::OpenDocument 1 UserManual.pdf"
+    bind . <Key-F1> "Operations::OpenDocument 2 UserManual.pdf"
      #to prevent BuildProject called
     bind . <Control-Key-F7> ""
     bind . <Control-Key-f> { FindSpace::FindDynWindow }
