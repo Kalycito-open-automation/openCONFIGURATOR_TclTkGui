@@ -1016,13 +1016,15 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autog
 
     $treePath itemconfigure ProjectNode -text $tmpPjtName
 
-    set mnName "openPOWERLINK_MN"
-    set mnNodeId 240
     image create photo img_mn -file "$image_dir/mn.gif"
+    image create photo img_pdo -file "$image_dir/pdo.gif"
 
+    $treePath insert end ProjectNode Network-1 -text "openPOWERLINK_Network" -open 1 -image img_mn
     thread::send [tsv::get application importProgress] "StartProgress"
 
-    $treePath insert end ProjectNode MN-$mnCount -text "openPOWERLINK_MN($mnNodeId)" -open 1 -image img_mn
+    set mnName "MN"
+    set mnNodeId 240
+    $treePath insert end Network-1 MN-$mnNodeId -text "$mnName\($mnNodeId\)" -open 1 -image img_mn
     lappend nodeIdList $mnNodeId
 
     set result [openConfLib::NewProject $pjtName $projectDir $tmpImpDir]
@@ -1034,7 +1036,7 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autog
 
 #puts "importing wrapper $Operations::viewType"
 
-    set result [WrapperInteractions::Import OBD-$mnCount-1 $mnNodeId]
+    set result [WrapperInteractions::Import MN-$mnNodeId $mnNodeId]
     thread::send  [tsv::set application importProgress] "StopProgress"
     if { $result == "fail" } {
         return

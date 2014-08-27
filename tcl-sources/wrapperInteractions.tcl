@@ -50,15 +50,7 @@ namespace eval WrapperInteractions {
 #-------------------------------------------------------------------------------
 proc WrapperInteractions::Import { parentNode nodeId } {
     global treePath
-    global cnCount
     global image_dir
-    global LocvarProgbar
-
-    set LocvarProgbar 0
-    #check for view if simple exit else advanced continue
-    if { [string match "SIMPLE" $Operations::viewType ] == 1 } {
-        return pass
-    }
 
     set result [openConfLib::IsExistingNode $nodeId]
     openConfLib::ShowErrorMessage [lindex $result 0]
@@ -75,19 +67,77 @@ proc WrapperInteractions::Import { parentNode nodeId } {
     image create photo img_index -file "$image_dir/index.gif"
     image create photo img_subindex -file "$image_dir/subindex.gif"
 
-    $treePath insert end $parentNode PDO-$parentId -text "PDO" -open 0 -image img_pdo
-    $treePath insert end PDO-$parentId TPDO-$parentId -text "TPDO" -open 0 -image img_pdo
-    $treePath insert end PDO-$parentId RPDO-$parentId -text "RPDO" -open 0 -image img_pdo
+    set treeNode Mapping-$nodeId
+    set insertMappingNode 0
+
+
+    set TPDOTreeNode TPDO-$nodeId
+    set insertPdoNodeOnce 0
+    set indexList [WrapperInteractions::GetIndexId $nodeId 4]
+    foreach index $indexList {
+        set mappingIdxId [WrapperInteractions::GetMappingParamIndex $index ]
+        if {[string length $mappingIdxId]} {
+            #puts ":: $mappingIdxId"
+            set result [openConfLib::IsExistingIndex $nodeId $mappingIdxId ]
+            if { [Result_IsSuccessful [lindex $result 0]] && [lindex $result 1]} {
+
+                if {$insertMappingNode == 0} {
+                    $treePath insert end $parentNode $treeNode -text "Mapping" -open 0 -image img_pdo
+                    set insertMappingNode 1
+                }
+                if {$insertPdoNodeOnce == 0} {
+                    $treePath insert end $treeNode $TPDOTreeNode -text "TPDO" -open 0 -image img_pdo
+                    set insertPdoNodeOnce 1
+                }
+
+                set mappingSubStr [string range $mappingIdxId 4 end]
+                $treePath insert end $TPDOTreeNode TPDONode-$nodeId-$mappingSubStr -text "TPDO-$mappingSubStr" -open 0 -image img_pdo
+            }
+        }
+    }
+
+    set RPDOTreeNode RPDO-$nodeId
+    set insertPdoNodeOnce 0
+    set indexList [WrapperInteractions::GetIndexId $nodeId 5]
+    foreach index $indexList {
+        set mappingIdxId [WrapperInteractions::GetMappingParamIndex $index ]
+        if {[string length $mappingIdxId]} {
+            #puts ":: $mappingIdxId"
+            set result [openConfLib::IsExistingIndex $nodeId $mappingIdxId ]
+            if { [Result_IsSuccessful [lindex $result 0]]  && [lindex $result 1] } {
+
+                if {$insertMappingNode == 0} {
+                    $treePath insert end $parentNode $treeNode -text "Mapping" -open 0 -image img_pdo
+                    set insertMappingNode 1
+                }
+                if {$insertPdoNodeOnce == 0} {
+                    $treePath insert end $treeNode $RPDOTreeNode -text "RPDO" -open 0 -image img_pdo
+                    set insertPdoNodeOnce 1
+                }
+
+                set mappingSubStr [string range $mappingIdxId 4 end]
+                $treePath insert end $RPDOTreeNode RPDONode-$nodeId-$mappingSubStr -text "RPDO-$mappingSubStr" -open 0 -image img_pdo
+            }
+        }
+    }
+
+    #check for view if simple exit else advanced continue
+    if { [string match "SIMPLE" $Operations::viewType ] == 1 } {
+        return pass
+    }
+
+    set treeNode OBD-$nodeId
+    $treePath insert end $parentNode $treeNode -text "ObjectDictionary" -open 0 -image img_pdo
 
     set indexCount 0
-    set indexList [WrapperInteractions::GetIndexId $nodeId 3]
+    set indexList [WrapperInteractions::GetIndexId $nodeId 0]
     foreach index $indexList {
         set indexName ""
         set result [openConfLib::GetIndexAttribute $nodeId $index $::NAME]
         if { [Result_IsSuccessful [lindex $result 0]] } {
             set indexName [lindex $result 1]
         }
-        $treePath insert $indexCount $parentNode IndexValue-$parentId-$indexCount -text $indexName\($index\) -open 0 -image img_index
+        $treePath insert $indexCount $treeNode IndexValue-$nodeId-$indexCount -text $indexName\($index\) -open 0 -image img_index
         set result [openConfLib::GetSubIndices $nodeId $index]
         if { [Result_IsSuccessful [lindex $result 0]] } {
             set subIndexCount 0
@@ -99,7 +149,7 @@ proc WrapperInteractions::Import { parentNode nodeId } {
                     set subIndexName [lindex $result 1]
                 }
 
-                $treePath insert end IndexValue-$parentId-$indexCount SubIndexValue-$parentId-$indexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
+                $treePath insert end IndexValue-$nodeId-$indexCount SubIndexValue-$nodeId-$indexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
                 incr subIndexCount
             }
         }
@@ -107,62 +157,6 @@ proc WrapperInteractions::Import { parentNode nodeId } {
         update idletasks
     }
 
-    set tpdoIndexCount 0
-    set indexList [WrapperInteractions::GetIndexId $nodeId 1]
-    foreach index $indexList {
-        set indexName ""
-        set result [openConfLib::GetIndexAttribute $nodeId $index $::NAME]
-        if { [Result_IsSuccessful [lindex $result 0]] } {
-            set indexName [lindex $result 1]
-        }
-        $treePath insert $tpdoIndexCount TPDO-$parentId TPdoIndexValue-$parentId-$tpdoIndexCount -text $indexName\($index\) -open 0 -image img_index
-        set result [openConfLib::GetSubIndices $nodeId $index]
-        if { [Result_IsSuccessful [lindex $result 0]] } {
-            set subIndexCount 0
-            foreach sidx [lindex $result 2] {
-                set subIndexIdHex "0x[format %2.2X $sidx]"
-                set subIndexName ""
-                set result [openConfLib::GetSubIndexAttribute $nodeId $index $subIndexIdHex $::NAME]
-                if { [Result_IsSuccessful [lindex $result 0]] } {
-                    set subIndexName [lindex $result 1]
-                }
-
-                $treePath insert end TPdoIndexValue-$parentId-$tpdoIndexCount TPdoSubIndexValue-$parentId-$tpdoIndexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
-                incr subIndexCount
-            }
-        }
-        incr tpdoIndexCount
-        update idletasks
-    }
-
-    set rpdoIndexCount 0
-    set indexList [WrapperInteractions::GetIndexId $nodeId 2]
-    foreach index $indexList {
-        set indexName ""
-        set result [openConfLib::GetIndexAttribute $nodeId $index $::NAME]
-        if { [Result_IsSuccessful [lindex $result 0]] } {
-            set indexName [lindex $result 1]
-        }
-
-        $treePath insert $rpdoIndexCount RPDO-$parentId RPdoIndexValue-$parentId-$rpdoIndexCount -text $indexName\($index\) -open 0 -image img_index
-        set result [openConfLib::GetSubIndices $nodeId $index]
-        if { [Result_IsSuccessful [lindex $result 0]] } {
-            set subIndexCount 0
-            foreach sidx [lindex $result 2] {
-                set subIndexIdHex "0x[format %2.2X $sidx]"
-                set subIndexName ""
-                set result [openConfLib::GetSubIndexAttribute $nodeId $index $subIndexIdHex $::NAME]
-                if { [Result_IsSuccessful [lindex $result 0]] } {
-                    set subIndexName [lindex $result 1]
-                }
-
-                $treePath insert end RPdoIndexValue-$parentId-$rpdoIndexCount RPdoSubIndexValue-$parentId-$rpdoIndexCount-$subIndexCount -text $subIndexName\($subIndexIdHex\) -open 0 -image img_subindex
-                incr subIndexCount
-            }
-        }
-        incr rpdoIndexCount
-        update idletasks
-    }
 
     return pass
 }
@@ -173,12 +167,14 @@ proc WrapperInteractions::Import { parentNode nodeId } {
 #               1 - TPDO
 #               2 - RPDO
 #               3 - NonPDOnodes
+#               4 - TxCommunicationParams
+#               5 - RxCommunicationParams
 ################################################################################
 proc WrapperInteractions::GetIndexId {nodeId type} {
     set returnList ""
     set result [openConfLib::GetIndices $nodeId]
     if { [Result_IsSuccessful [lindex $result 0]] } {
-        set indexList [lsort [lindex $result 2]]
+        set indexList [lsort -integer [lindex $result 2]]
         foreach index $indexList {
             set indexIdHex "[format %4.4X $index]"
             switch $type {
@@ -202,6 +198,16 @@ proc WrapperInteractions::GetIndexId {nodeId type} {
                         lappend returnList "0x$indexIdHex"
                     }
                 }
+                4 {
+                    if {[string match "18*" $indexIdHex]} {
+                        lappend returnList "0x$indexIdHex"
+                    }
+                }
+                5 {
+                    if {[string match "14*" $indexIdHex]} {
+                        lappend returnList "0x$indexIdHex"
+                    }
+                }
                 default {
                     puts "default"
                 }
@@ -209,4 +215,18 @@ proc WrapperInteractions::GetIndexId {nodeId type} {
         }
     }
     return $returnList
+}
+
+proc WrapperInteractions::GetMappingParamIndex { communicationParamIndex } {
+
+    if {[string match "0x14*" $communicationParamIndex]} {
+        set substr [string range $communicationParamIndex 4 end]
+        return "0x16$substr"
+    } elseif {[string match "0x18*" $communicationParamIndex]} {
+        set substr [string range $communicationParamIndex 4 end]
+        return "0x1A$substr"
+    } else {
+        puts "Not a Communication parameter IndexId : $communicationParamIndex"
+        # not an communication param index
+    }
 }
