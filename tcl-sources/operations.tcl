@@ -37,6 +37,7 @@
 namespace eval Operations {
     variable mnMenu
     variable cnMenu
+    variable networkMenu
     variable cnMenuIndex
     variable projMenu
     variable obdMenu
@@ -454,6 +455,8 @@ proc Operations::tselectright {x y node} {
         tk_popup $Operations::mnMenu $x $y
     } elseif { [string match "CN-*" $node] == 1 } {
             tk_popup $Operations::cnMenu $x $y
+    } elseif { [string match "Network-*" $node] == 1 } {
+            tk_popup $Operations::networkMenu $x $y
     } else {
         return
     }
@@ -763,6 +766,7 @@ proc Operations::RePopulate { projectDir projectName } {
     image create photo img_cn -file "$image_dir/cn.gif"
 
     $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
+    $treePath insert end ProjectNode Network-1 -text "openPOWERLINK_Network" -open 1 -image img_mn
 
     set result [openConfLib::GetNodes]
     openConfLib::ShowErrorMessage [lindex $result 0]
@@ -775,15 +779,15 @@ proc Operations::RePopulate { projectDir projectName } {
             set l_NodeName [lindex $aResult 1]
 
             if {$l_NodeId == 240} {
-                $treePath insert end ProjectNode MN-$mnCount -text "$l_NodeName\($l_NodeId\)" -open 1 -image img_mn
-                set treeNode OBD-$mnCount-1
+                set treeNode MN-$mnCount
+                $treePath insert end Network-1 $treeNode -text "$l_NodeName\($l_NodeId\)" -open 1 -image img_mn
             #insert the OBD icon only if the view is in EXPERT mode
-                if {[string match "EXPERT" $Operations::viewType ] == 1} {
-                    $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
-                }
+                #if {[string match "EXPERT" $Operations::viewType ] == 1} {
+                #    $treePath insert end MN-$mnCount $treeNode -text "OBD" -open 0 -image img_pdo
+                #}
             } elseif {$l_NodeId > 0} {
                 set treeNode CN-$mnCount-$cnCount
-                set child [$treePath insert end MN-$mnCount $treeNode -text "$l_NodeName\($l_NodeId\)" -open 0 -image img_cn]
+                set child [$treePath insert end Network-1 $treeNode -text "$l_NodeName\($l_NodeId\)" -open 0 -image img_cn]
             } else {
                 continue
             }
@@ -847,6 +851,7 @@ proc Operations::BasicFrames { } {
     variable Button
     variable cnMenu
     variable mnMenu
+    variable networkMenu
 
     set image_dir "$rootDir/images"
 
@@ -936,10 +941,11 @@ proc Operations::BasicFrames { } {
     $Operations::cnMenu add separator
     $Operations::cnMenu add command -label "Delete" -command {Operations::DeleteTreeNode}
 
+    set Operations::networkMenu [menu .networkMenu -tearoff 0]
+    $Operations::networkMenu add command -label "Add CN..." -command "ChildWindows::AddCNWindow"
 
     # Menu for the Managing Nodes
     set Operations::mnMenu [menu  .mnMenu -tearoff 0]
-    $Operations::mnMenu add command -label "Add CN..." -command "ChildWindows::AddCNWindow"
     $Operations::mnMenu add command -label "Replace with XDC/XDD..." -command "Operations::ReImport"
     #$Operations::mnMenu add separator
     #$Operations::mnMenu add command -label "Auto Generate" -command {Operations::AutoGenerateMNOBD}
@@ -1443,12 +1449,12 @@ proc Operations::SingleClickNode {node} {
     global LOWER_LIMIT
     global UPPER_LIMIT
 
-    if { $nodeSelect == "" || ![$treePath exists $nodeSelect] || [string match "root" $nodeSelect] || [string match "ProjectNode" $nodeSelect] || [string match "OBD-*" $nodeSelect] || [string match "PDO-*" $nodeSelect] } {
+    if { $nodeSelect == "" || ![$treePath exists $nodeSelect] || [string match "root" $nodeSelect] || [string match "ProjectNode" $nodeSelect] || [string match "OBD-*" $nodeSelect] || [string match "?PDO-*" $nodeSelect] } {
         #should not check for project settings option
     } else {
         if { $st_save == "0"} {
             if { $chkPrompt == 1 } {
-                if { [string match "TPDO-*" $nodeSelect] || [string match "RPDO-*" $nodeSelect] } {
+                if { [string match "TPDONode-*" $nodeSelect] || [string match "RPDONode-*" $nodeSelect] } {
                     $tableSaveBtn invoke
                 } elseif { [string match "*SubIndex*" $nodeSelect] } {
                     $subindexSaveBtn invoke
@@ -1501,20 +1507,20 @@ proc Operations::SingleClickNode {node} {
     $treePath selection set $node
     set nodeSelect $node
 
-    if {[string match "root" $node] || [string match "ProjectNode" $node] || [string match "OBD-*" $node] || [string match "PDO-*" $node]} {
+    if {[string match "root" $node] || [string match "ProjectNode" $node] || [string match "OBD-*" $node] || [string match "?PDO-*" $node] || [string match "Mapping*" $node]} {
         Operations::RemoveAllFrames
         return
     }
 
     #getting Id and Type of node
-    set result [Operations::GetNodeIdType $node]
-    if {$result == ""} {
+    set result [Operations::GetNodeIdFromTree $node]
+    if {$result == -1} {
         #the node is not an index, subindex, TPDO or RPDO do nothing
         Operations::RemoveAllFrames
         return
     } else {
         # it is index or subindex
-        set nodeId [lindex $result 0]
+        set nodeId $result
     }
 
     set result [openConfLib::IsExistingNode $nodeId]
@@ -1554,11 +1560,11 @@ proc Operations::SingleClickNode {node} {
         return
     }
 
-    if {[string match "TPDO-*" $node] || [string match "RPDO-*" $node]} {
+    if {[string match "TPDONode-*" $node] || [string match "RPDONode-*" $node]} {
         #the LastTableFocus is cleared to avoid potential bugs
         set LastTableFocus ""
 
-        if {[string match "TPDO-*" $node] } {
+        if {[string match "TPDONode-*" $node] } {
             set commParam "18"
             set mappParam "1A"
         } else {
@@ -2961,19 +2967,19 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
         set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
         set tmpNode [string range $MnTreeNode 2 end]
         #there can be one OBD in MN so -1 is hardcoded
-        set ObdTreeNode OBD$tmpNode-1
-        catch {$treePath delete $ObdTreeNode}
+        #set ObdTreeNode OBD$tmpNode-1
+        # catch {$treePath delete $ObdTreeNode}
         #insert the OBD ico only for expert view mode
-        if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-            $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
-        }
-        set mnNodeId 240
-        if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
+        #if { [string match "EXPERT" $Operations::viewType ] == 1 } {
+        #    $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
+        #}
+        #set mnNodeId 240
+        #if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
             # error has occured
-            thread::send  [tsv::set application importProgress] "StopProgress"
-            Operations::CloseProject
-            return 0
-        }
+        #    thread::send  [tsv::set application importProgress] "StopProgress"
+        #    Operations::CloseProject
+        #    return 0
+        #}
         thread::send  [tsv::set application importProgress] "StopProgress"
         if { $result == "fail" } {
             return
@@ -4223,15 +4229,11 @@ proc Operations::GetNodeList {} {
     global treePath
 
     set nodeList ""
-    foreach mnNode [$treePath nodes ProjectNode] {
+    foreach mnNode [$treePath nodes Network-1] {
         set chk 1
         foreach cnNode [$treePath nodes $mnNode] {
             if {$chk == 1} {
-                if {[string match "OBD*" $cnNode]} {
                     lappend nodeList $cnNode
-                } else {
-                    lappend nodeList " " $cnNode
-                }
                 set chk 0
             } else {
                 lappend nodeList $cnNode
@@ -4253,16 +4255,17 @@ proc Operations::GetNodeList {} {
 proc Operations::GetNodeIdType {node} {
     global treePath
     global nodeIdList
+
     if {[string match "*SubIndex*" $node]} {
         set parent [$treePath parent [$treePath parent $node]]
-        if {[string match "?Pdo*" $node]} {
+        if {[string match "?PDO*" $node]} {
             # subindex in TPDO orRPDO
             set parent [$treePath parent [$treePath parent $parent]]
         } else {
         }
     } elseif {[string match "*Index*" $node]} {
         set parent [$treePath parent $node]
-        if {[string match "?Pdo*" $node]} {
+        if {[string match "?PDO*" $node]} {
             #it must be index in TPDO or RPDO
             set parent [$treePath parent [$treePath parent $parent]]
         } else {
@@ -4276,8 +4279,9 @@ proc Operations::GetNodeIdType {node} {
     } elseif {[string match "OBD-*" $node] || [string match "CN-*" $node]} {
         set parent $node
     } elseif {[string match "MN-*" $node]} {
-        set reqNode [lsearch -regexp [$treePath nodes $node] "OBD-*" ]
-        set parent [lindex [$treePath nodes $node] $reqNode]
+        #set reqNode [lsearch -regexp [$treePath nodes $node] "OBD-*" ]
+        #puts "reqNode:$reqNode"
+        #set parent [lindex [$treePath nodes $node] $reqNode]
         return [list 240 0]
     } else {
         #it is root or ProjectNode
@@ -4287,6 +4291,7 @@ proc Operations::GetNodeIdType {node} {
     set nodeList [Operations::GetNodeList]
     set searchCount [lsearch -exact $nodeList $parent ]
     set nodeId [lindex $nodeIdList $searchCount]
+    puts "$searchCount#nodeList: $nodeList %% nodeIdList:$nodeIdList"
     if { $nodeId == "" } {
         return ""
     }
@@ -4298,6 +4303,40 @@ proc Operations::GetNodeIdType {node} {
         set nodeType 1
     }
     return [list $nodeId $nodeType]
+}
+
+proc Operations::GetNodeIdFromTree {nodeTree} {
+    global treePath
+
+    if {[string match "Network-1" $nodeTree] || [string match "ProjectNode" $nodeTree] } {
+        return -1
+    } elseif {[string match "MN-*" $nodeTree] || [string match "CN-*" $nodeTree]} {
+        set parentId [split $nodeTree -]
+        set nodeId [lindex $parentId 1]
+        return $nodeId
+    } elseif {[string match "Mapping*" $nodeTree]} {
+        set parentId [split $nodeTree -]
+        set nodeId [lindex $parentId 1]
+        return $nodeId
+    } elseif {[string match "?PDO-*" $nodeTree]} {
+        set parentId [split $nodeTree -]
+        set nodeId [lindex $parentId 1]
+        return $nodeId
+    } elseif {[string match "?PDO-*" $nodeTree]} {
+        set parentId [split $nodeTree -]
+        set nodeId [lindex $parentId 1]
+        return $nodeId
+    } elseif {[string match "?PDONode-*" $nodeTree]} {
+        set parentId [split $nodeTree -]
+        set nodeId [lindex $parentId 1]
+        return $nodeId
+    } elseif {[string match "IndexValue-*" $nodeTree] || [string match "SubIndexValue-*" $nodeTree]} {
+        set parentId [split $nodeTree -]
+        set nodeId [lindex $parentId 1]
+        return $nodeId
+    } else {
+        return -1
+    }
 }
 
 #-------------------------------------------------------------------------------
