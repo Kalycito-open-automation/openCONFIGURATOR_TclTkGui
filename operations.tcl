@@ -2526,7 +2526,7 @@ proc Operations::CNProperties {node nodeId} {
                         set cnForcedCycleValue [lindex $result 1]
                     }
                 }
-                
+
                 set prevSelCycleNoDec [Validation::InputToDec $cnForcedCycleValue $locMultiPrescalerDatatype ]
                 if { [string match -nocase "pass" [lindex $prevSelCycleNoDec 1]] == 0 } {
                     #error in conversion
@@ -4649,23 +4649,21 @@ proc Operations::ViewModeChanged {} {
     }
 
     if { $Operations::viewType == "EXPERT" } {
-        set viewType 1
+        set tempViewType 1
     } else {
-        set viewType 0
+        set tempViewType 0
     }
     #check if the view is toggled
-    if {$lastVideoModeSel == $viewType} {
+    if {$lastVideoModeSel == $tempViewType} {
         return
     }
 
-
-    if { ($st_viewType == 0) && ($viewType == 1) } {
+    if { ($st_viewType == 0) && ($tempViewType == 1) } {
         set result [ tk_messageBox -message "Internal know-how of POWERLINK is recommended when using advanced mode.\
         \nAre you sure you want to change view?" -type yesno -icon info -title "Information" -parent . ]
         switch -- $result {
             yes {
                 set Operations::viewType "EXPERT"
-                set st_viewType 1
             }
             no {
                 set Operations::viewType "SIMPLE"
@@ -4673,15 +4671,23 @@ proc Operations::ViewModeChanged {} {
             }
         }
     }
-    set lastVideoModeSel $viewType
+
+    set st_viewType $tempViewType
 
     set result [openConfLib::SetActiveView $st_viewType]
     openConfLib::ShowErrorMessage $result
     if { [Result_IsSuccessful $result] != 1 } {
+        if { $tempViewType == 1 } {
+            set Operations::viewType "SIMPLE"
+        } else {
+            set Operations::viewType "EXPERT"
+        }
 
+        set st_viewType $lastVideoModeSel
+        return
+    } else {
+        set lastVideoModeSel $tempViewType
     }
-
-#TODO if error:     set Operations::viewType "SIMPLE" and return
 
     #remove all the frames
     Operations::RemoveAllFrames
