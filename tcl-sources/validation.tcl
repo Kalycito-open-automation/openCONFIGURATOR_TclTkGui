@@ -687,12 +687,7 @@ proc Validation::IsTableHex {input preinput mode idx reqLen tablePath rowIndex c
     if {[string is xdigit $input] == 0 || [string length $input] > $reqLen } {
         return 0
     } else {
-        if { $columnIndex == 1} {
-            #for editing node id
-            after 1 Validation::SetTableValueNodeid $tablePath $rowIndex $columnIndex $entryPath $mode $idx 0x$input
-        } else {
-            after 1 Validation::SetTableValue $entryPath $mode $idx 0x$input
-        }
+        after 1 Validation::SetTableValue $entryPath $mode $idx 0x$input
 
         Validation::SetPromptFlag
 
@@ -729,73 +724,48 @@ proc Validation::SetTableValue { entryPath mode idx input } {
 }
 
 proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entryPath} {
-    global populatedCommParamList
+
     switch -- $columnIndex {
         0 {
             # Do nothing for Sno
         }
         1 {
-            #set result [regexp {[\(][0-9]+[\)]} $input match]
-            #set value [string range $match 1 end-1]
-
-            #set enty [Widget::subcget $tablePath .e]
-            #$entryPath configure -editable no
-            #if { [string length $value] < 3 || [string length $value] > 4 } {
-            #    return 0
-            #}
-
-
-            foreach tempList $populatedCommParamList {
-                set rowlist [lindex $tempList 2]
-                # puts "rowlist: $rowlist"
-                set chkRslt [lsearch $rowlist $rowIndex]
-                if { $chkRslt != -1} {
-
-                    foreach indRow $rowlist {
-                        if { $indRow == $rowIndex } {
-                            continue;
-                        }
-                        $tablePath cellconfigure $indRow,$columnIndex -text "$input"
-                    }
-                    return 0;
-                } else {
-                }
-            }
+            # sidx and length should be set empty after index is edited or modified
+            $tablePath cellconfigure $rowIndex,2 -text "Default\(0x00\)"
+            $tablePath cellconfigure $rowIndex,3 -text "0x0000"
         }
         2 {
-            # sidx and length should be set empty after index is edited or modified
-            $tablePath cellconfigure $rowIndex,3 -text "Default\(0x00\)"
-            $tablePath cellconfigure $rowIndex,4 -text "0x0000"
+            # length should be set empty after sidx is modified or edited
+            $tablePath cellconfigure $rowIndex,3 -text "0x0000"
         }
         3 {
-            # length should be set empty after sidx is modified or edited
-            $tablePath cellconfigure $rowIndex,4 -text "0x0000"
-        }
-        4 {
             #puts "tablePath: $tablePath,"
             #puts "rowIndex: $rowIndex, columnIndex: $columnIndex, input: $input"
             if {[string length $input] != 6} {
                 return 0;
             }
-            foreach tempList $populatedCommParamList {
-                set rowlist [lindex $tempList 2]
-                #puts "rowlist: $rowlist"
-                set chkRslt [lsearch $rowlist $rowIndex]
-                if { $chkRslt != -1} {
-                    set maxRow [llength $rowlist]
-                    #puts "maxRow: $maxRow"
+            puts "Rows: "
+
+            # foreach tempList $populatedCommParamList {
+            #    set rowlist [lindex $tempList 2]
+            #    #puts "rowlist: $rowlist"
+            #    set chkRslt [lsearch $rowlist $rowIndex]
+            #    if { $chkRslt != -1} {
+                    set maxRow [$tablePath size]
+                    puts "maxRow: $maxRow"
                     set counter 1
-                    foreach indRow $rowlist {
+                    for {set indRow 0} {$indRow < $maxRow} {incr indRow} {
+                        puts "x is $indRow"
                         # while 1a00 has one index
                         if { $counter == 1 } {
                             #puts "counter == 1"
                             # 1st subindex in an channel for which offset is 0x0000
-                            $tablePath cellconfigure $indRow,5 -text "0x0000"
-                            set offsetVal [$tablePath cellcget $indRow,5 -text]
+                            $tablePath cellconfigure $indRow,4 -text "0x0000"
+                            set offsetVal [$tablePath cellcget $indRow,4 -text]
                             if { $indRow == $rowIndex } {
                                 set lengthVal $input
                             } else {
-                                set lengthVal [$tablePath cellcget $indRow,4 -text]
+                                set lengthVal [$tablePath cellcget $indRow,3 -text]
                             }
                             #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
                         } elseif { $counter == $maxRow } {
@@ -805,14 +775,14 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
                             #puts "totalOffset: $totalOffset"
                             set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
                             #puts "totalOffsethex: $totalOffsethex"
-                            $tablePath cellconfigure $indRow,5 -text "$totalOffsethex"
+                            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
                         } elseif { $indRow == $rowIndex } {
                             #puts "indRow == rowIndex"
                             set totalOffset [expr $offsetVal+$lengthVal]
                             #puts "totalOffset: $totalOffset"
                             set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                            $tablePath cellconfigure $indRow,5 -text "$totalOffsethex"
-                            set offsetVal [$tablePath cellcget $indRow,5 -text]
+                            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+                            set offsetVal [$tablePath cellcget $indRow,4 -text]
                             #puts "offsetVal: $offsetVal"
                             set lengthVal $input
                             #puts "inputlengthval: $lengthVal"
@@ -822,9 +792,9 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
                             #puts "totalOffset: $totalOffset"
                             set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
                             #puts "totalOffsethex: $totalOffsethex"
-                            $tablePath cellconfigure $indRow,5 -text "$totalOffsethex"
-                            set offsetVal [$tablePath cellcget $indRow,5 -text]
-                            set lengthVal [$tablePath cellcget $indRow,4 -text]
+                            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+                            set offsetVal [$tablePath cellcget $indRow,4 -text]
+                            set lengthVal [$tablePath cellcget $indRow,3 -text]
                             #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
                         }
 
@@ -833,40 +803,16 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
                         }
                         incr counter
                     }
-                } else {
+            #    } else {
 
-                }
-            }
+            #    }
+            #}
         }
-        5 {
+        4 {
             # do nothing for offset
         }
     }
     return 0
-}
-
-proc Validation::SetTableValueNodeid {tablePath rowIndex columnIndex entryPath mode idx input} {
-    global populatedCommParamList
-
-    Validation::SetTableValue $entryPath $mode $idx $input
-
-    foreach tempList $populatedCommParamList {
-        set rowlist [lindex $tempList 2]
-        #puts "rowlist: $rowlist"
-        set chkRslt [lsearch $rowlist $rowIndex]
-        if { $chkRslt != -1} {
-
-            foreach indRow $rowlist {
-                if { $indRow == $rowIndex } {
-                    continue;
-                }
-                $tablePath cellconfigure $indRow,$columnIndex -text "$input"
-            }
-            return;
-        } else {
-
-        }
-    }
 }
 
 #-------------------------------------------------------------------------------
