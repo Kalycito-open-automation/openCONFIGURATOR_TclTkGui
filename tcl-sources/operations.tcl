@@ -1146,11 +1146,10 @@ proc Operations::BasicFrames { } {
 
     set f2 [NoteBookManager::create_table $alignFrame  "pdo"]
     [lindex $f2 1] columnconfigure 0 -background #e0e8f0 -width 6 -sortmode integer
-    [lindex $f2 1] columnconfigure 1 -background #e0e8f0 -width 14
+    [lindex $f2 1] columnconfigure 1 -background #e0e8f0 -width 11
     [lindex $f2 1] columnconfigure 2 -background #e0e8f0 -width 11
     [lindex $f2 1] columnconfigure 3 -background #e0e8f0 -width 11
     [lindex $f2 1] columnconfigure 4 -background #e0e8f0 -width 11
-    [lindex $f2 1] columnconfigure 5 -background #e0e8f0 -width 11
 
     #binding for tablelist widget
     bind [lindex $f2 0] <Enter> {
@@ -1252,11 +1251,10 @@ proc Operations::BasicFrames { } {
     #######Combobox implementation########
     set f5 [NoteBookManager::create_table $alignFrame  "AUTOpdo"]
     [lindex $f5 1] columnconfigure 0 -background #e0e8f0 -width 6 -sortmode integer
-    [lindex $f5 1] columnconfigure 1 -background #e0e8f0 -width 14
+    [lindex $f5 1] columnconfigure 1 -background #e0e8f0 -width 11
     [lindex $f5 1] columnconfigure 2 -background #e0e8f0 -width 11
     [lindex $f5 1] columnconfigure 3 -background #e0e8f0 -width 11
-    [lindex $f5 1] columnconfigure 4 -background #e0e8f0 -width 11
-    [lindex $f5 1] columnconfigure 5 -background #e0e8f0 -width 11 -foreground #606060
+    [lindex $f5 1] columnconfigure 4 -background #e0e8f0 -width 11 -foreground #606060
 
     #binding for tablelist widget
     bind [lindex $f5 0] <Enter> {
@@ -1513,7 +1511,7 @@ proc Operations::SingleClickNode {node} {
     }
 
     #getting Id and Type of node
-    set result [Operations::GetNodeIdFromTree $node]
+    set result [Operations::GetNodeIdType $node]
     if {$result == -1} {
         #the node is not an index, subindex, TPDO or RPDO do nothing
         Operations::RemoveAllFrames
@@ -1564,225 +1562,223 @@ proc Operations::SingleClickNode {node} {
         #the LastTableFocus is cleared to avoid potential bugs
         set LastTableFocus ""
 
+        if {$st_autogen == 1 } {
+            set propertyFrame [lindex $f5 2]
+            set tableFrame [lindex $f5 1]
+        } else {
+            set propertyFrame [lindex $f2 2]
+            set tableFrame [lindex $f2 1]
+        }
+
         if {[string match "TPDONode-*" $node] } {
             set commParam "18"
             set mappParam "1A"
+            $propertyFrame.la_sendto configure -text "Send to (Node Id)"
         } else {
             #must be RPDO
             set commParam "14"
             set mappParam "16"
+            $propertyFrame.la_sendto configure -text "Receive from (Node Id)"
         }
         set commParamList ""
         set mappParamList ""
 
-        set idx [$treePath nodes $node]
-        foreach tempIdx $idx {
-            set indexId [string range [$treePath itemcget $tempIdx -text] end-4 end-1 ]
-            if {[string match "$commParam*" $indexId]} {
-                lappend commParamList [list $indexId $tempIdx]
-            } elseif {[string match "$mappParam*" $indexId]} {
-                lappend mappParamList [list $indexId $tempIdx]
-            }
-        }
-        set finalMappList ""
-        set populatedPDOList ""
+        set subStr [lindex [split $node -] 2]
+        set commParam "$commParam$subStr"
+        set mappParam "$mappParam$subStr"
 
-        foreach chk $mappParamList {
-            set paramID [string range [lindex $chk 0] end-1 end]
-            set find [lsearch $commParamList [list $commParam$paramID *]]
-            if { $find != -1 } {
-                lappend finalMappList [lindex [lindex $commParamList $find] 1] [lindex $chk 1]
-                lappend populatedPDOList [lindex $chk 1]
+        puts "node:$node commParam:$commParam mappParam:$mappParam"
+
+        $propertyFrame.en_comparam configure -state disabled
+        NoteBookManager::SetEntryValue $propertyFrame.en_comparam 0x$commParam
+
+        $propertyFrame.en_mapparam configure -state disabled
+        NoteBookManager::SetEntryValue $propertyFrame.en_mapparam 0x$mappParam
+
+        set result [ openConfLib::GetSubIndexAttribute $nodeId 0x$mappParam 0x00 $::ACTUALVALUE ]
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+            $propertyFrame.en_numberofentries configure -state disabled
+            NoteBookManager::SetEntryValue $propertyFrame.en_numberofentries 0
+        } else {
+            if { [string match -nocase "0x*" [lindex $result 1]] } {
+                set tempVal [string range [lindex $result 1] 2 end]
+                set val [lindex [Validation::InputToDec $tempVal "UNSIGNED8"] 0]
             } else {
-                lappend finalMappList [] [lindex $chk 1]
-                lappend populatedPDOList [lindex $chk 1]
+                set val [lindex $result 1]
             }
+            puts "en_numberofentries- val:$val"
+            NoteBookManager::SetEntryValue $propertyFrame.en_numberofentries $val
         }
-        set popCount 0
-        set popCountList ""
-        set populatedCommParamList ""
+
+        set locNodeIdList [Operations::GetNodelistWithName]
+        $propertyFrame.com_sendto configure -values "$locNodeIdList"
+
+        set value  ""
+        set result [ openConfLib::GetSubIndexAttribute $nodeId 0x$commParam 0x01 $::ACTUALVALUE ]
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+            ## TODO
+        } else {
+            set tempTargetNodeId [lindex $result 1]
+            if { [string match -nocase "0x*" $tempTargetNodeId] } {
+                set tempVal [string range $tempTargetNodeId 2 end]
+                set tempTargetNodeId [lindex [Validation::InputToDec $tempVal "UNSIGNED8"] 0]
+            }
+            if { $tempTargetNodeId == 0 } {
+                set value "Default\(0\)"
+            } else {
+                set result [openConfLib::GetNodeParameter $tempTargetNodeId $::NODENAME]
+                if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+                    ## TODO Handle err
+                    set value "\($tempTargetNodeId\)"
+                } else {
+                    set value "[lindex $result 1]\($tempTargetNodeId\)"
+                }
+            }
+            set nodeidEditableFlag 1
+            NoteBookManager::SetEntryValue $propertyFrame.com_sendto $value
+        }
+
+        set result [ openConfLib::GetSubIndexAttribute $nodeId 0x$commParam 0x02 $::ACTUALVALUE ]
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+            NoteBookManager::SetEntryValue $propertyFrame.en_mapver 0
+            $propertyFrame.en_mapver configure -state disabled
+        } else {
+            if { [string match -nocase "0x*" [lindex $result 1]] == 1} {
+                set val [lindex $result 1]
+            } else {
+                set val [lindex [Validation::InputToHex [lindex $result 1] "INTEGER8"] 0]
+            }
+            # puts "en_mapver- val:$val"
+            NoteBookManager::SetEntryValue $propertyFrame.en_mapver $val
+        }
 
         if {$st_autogen == 1 } {
             [lindex $f2 1] configure -state disabled
             [lindex $f5 1] configure -state normal
             [lindex $f5 1] delete 0 end
         } else {
+            [lindex $f5 1] configure -state disabled
             [lindex $f2 1] configure -state normal
             [lindex $f2 1] delete 0 end
         }
 
-        set commParamValue ""
-        set nodeidEditableFlag 0
-        for {set count 0} { $count <= [expr [llength $finalMappList]-2] } {incr count 2} {
-            set tempIdx [lindex $finalMappList $count]
-            set commParamValue ""
-            set nodeidEditableFlag 0
-            if { $tempIdx != "" } {
-                set indexId [string range [$treePath itemcget $tempIdx -text] end-4 end-1 ]
-                set sidx [$treePath nodes $tempIdx]
-                foreach tempSidx $sidx {
-                    set subIndexId [string range [$treePath itemcget $tempSidx -text] end-2 end-1 ]
-                    if { [string match "01" $subIndexId] == 1 } {
+        # Get the number of valid entries
+        set noOfValidEntries [NoteBookManager::GetEntryValue $propertyFrame.en_numberofentries]
+        # Re set the total bytes
+        NoteBookManager::SetEntryValue $propertyFrame.en_totalbytes 0
 
-                        set result [openConfLib::GetSubIndexAttribute $nodeId 0x$indexId 0x$subIndexId $::ACTUALVALUE]
-                        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
-                            continue
-                        }
-                        set IndexActualValue [lindex $result 1]
-                        if {[string match -nocase "0x*" $IndexActualValue] } {
-                            #remove appended 0x
-                            scan $IndexActualValue %x commParamValue
-                            #set IndexActualValue [string range $IndexActualValue 2 end]
-                        } else {
-                            set commParamValue $IndexActualValue
-                        }
-                        set nodeidEditableFlag 1
-                    }
-                }
-            }
+        set popCount 0
+        set result [openConfLib::GetSubIndices $nodeId 0x$mappParam]
+        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+            set subIndexList ""
+        } else {
+            set subIndexList [lindex $result 2]
+        }
+        # puts "subIndexList:$subIndexList"
+        foreach subIndex $subIndexList {
 
-            if {$st_autogen == 1 } {
-                if { $commParamValue == 0} {
-                    set commParamValue "Default(0)"
-                } else {
-                    set result [openConfLib::GetNodeParameter $commParamValue $::NAME]
-                    if {[Result_IsSuccessful [lindex $result 0]]} {
-                        set commParamValue "[lindex $result 1]\($commParamValue\)"
-                    } else {
-                        set commParamValue "\($commParamValue\)"
-                    }
-                }
-            }
+            if { $subIndex != 0 } {
 
-            set tempIdx [lindex $finalMappList $count+1]
-            set indexId [string range [$treePath itemcget $tempIdx -text] end-4 end-1 ]
-            set sidx [$treePath nodes $tempIdx]
-            foreach tempSidx $sidx {
-                set subIndexId [string range [$treePath itemcget $tempSidx -text] end-2 end-1 ]
-                if {[string match "00" $subIndexId] == 0 } {
-
-                    set result [openConfLib::GetSubIndexAttribute $nodeId 0x$indexId 0x$subIndexId $::ACCESSTYPE]
-                    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
-                        if {$st_autogen == 1 } {
-                            [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
-                            foreach col [list 2 3 4 5 ] {
-                                [lindex $f5 1] cellconfigure $popCount,$col -editable no
-                            }
-                        } else {
-                            [lindex $f2 1] insert $popCount [list "" "" "" "" "" ""]
-                            foreach col [list 2 3 4 5 ] {
-                                [lindex $f2 1] cellconfigure $popCount,$col -editable no
-                            }
-                        }
-                        incr popCount 1
-                        continue
-                    }
-
-                    set accessType [lindex $result 1]
-
-                    set result [openConfLib::GetSubIndexAttribute $nodeId 0x$indexId 0x$subIndexId $::ACTUALVALUE]
-                    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
-                        if {$st_autogen == 1 } {
-                            [lindex $f5 1] insert $popCount [list "" "" "" "" "" ""]
-                            foreach col [list 2 3 4 5 ] {
-                            [lindex $f5 1] cellconfigure $popCount,$col -editable no
-                            }
-                        } else {
-                            [lindex $f2 1] insert $popCount [list "" "" "" "" "" ""]
-                            foreach col [list 2 3 4 5 ] {
-                            [lindex $f2 1] cellconfigure $popCount,$col -editable no
-                            }
-                        }
-                        incr popCount 1
-                        continue
-                    }
-
-                    set IndexActualValue [lindex $result 1]
-                    if {[string match -nocase "0x*" $IndexActualValue] } {
-                        #remove appended 0x
-                        set IndexActualValue [string range $IndexActualValue 2 end]
-                    } else {
-                        # no 0x no need to do anything
-                    }
-
-                    set length [string range $IndexActualValue 0 3]
-                    set offset [string range $IndexActualValue 4 7]
-                    set reserved [string range $IndexActualValue 8 9]
-                    set listSubIndex [string range $IndexActualValue 10 11]
-                    set listIndex [string range $IndexActualValue 12 15]
-                    foreach tempPdo [list offset length listIndex listSubIndex] {
-                        if {[subst $[subst $tempPdo]] != ""} {
-                            set $tempPdo 0x[subst $[subst $tempPdo]]
-                        } else {
-                            set $tempPdo 0x0
-                        }
-                    }
-
-                    if {$st_autogen == 1 } {
-                        set result [openConfLib::GetSubIndexAttribute $nodeId $listIndex $listSubIndex $::NAME]
-                        if {[Result_IsSuccessful [lindex $result 0]]} {
-                            set listSubIndex "[lindex $result 1]\($listSubIndex\)"
-                        } else {
-                            set listSubIndex "\($listSubIndex\)"
-                        }
-
-                        set result [openConfLib::GetIndexAttribute $nodeId $listIndex $::NAME]
-                        if {[Result_IsSuccessful [lindex $result 0]]} {
-                            set listIndex "[lindex $result 1]\($listIndex\)"
-                        } else {
-                            set listIndex "\($listIndex\)"
-                        }
-
-                        [lindex $f5 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
-                    } else {
-                        [lindex $f2 1] insert $popCount [list $popCount $commParamValue $listIndex $listSubIndex $length $offset ]
-                    }
-
-                    lappend popCountList $popCount
-
-                    if { $accessType == "ro" || $accessType == "const" } {
-                        foreach col [list 2 3 4 5 ] {
-                            if {$st_autogen == 1 } {
-                                [lindex $f5 1] cellconfigure $popCount,$col -editable no
-                            } else {
-                                [lindex $f2 1] cellconfigure $popCount,$col -editable no
-                            }
-                        }
-                    } else {
-                    # as a default the first cell is always non editable, adding it to the list only when made editable
-                        if {$st_autogen == 1 } {
-                            foreach col [list 2 3 4 ] {
-                                [lindex $f5 1] cellconfigure $popCount,$col -editable yes
-                            }
-                            if { $nodeidEditableFlag == 1} {
-                                [lindex $f5 1] cellconfigure $popCount,1 -editable yes
-                            }
-                        } else {
-                            foreach col [list 2 3 4 5 ] {
-                                [lindex $f2 1] cellconfigure $popCount,$col -editable yes
-                            }
-                            if { $nodeidEditableFlag == 1} {
-                                [lindex $f2 1] cellconfigure $popCount,1 -editable yes
-                            }
-                        }
+                puts "subIndex:$subIndex"
+                set result [openConfLib::GetSubIndexAttribute $nodeId 0x$mappParam $subIndex $::ACCESSTYPE]
+                if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+                    $tableFrame insert $popCount [list "" "" "" "" "" ""]
+                    foreach col [list 1 2 3 4 ] {
+                        $tableFrame cellconfigure $popCount,$col -editable no
                     }
                     incr popCount 1
+                    continue
+                }
+
+                set accessType [lindex $result 1]
+
+                set result [openConfLib::GetSubIndexAttribute $nodeId 0x$mappParam $subIndex $::ACTUALVALUE]
+                if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+                    $tableFrame insert $popCount [list "" "" "" "" "" ""]
+                    foreach col [list 1 2 3 4 ] {
+                        $tableFrame cellconfigure $popCount,$col -editable no
+                    }
+                    incr popCount 1
+                    continue
+                }
+
+                set IndexActualValue [lindex $result 1]
+                if {[string match -nocase "0x*" $IndexActualValue] } {
+                    #remove appended 0x
+                    set IndexActualValue [string range $IndexActualValue 2 end]
+                } else {
+                    # no 0x no need to do anything
+                }
+
+                set length [string range $IndexActualValue 0 3]
+                set offset [string range $IndexActualValue 4 7]
+                set reserved [string range $IndexActualValue 8 9]
+                set listSubIndex [string range $IndexActualValue 10 11]
+                set listIndex [string range $IndexActualValue 12 15]
+                foreach tempPdo [list offset length listIndex listSubIndex] {
+                    if {[subst $[subst $tempPdo]] != ""} {
+                        set $tempPdo 0x[subst $[subst $tempPdo]]
+                    } else {
+                        set $tempPdo 0x0
+                    }
+                }
+
+                if {$st_autogen == 1 } {
+                    set result [openConfLib::GetSubIndexAttribute $nodeId $listIndex $listSubIndex $::NAME]
+                    if {[Result_IsSuccessful [lindex $result 0]]} {
+                        set listSubIndex "[lindex $result 1]\($listSubIndex\)"
+                    } else {
+                        set listSubIndex "\($listSubIndex\)"
+                    }
+
+                    set result [openConfLib::GetIndexAttribute $nodeId $listIndex $::NAME]
+                    if {[Result_IsSuccessful [lindex $result 0]]} {
+                        set listIndex "[lindex $result 1]\($listIndex\)"
+                    } else {
+                        set listIndex "\($listIndex\)"
+                    }
+
+                    # puts "insert $popCount [list [expr $popCount + 1] $listIndex $listSubIndex $length $offset ]"
+                    $tableFrame insert $popCount [list [expr $popCount + 1] $listIndex $listSubIndex $length $offset ]
+                } else {
+                    $tableFrame insert $popCount [list [expr $popCount + 1] $listIndex $listSubIndex $length $offset ]
+                }
+
+                lappend popCountList $popCount
+
+                if { $accessType == "ro" || $accessType == "const" } {
+                    foreach col [list 1 2 3 4 ] {
+                        $tableFrame cellconfigure $popCount,$col -editable no
+                    }
+                } else {
+                # as a default the first cell is always non editable, adding it to the list only when made editable
+                    foreach col [list 1 2 3 ] {
+                        # puts "pblm. $popCount,$col"
+                        $tableFrame cellconfigure $popCount,$col -editable yes
+                    }
+                    if { $nodeidEditableFlag == 1} {
+                        $tableFrame cellconfigure $popCount,1 -editable yes
+                    }
+                }
+                incr popCount 1
+
+                if {$noOfValidEntries == $popCount} {
+                    NoteBookManager::SetEntryValue $propertyFrame.en_totalbytes [expr $offset + $length]
                 }
             }
-            #the populatedCommParamList contains the index id of the displayed mapping parameter
-            #the tree node of the communication parameter and the cells in which they are  inserted
-            lappend populatedCommParamList [list $indexId [lindex $finalMappList $count]  $popCountList]
-            set popCountList ""
         }
+        #the populatedCommParamList contains the index id of the displayed mapping parameter
+        #the tree node of the communication parameter and the cells in which they are  inserted
+        # lappend populatedCommParamList [list 0x$mappParam [lindex $finalMappList $count]  $popCountList]
 
         pack forget [lindex $f0 0]
         pack forget [lindex $f1 0]
         if {$st_autogen == 1 } {
-        pack forget [lindex $f2 0]
-        pack [lindex $f5 0] -expand yes -fill both -padx 2 -pady 4
+            pack forget [lindex $f2 0]
+            pack [lindex $f5 0] -expand yes -fill both -padx 2 -pady 4
         } else {
-        pack [lindex $f2 0] -expand yes -fill both -padx 2 -pady 4
-        pack forget [lindex $f5 0]
+            pack [lindex $f2 0] -expand yes -fill both -padx 2 -pady 4
+            pack forget [lindex $f5 0]
         }
         pack forget [lindex $f3 0]
         pack forget [lindex $f4 0]
@@ -2121,6 +2117,66 @@ proc Operations::SingleClickNode {node} {
         $tmpInnerf1.en_value1 configure -validate key -vcmd { return 0 } -bg $savedBg
     }
     return
+}
+
+proc Operations::PDO_NumberOfEntries_EditingFinished { input parentFrame mode idx {dataType ""} } {
+    global nodeSelect
+    global pdo_en_numberofentries
+    global pdo_en_totalbytes
+
+    puts "!!!! $input $mode $idx $dataType"
+
+    set retVal [Validation::IsDec $input $parentFrame.en_numberofentries $mode $idx $dataType]
+
+    if { $retVal == 1} {
+        set numberOfEntries $input
+    } else {
+        set numberOfEntries [NoteBookManager::GetEntryValue $parentFrame.en_numberofentries]
+    }
+
+    # set totalNumberOfBytes [NoteBookManager::GetEntryValue $parentFrame.en_totalbytes]
+    set mappingIndexId [NoteBookManager::GetEntryValue $parentFrame.en_mapparam]
+puts "Act: $numberOfEntries :::: $retVal"
+    if { $numberOfEntries == "" || $numberOfEntries == 0 } {
+        set numberOfEntries 0
+        set pdo_en_totalbytes 0
+        return $retVal
+    }
+    set numberOfEntries [lindex [Validation::InputToHex $numberOfEntries "UNSIGNED8"] 0]
+
+    set result [Operations::GetNodeIdType $nodeSelect]
+    if {$result == -1} {
+        return $retVal
+    } else {
+        set nodeId $result
+    }
+    puts "##$nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE"
+
+    set result [openConfLib::GetSubIndexAttribute $nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE ]
+    # openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        set pdo_en_totalbytes 0
+        return 0
+    }
+
+    set mappActualValue [lindex $result 1]
+    if {[string match -nocase "0x*" $mappActualValue] } {
+        #remove appended 0x
+        set mappActualValue [string range $mappActualValue 2 end]
+    } else {
+        # no 0x no need to do anything
+    }
+
+    set length [string range $mappActualValue 0 3]
+    set offset [string range $mappActualValue 4 7]
+    set length 0x[NoteBookManager::AppendZero $length 4]
+    set offset 0x[NoteBookManager::AppendZero $offset 4]
+
+    puts "%% $length : $offset"
+    set pdo_en_totalbytes "[expr $length + $offset]"
+    # NoteBookManager::SetEntryValue $parentFrame.en_numberofentries [expr $length + $offset]
+
+    return $retVal
 }
 
 #-------------------------------------------------------------------------------
@@ -3024,14 +3080,19 @@ proc Operations::GetNodelistWithName {} {
     set locNodeIdList [lindex $result 2]
 
     foreach nodeId $locNodeIdList {
-        set result [openConfLib::GetNodeParameter $nodeId $::NAME]
-        if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
-            return $retNodeIdList
-        }
-        set nodeName [lindex $result 1]
-        lappend retNodeIdList "$nodeName\($nodeId\)"
+        lappend retNodeIdList [Operations::GetNodeIdWithName $nodeId]
     }
     return $retNodeIdList
+}
+
+proc Operations::GetNodeIdWithName { nodeId } {
+
+    set result [openConfLib::GetNodeParameter $nodeId $::NODENAME]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        return ""
+    }
+    set nodeName [lindex $result 1]
+    return "$nodeName\($nodeId\)"
 }
 
 #-------------------------------------------------------------------------------
@@ -3822,9 +3883,8 @@ proc Operations::BuildProject {} {
                 } else {
                         set buildCN_result [Operations::GetNodeIdType $cnNode]
                 }
-                if {$buildCN_result != "" } {
-                    set buildCN_nodeId [lindex $buildCN_result 0]
-                    #set buildCN_nodeType [lindex $buildCN_result 1]
+                if {$buildCN_result != -1 } {
+                    set buildCN_nodeId $buildCN_result
                     #lappend build_nodesList $buildCN_nodeId
                     set build_nodesList [linsert $build_nodesList end $buildCN_nodeId]
                     #puts "Insert: $build_nodesList"
@@ -3951,8 +4011,8 @@ proc Operations::ReImport {} {
     } else {
         #gets the nodeId and Type of selected node
         set result [Operations::GetNodeIdType $node]
-        if {$result != "" } {
-            set nodeId [lindex $result 0]
+        if {$result != -1 } {
+            set nodeId $result
         } else {
             return
         }
@@ -4046,14 +4106,15 @@ proc Operations::DeleteTreeNode {} {
     }
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $node]
-    if {$result != "" } {
-        set nodeId [lindex $result 0]
+    if {$result != -1 } {
+        set nodeId $result
     } else {
         return
     }
 
     set nodeList ""
     set nodeList [Operations::GetNodeList]
+    puts "nodeList:$nodeList"
     if { ([lsearch -exact $nodeList $node ]!= -1) } {
         set result [tk_messageBox -message "Do you want to delete node?" -type yesno -icon question -title "Question" -parent .]
         switch -- $result {
@@ -4229,16 +4290,8 @@ proc Operations::GetNodeList {} {
     global treePath
 
     set nodeList ""
-    foreach mnNode [$treePath nodes Network-1] {
-        set chk 1
-        foreach cnNode [$treePath nodes $mnNode] {
-            if {$chk == 1} {
-                    lappend nodeList $cnNode
-                set chk 0
-            } else {
-                lappend nodeList $cnNode
-            }
-        }
+    foreach treeObj [$treePath nodes Network-1] {
+        lappend nodeList $treeObj
     }
     return $nodeList
 }
@@ -4252,91 +4305,41 @@ proc Operations::GetNodeList {} {
 #
 #  Description: Returns the node id and node type for the node from tree widget
 #-------------------------------------------------------------------------------
-proc Operations::GetNodeIdType {node} {
-    global treePath
-    global nodeIdList
 
-    if {[string match "*SubIndex*" $node]} {
-        set parent [$treePath parent [$treePath parent $node]]
-        if {[string match "?PDO*" $node]} {
-            # subindex in TPDO orRPDO
-            set parent [$treePath parent [$treePath parent $parent]]
-        } else {
-        }
-    } elseif {[string match "*Index*" $node]} {
-        set parent [$treePath parent $node]
-        if {[string match "?PDO*" $node]} {
-            #it must be index in TPDO or RPDO
-            set parent [$treePath parent [$treePath parent $parent]]
-        } else {
-        }
-    } elseif {[string match "TPDO-*" $node] || [string match "RPDO-*" $node]} {
-        #it must be either TPDO or RPDO
-        set parent [$treePath parent $node]
-        set parent [$treePath parent $parent]
-    } elseif {[string match "PDO-*" $node]} {
-        set parent [$treePath parent $node]
-    } elseif {[string match "OBD-*" $node] || [string match "CN-*" $node]} {
-        set parent $node
-    } elseif {[string match "MN-*" $node]} {
-        #set reqNode [lsearch -regexp [$treePath nodes $node] "OBD-*" ]
-        #puts "reqNode:$reqNode"
-        #set parent [lindex [$treePath nodes $node] $reqNode]
-        return [list 240 0]
-    } else {
-        #it is root or ProjectNode
-        return
-    }
-    set nodeList []
-    set nodeList [Operations::GetNodeList]
-    set searchCount [lsearch -exact $nodeList $parent ]
-    set nodeId [lindex $nodeIdList $searchCount]
-    puts "$searchCount#nodeList: $nodeList %% nodeIdList:$nodeIdList"
-    if { $nodeId == "" } {
-        return ""
-    }
-    if {[string match "OBD*" $parent]} {
-        #it is a mn
-        set nodeType 0
-    } else {
-        #it is a cn
-        set nodeType 1
-    }
-    return [list $nodeId $nodeType]
-}
-
-proc Operations::GetNodeIdFromTree {nodeTree} {
+proc Operations::GetNodeIdType {nodeTree} {
     global treePath
 
     if {[string match "Network-1" $nodeTree] || [string match "ProjectNode" $nodeTree] } {
         return -1
     } elseif {[string match "MN-*" $nodeTree] || [string match "CN-*" $nodeTree]} {
-        set parentId [split $nodeTree -]
-        set nodeId [lindex $parentId 1]
-        return $nodeId
-    } elseif {[string match "Mapping*" $nodeTree]} {
-        set parentId [split $nodeTree -]
-        set nodeId [lindex $parentId 1]
-        return $nodeId
+        set parent $nodeTree
+    } elseif {[string match "Mapping*" $nodeTree] || [string match "OBD-*" $nodeTree]} {
+        set parent [$treePath parent $nodeTree]
     } elseif {[string match "?PDO-*" $nodeTree]} {
-        set parentId [split $nodeTree -]
-        set nodeId [lindex $parentId 1]
-        return $nodeId
-    } elseif {[string match "?PDO-*" $nodeTree]} {
-        set parentId [split $nodeTree -]
-        set nodeId [lindex $parentId 1]
-        return $nodeId
+        set parent [$treePath parent $nodeTree]
+        set parent [$treePath parent $parent]
     } elseif {[string match "?PDONode-*" $nodeTree]} {
-        set parentId [split $nodeTree -]
-        set nodeId [lindex $parentId 1]
-        return $nodeId
-    } elseif {[string match "IndexValue-*" $nodeTree] || [string match "SubIndexValue-*" $nodeTree]} {
-        set parentId [split $nodeTree -]
-        set nodeId [lindex $parentId 1]
-        return $nodeId
+        set parent [$treePath parent $nodeTree]
+        set parent [$treePath parent $parent]
+        set parent [$treePath parent $parent]
+    } elseif {[string match "IndexValue-*" $nodeTree] } {
+        set parent [$treePath parent $nodeTree]
+        set parent [$treePath parent $parent]
+    } elseif { [string match "SubIndexValue-*" $nodeTree]} {
+        set parent [$treePath parent $nodeTree]
+        set parent [$treePath parent $parent]
+        set parent [$treePath parent $parent]
     } else {
         return -1
     }
+
+    set name [$treePath itemcget $parent -text]
+    puts "name:$name"
+    set result [regexp {[\(][0-9]+[\)]} $name match]
+    puts "Result: $result match: $match"
+    set locNodeId [string range $match 1 end-1]
+    puts "$locNodeId"
+    return $locNodeId
 }
 
 #-------------------------------------------------------------------------------

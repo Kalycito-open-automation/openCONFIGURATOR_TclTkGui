@@ -431,8 +431,68 @@ proc NoteBookManager::create_table {nbpath choice} {
     set frmPath [frame $outerFrame.frmPath -relief flat -borderwidth 10  ]
     pack $frmPath -expand yes -fill both
 
-    set scrollWin [ScrolledWindow $frmPath.scrollWin ]
-    pack $scrollWin -fill both -expand true
+    set scrollWin11 [ScrolledWindow $frmPath.scrollWin11 -auto horizontal -scrollbar horizontal]
+    pack $scrollWin11 -fill x -side top
+    #-expand yes
+
+    set sf1 [ScrollableFrame $scrollWin11.sf1]
+    $sf1 configure -height 120
+    $scrollWin11 setwidget $sf1
+
+    set uf [$sf1 getframe]
+    $uf configure -height 20 -width 800
+    set propertyFrame [TitleFrame $uf.propertyFrame -text "Properties" ]
+    set propInFrm [ $propertyFrame getframe ]
+    pack $propertyFrame -side top -fill x -expand true
+    # -expand yes
+
+    ttk::label $propInFrm.la_empty -text "  "
+    ttk::label $propInFrm.la_emptyrow1 -text "  "
+    ttk::label $propInFrm.la_emptyrow2 -text "  "
+    ttk::label $propInFrm.la_emptycol1 -text "      "
+    ttk::label $propInFrm.la_emptycol3 -text "      "
+    ttk::label $propInFrm.la_comparam -text "Communication parameter"
+    ttk::label $propInFrm.la_mapparam -text "Mapping parameter"
+    ttk::label $propInFrm.la_sendto -text "Send to (Node Id)"
+    ttk::label $propInFrm.la_numberofentries -text "Number of valid entries"
+    ttk::label $propInFrm.la_mapver -text "Mapping version "
+    ttk::label $propInFrm.la_totalbytes -text "Total bytes   "
+    ttk::label $propInFrm.la_empty3 -text "  "
+
+    ttk::combobox $propInFrm.com_sendto
+    ttk::entry $propInFrm.en_numberofentries -width 23 -justify left -validate key -textvariable pdo_en_numberofentries  -validatecommand "Operations::PDO_NumberOfEntries_EditingFinished %P $propInFrm %d %i UNSIGNED8"
+    ttk::entry $propInFrm.en_mapver -width 20 -textvariable tmpNodeTime$_pageCounter -justify left -validate key -validatecommand "Validation::IsHex %P %s $propInFrm.en_mapver %d %i integer8"
+    ttk::entry $propInFrm.en_comparam -state disabled -width 20
+    ttk::entry $propInFrm.en_mapparam -state disabled -width 20
+    ttk::entry $propInFrm.en_totalbytes -state disabled -width 20 -textvariable pdo_en_totalbytes
+
+    tooltip::tooltip $propInFrm.en_numberofentries "Number of valid entries"
+    tooltip::tooltip $propInFrm.en_totalbytes "Total number of bytes that will be used for mapping."
+
+    grid config $propInFrm.la_empty -row 0 -column 0 -padx 5
+    grid config $propInFrm.la_emptyrow1 -row 1 -column 0 -padx 5 -pady 4
+    grid config $propInFrm.la_comparam -row 0 -column 1 -sticky w
+    grid config $propInFrm.en_comparam -row 0 -column 2 -sticky w
+    grid config $propInFrm.la_mapparam -row 2 -column 1 -sticky w
+    grid config $propInFrm.en_mapparam -row 2 -column 2 -sticky w
+    grid config $propInFrm.la_emptycol1 -row 0 -column 3 -sticky w -rowspan 2
+    grid config $propInFrm.la_sendto -row 0 -column 5 -sticky w
+    grid config $propInFrm.com_sendto -row 0 -column 6 -sticky w
+    grid config $propInFrm.la_numberofentries -row 2 -column 5 -sticky w
+    grid config $propInFrm.en_numberofentries -row 2 -column 6 -sticky w
+    grid config $propInFrm.la_emptycol3 -row 0 -column 7 -sticky w -rowspan 2
+    grid config $propInFrm.la_mapver -row 0 -column 9 -sticky w
+    grid config $propInFrm.en_mapver -row 0 -column 10 -sticky w
+    grid config $propInFrm.la_totalbytes -row 2 -column 9 -sticky w
+    grid config $propInFrm.en_totalbytes -row 2 -column 10 -sticky w
+    grid config $propInFrm.la_empty3 -row 0 -column 11 -padx 10 -sticky we
+    grid config $propInFrm.la_emptyrow2 -row 3 -column 0 -padx 5 -pady 4
+
+    pack $propInFrm -side top -fill x -expand true
+    # -expand true
+
+    set scrollWin [ScrolledWindow $frmPath.scrollWin  ]
+    pack $scrollWin -fill both -side top -expand true
     set st $frmPath.st
 
     catch "font delete custom1"
@@ -441,7 +501,6 @@ proc NoteBookManager::create_table {nbpath choice} {
     if {$choice == "pdo"} {
         set st [tablelist::tablelist $st \
             -columns {0 "No" left
-            0 "Node Id" center
             0 "Index" center
             0 "Sub Index" center
             0 "Length" center
@@ -453,16 +512,14 @@ proc NoteBookManager::create_table {nbpath choice} {
             -editstartcommand NoteBookManager::StartEdit -editendcommand NoteBookManager::EndEdit ]
 
         $st columnconfigure 0 -editable no
-        $st columnconfigure 1 -editable no
+        $st columnconfigure 1 -editable yes -editwindow entry
         $st columnconfigure 2 -editable yes -editwindow entry
         $st columnconfigure 3 -editable yes -editwindow entry
         $st columnconfigure 4 -editable yes -editwindow entry
-        $st columnconfigure 5 -editable yes -editwindow entry
 
     } elseif {$choice == "AUTOpdo"} {
         set st [tablelist::tablelist $st \
             -columns {0 "S.No" left
-            0 "Target Node Id" center
             0 "Index" center
             0 "Sub Index" center
             0 "Length" center
@@ -478,20 +535,19 @@ proc NoteBookManager::create_table {nbpath choice} {
             $st columnconfigure 1 -editable no -editwindow ComboBox
             $st columnconfigure 2 -editable no -editwindow ComboBox
             $st columnconfigure 3 -editable no -editwindow ComboBox
-            $st columnconfigure 4 -editable no -editwindow ComboBox
-            $st columnconfigure 5 -editable no
+            $st columnconfigure 4 -editable no
     } else {
         #invalid choice
         return
     }
 
     $scrollWin setwidget $st
-    pack $st -fill both -expand true
+    pack $st -fill both -expand true -side top
     $st configure -height 4 -width 40 -stretch all
 
     set fram [ frame $frmPath.f1 ]
     label $fram.la_empty -text "  " -height 1
-    set tableSaveBtn [ button $fram.bt_sav -text " Save " -width 8 -command "NoteBookManager::SaveTable $st" ]
+    set tableSaveBtn [ button $fram.bt_sav -text " Save " -width 8 -command "NoteBookManager::SaveTable $st $propInFrm" ]
     label $fram.la_empty1 -text "  "
     button $fram.bt_dis -text "Discard" -width 8 -command "NoteBookManager::DiscardTable $st"
     grid config $fram.la_empty -row 0 -column 0 -columnspan 2
@@ -500,7 +556,7 @@ proc NoteBookManager::create_table {nbpath choice} {
     grid config $fram.bt_dis -row 1 -column 2 -sticky s
     pack $fram -side top
 
-    return  [list $outerFrame $st]
+    return  [list $outerFrame $st $propInFrm]
 }
 
 #-------------------------------------------------------------------------------
@@ -824,8 +880,8 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
 
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $nodeSelect]
-    if {$result != "" } {
-        set nodeId [lindex $result 0]
+    if {$result != -1 } {
+        set nodeId $result
     } else {
         #must be some other node this condition should never reach
         return
@@ -928,12 +984,12 @@ proc NoteBookManager::SaveMNValue { frame0 frame1 } {
 
     #gets the nodeId and Type of selected node
     set result [Operations::GetNodeIdType $nodeSelect]
-    if {$result != "" } {
-        set nodeId [lindex $result 0]
+    if {$result != -1 } {
+        set nodeId $result
     } else {
-            #must be some other node this condition should never reach
-            Validation::ResetPromptFlag
-            return
+        #must be some other node this condition should never reach
+        Validation::ResetPromptFlag
+        return
     }
 
     set newNodeName [$frame0.en_nodeName get]
@@ -1026,7 +1082,7 @@ proc NoteBookManager::SaveMNValue { frame0 frame1 } {
 #
 #  Results:  -
 #
-#  Description: Saves the entered value for MN property window
+#  Description: Saves the entered value for CN property window
 #-------------------------------------------------------------------------------
 proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalDatatype ""}} {
     global nodeSelect
@@ -1201,13 +1257,15 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
             return
         }
     }
-
+######################FIXME########################
     set status_save 1
     #if the forced cycle no is changed and saved subobjects will be added to MN
     #based on the internal logic so need to rebuild the mn tree
     #delete the OBD node and rebuild the tree
     set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
+    puts "MnTreeNode:$MnTreeNode"
     set tmpNode [string range $MnTreeNode 2 end]
+    puts "tmpNode:$tmpNode"
     #there can be one OBD in MN so -1 is hardcoded
     set ObdTreeNode OBD$tmpNode-1
     catch {$treePath delete $ObdTreeNode}
@@ -1221,9 +1279,9 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
     thread::send [tsv::get application importProgress] "StartProgress"
     if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
         # error has occured
-        thread::send  [tsv::set application importProgress] "StopProgress"
-        Operations::CloseProject
-        return 0
+        #thread::send  [tsv::set application importProgress] "StopProgress"
+        #Operations::CloseProject
+        #return 0
     }
     thread::send  [tsv::set application importProgress] "StopProgress"
 
@@ -1249,18 +1307,15 @@ proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
     set win [$tablePath editwinpath]
     switch -- $columnIndex {
         1 {
-            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 2 $tablePath $rowIndex $columnIndex $win"
+            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
         }
         2 {
-            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
-        }
-        3 {
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 2 $tablePath $rowIndex $columnIndex $win"
         }
-        4 {
+        3 {
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
         }
-        5 {
+        4 {
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::IsTableHex %P %s %d %i 4 $tablePath $rowIndex $columnIndex $win"
         }
     }
@@ -1289,20 +1344,22 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     #set locNodeId [string range $match 1 end-1]
     #puts "$locNodeId"
 
-    set idxidVal [$tablePath cellcget $rowIndex,2 -text]
+    set idxidVal [$tablePath cellcget $rowIndex,1 -text]
 
     set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxidVal match]
     set locIdxId [string range $match 1 end-1]
 
-    set sidxVal [$tablePath cellcget $rowIndex,3 -text]
+    set sidxVal [$tablePath cellcget $rowIndex,2 -text]
     set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
     set locSidxId [string range $match 1 end-1]
 
-    set lengthVal [$tablePath cellcget $rowIndex,4 -text]
-    set offsetVal [$tablePath cellcget $rowIndex,5 -text]
+    set lengthVal [$tablePath cellcget $rowIndex,3 -text]
+    set offsetVal [$tablePath cellcget $rowIndex,4 -text]
 
     set selectedNode [$treePath selection get]
-    set pdoType "[$treePath itemcget $selectedNode -text ]"
+    set tempList "[split [$treePath itemcget $selectedNode -text ] -]"
+    set pdoType  [lindex $tempList 0]
+    puts "tempList:$tempList pdoType:$pdoType"
     set result [Operations::GetNodeIdType $selectedNode]
     set locNodeId [lindex $result 0]
 
@@ -1310,32 +1367,27 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     $win configure -editable no
     switch -- $columnIndex {
         1 {
-            set locNodeIdList [Operations::GetNodelistWithName]
-            $win configure -values "$locNodeIdList"
-            $win configure -invalidcommand bell -validate key -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
-        }
-        2 {
             set idxList [Operations::GetIndexListWithName $locNodeId $pdoType]
             set idxList [lappend idxList "Default\(0x0000\)"]
             set idxList [lsort $idxList]
             $win configure -values "$idxList"
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
         }
-        3 {
+        2 {
             set sidxList [Operations::GetSubIndexlistWithName $locNodeId $locIdxId $pdoType]
             set sidxList [lappend sidxList "Default\(0x00\)"]
             set sidxList [lsort $sidxList]
             $win configure -values "$sidxList"
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
             }
-        4 {
+        3 {
             set sidxLength [Operations::FuncSubIndexLength $locNodeId $locIdxId $locSidxId]
             set sidxLength [lappend sidxLength "0x0000"]
             set sidxLength [lsort $sidxLength]
             $win configure -values "$sidxLength"
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
         }
-        5 {
+        4 {
             #puts "Offset Loading"
             #Nothing to do for offset. Entry greyed out.
         }
@@ -1363,17 +1415,15 @@ proc NoteBookManager::EndEdit {tablePath rowIndex columnIndex text} {
 #  NoteBookManager::SaveTable
 #
 #  Arguments: tableWid - Path of the tablelist widget
-#
+#             propertyFrame - Path of the property frame
 #  Results: -
 #
 #  Description: To validate and save the validated values in tablelist widget
 #-------------------------------------------------------------------------------
-proc NoteBookManager::SaveTable {tableWid} {
+proc NoteBookManager::SaveTable {tableWid propertyFrame} {
     global nodeSelect
     global treePath
     global status_save
-    global populatedPDOList
-    global populatedCommParamList
     global st_autogen
 
     set result [$tableWid finishediting]
@@ -1383,11 +1433,10 @@ proc NoteBookManager::SaveTable {tableWid} {
     } else {
     }
     # should save entered values to corresponding subindex
-    set result [Operations::GetNodeIdType $nodeSelect]
-    set nodeId [lindex $result 0]
+    set nodeId [Operations::GetNodeIdType $nodeSelect]
     set rowCount 0
     set flag 0
-
+    set match ""
     set result [openConfLib::IsExistingNode $nodeId]
     openConfLib::ShowErrorMessage [lindex $result 0]
     if {[lindex $result 1] == 0 && [Result_IsSuccessful [lindex $result 0]] != 1} {
@@ -1395,103 +1444,98 @@ proc NoteBookManager::SaveTable {tableWid} {
         return
     }
 
+    set commParamIndexId [string trim [$propertyFrame.en_comparam get]]
+    set mappParamIndexId [string trim [$propertyFrame.en_mapparam get]]
+
+    set targetNodeId [string trim [$propertyFrame.com_sendto get]]
+    puts "targetNodeId:$targetNodeId"
+    set result [regexp {[\(][0-9]+[\)]} $targetNodeId match]
+    if { $result == 0} {
+        #TODO remove this after fixing nodeid always integetr in singleclicknode
+        set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $targetNodeId match]
+    }
+
+    puts "result:$result match:$match"
+    set targetNodeId [string range $match 1 end-1]
+    puts "targetNodeId:$targetNodeId"
+
+    set mappingVersion [string trim [$propertyFrame.en_mapver get]]
+
+    set numberOfEntries [string trim [$propertyFrame.en_numberofentries get]]
+
+    set totalBytes [string trim [$propertyFrame.en_totalbytes get]]
+
+    set result [openConfLib::SetSubIndexActualValue $nodeId $commParamIndexId "0x01" $targetNodeId]
+    openConfLib::ShowErrorMessage $result
+    # if { [Result_IsSuccessful $result] == 0 } {
+    # }
+
+    set result [openConfLib::SetSubIndexActualValue $nodeId $commParamIndexId "0x02" $mappingVersion]
+    openConfLib::ShowErrorMessage $result
+    # if { [Result_IsSuccessful $result] == 0 } {
+    # }
+
+    set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfEntries]
+    openConfLib::ShowErrorMessage $result
+    # if { [Result_IsSuccessful $result] == 0 } {
+    # }
+
     #sort the tablelist based on the No column
     $tableWid sortbycolumn 0 -increasing
     update
 
-    foreach childIndex $populatedPDOList {
-        set indexId [string range [$treePath itemcget $childIndex -text] end-4 end-1]
-        foreach childSubIndex [$treePath nodes $childIndex] {
-            set subIndexId [string range [$treePath itemcget $childSubIndex -text] end-2 end-1]
-            if {[string match "00" $subIndexId]} {
-                # Reset the 00th subindex of a Mapping index
-                set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId "0x00" "0x00"]
-            } else {
-                set offset [string range [$tableWid cellcget $rowCount,5 -text] 2 end]
-                set length [string range [$tableWid cellcget $rowCount,4 -text] 2 end]
-                set reserved 00
-
-                if {$st_autogen == 1 } {
-                    set sidxVal [$tableWid cellcget $rowCount,3 -text]
-                    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
-                    set locSidxId [string range $match 3 end-1]
-
-                    set idxVal [$tableWid cellcget $rowCount,2 -text]
-                    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxVal match]
-                    set locIdxId [string range $match 3 end-1]
-                    #set index [string range [$tableWid cellcget $rowCount,2 -text] end-4 end-1]
-                    #set subindex [string range [$tableWid cellcget $rowCount,3 -text] end-2 end-1]
-                } else {
-                    set locIdxId [string range [$tableWid cellcget $rowCount,2 -text] 2 end]
-                    set locSidxId [string range [$tableWid cellcget $rowCount,3 -text] 2 end]
-                }
-
-                set value $length$offset$reserved$locSidxId$locIdxId
-                # puts "value:::: $value"
-                if { [string length $value] != 16 } {
-                    set flag 1
-                    incr rowCount
-                    continue
-                } else {
-                    set value 0x$value
-                }
-                set result [openConfLib::IsExistingSubIndex $nodeId 0x$indexId 0x$subIndexId]
-                if { [lindex $result 1] } {
-                    set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId 0x$subIndexId $value]
-
-                    if { [expr [expr 0x$locIdxId > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
-                        # if The value is valid and the 00th subindex is set to the subindex id. But Spec says: Number of mapped objects.
-                        # TODO Need to discuss.
-                        set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId "0x00" "0x$subIndexId"]
-                    }
-                }
-                incr rowCount
-            }
+    set result [openConfLib::GetSubIndices $nodeId $mappParamIndexId]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        set subIndexList ""
+    } else {
+        set subIndexList [lindex $result 2]
+    }
+    puts "subIndexList:$subIndexList"
+    foreach subIndex $subIndexList {
+        if { $subIndex == 0 } {
+            continue
         }
+        set offset [string range [$tableWid cellcget $rowCount,4 -text] 2 end]
+        set length [string range [$tableWid cellcget $rowCount,3 -text] 2 end]
+        set reserved 00
+
+        if {$st_autogen == 1 } {
+            set sidxVal [$tableWid cellcget $rowCount,2 -text]
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
+            set locSidxId [string range $match 3 end-1]
+
+            set idxVal [$tableWid cellcget $rowCount,1 -text]
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxVal match]
+            set locIdxId [string range $match 3 end-1]
+        } else {
+            set locIdxId [string range [$tableWid cellcget $rowCount,1 -text] 2 end]
+            set locSidxId [string range [$tableWid cellcget $rowCount,2 -text] 2 end]
+        }
+
+        set value $length$offset$reserved$locSidxId$locIdxId
+        puts "value:::: $value"
+        if { [string length $value] != 16 } {
+            set flag 1
+            incr rowCount
+            continue
+        } else {
+            set value 0x$value
+        }
+        set result [openConfLib::IsExistingSubIndex $nodeId $mappParamIndexId $subIndex]
+        if { [lindex $result 1] } {
+            set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId $subIndex $value]
+
+            # if { [expr [expr 0x$locIdxId > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
+                # if The value is valid and the 00th subindex is set to the subindex id. But Spec says: Number of mapped objects.
+                # TODO Need to discuss.
+                #set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $subIndex]
+#Do we need this?
+#### TODO Update no.entries in GUI
+            # }
+        }
+        incr rowCount
     }
 
-    #saving the nodeid to communication parameter subindex 01
-    foreach childIndex $populatedCommParamList {
-        set treeNode [lindex $childIndex 1]
-        if {[$treePath exists $treeNode] == 0} {
-            continue;
-        }
-        set indexId [string range [$treePath itemcget $treeNode -text] end-4 end-1]
-        foreach childSubIndex [$treePath nodes $treeNode] {
-            set subIndexId [string range [$treePath itemcget $childSubIndex -text] end-2 end-1]
-            set name [string range [$treePath itemcget $childSubIndex -text] 0 end-6]
-            set rowCount [lindex [lindex $childIndex 2] 0]
-            if { [string match "01" $subIndexId] } {
-                #
-                if { $rowCount == ""} {
-                    break
-                }
-                if {$st_autogen == 1 } {
-                    set enteredNodeIdstr [$tableWid cellcget $rowCount,1 -text]
-                    set result [regexp {[\(][0-9]+[\)]} $enteredNodeIdstr match]
-                    set value [string range $match 1 end-1]
-                } else {
-                    set value [string range [$tableWid cellcget $rowCount,1 -text] 2 end]
-                }
-
-                # puts "value: $value"
-
-                #0x is appended when saving value to indicate it is a hexa decimal number
-                #if { ([string length $value] < 1) || ([string length $value] > 2) } {
-                #    #set flag 1
-                #    break
-                #} else {
-                #    set value 0x$value
-                #}
-
-                set result [openConfLib::IsExistingSubIndex $nodeId 0x$indexId 0x$subIndexId]
-                if { [lindex $result 1] } {
-                    set result [openConfLib::SetSubIndexActualValue $nodeId 0x$indexId "0x$subIndexId" $value]
-                    break
-                }
-            }
-        }
-    }
     if { $flag == 1} {
         Console::DisplayInfo "Only the PDO mapping table entries that are completely filled(Offset, Length, Index and Sub Index) are saved"
     }
