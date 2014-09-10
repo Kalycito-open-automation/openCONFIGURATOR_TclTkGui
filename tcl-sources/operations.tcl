@@ -4001,21 +4001,12 @@ proc Operations::ReImport {} {
     global image_dir
 
     set node [$treePath selection get]
-    if {[string match "MN*" $node]} {
-        set child [$treePath nodes $node]
-        set tmpNode [string range $node 2 end]
-        # since a MN has only one so -1 is appended
-        set node OBD$tmpNode-1
-        set res [lsearch $child "OBD$tmpNode-1*"]
-        set nodeId 240
+    #gets the nodeId of selected node
+    set result [Operations::GetNodeIdType $node]
+    if {$result != -1 } {
+        set nodeId $result
     } else {
-        #gets the nodeId and Type of selected node
-        set result [Operations::GetNodeIdType $node]
-        if {$result != -1 } {
-            set nodeId $result
-        } else {
-            return
-        }
+        return
     }
 
     set cursor [. cget -cursor]
