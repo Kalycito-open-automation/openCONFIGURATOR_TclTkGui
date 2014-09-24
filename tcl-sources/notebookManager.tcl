@@ -914,6 +914,22 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
         }
         #value for SubIndex is edited need to change
         set status_save 1
+
+        set forceCDC_state [$frame0.frame1.ch_gen cget -state]
+        if {[string match "disabled" $forceCDC_state]} {
+            # Force CDC export option is already disabled.
+        } else {
+            set chkGen [$frame0.frame1.ch_gen cget -variable]
+            global $chkGen
+
+            set checkBoxValue [subst $[subst $chkGen]]
+            puts "$nodeId $indexId $subIndexId CHECKBOX VALUE: $checkBoxValue --- $::FORCETOCDC"
+            set result [openConfLib::SetSubIndexAttribute $nodeId $indexId $subIndexId $::FORCETOCDC $checkBoxValue]
+            openConfLib::ShowErrorMessage $result
+            if { [Result_IsSuccessful $result] != 1 } {
+                return
+            }
+        }
     } elseif {[string match "*IndexValue*" $nodeSelect]} {
         set indexId [string range $oldName end-4 end-1 ]
         set indexId "0x[string toupper $indexId]"
@@ -927,6 +943,21 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
         }
         #value for SubIndex is edited need to change
         set status_save 1
+
+        set forceCDC_state [$frame0.frame1.ch_gen cget -state]
+        if {[string match "disabled" $forceCDC_state]} {
+            # Force CDC export option is already disabled.
+        } else {
+            set chkGen [$frame0.frame1.ch_gen cget -variable]
+            global $chkGen
+            set checkBoxValue [subst $[subst $chkGen]]
+            puts "$nodeId $indexId CHECKBOX VALUE: $checkBoxValue --- $::FORCETOCDC"
+            set result [openConfLib::SetIndexAttribute $nodeId $indexId $::FORCETOCDC $checkBoxValue]
+            openConfLib::ShowErrorMessage $result
+            if { [Result_IsSuccessful $result] != 1 } {
+                return
+            }
+        }
     } else {
         return
     }

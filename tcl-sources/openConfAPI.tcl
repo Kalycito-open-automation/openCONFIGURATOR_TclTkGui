@@ -764,3 +764,29 @@ proc openConfLib::GetSubIndices { nodeId indexId } {
 
     return $retVal
 }
+
+#-------------------------------------------------------------------------------
+#  openConfLib::SetIndexAttribute
+#  Description: Set the attribute value of an index of a node.
+#               List arg 0 - The openCONFIGURATOR::Library::ErrorHandling::Result obj
+#-------------------------------------------------------------------------------
+#Result SetIndexAttribute(const UINT32 nodeId, const UINT32 index, AttributeType attributeType, const std::string attributeValue);
+proc openConfLib::SetIndexAttribute { nodeId index attributeType attributeValue} {
+    openConfLib::PrintText "::SetIndexAttribute $nodeId $index $attributeType $attributeValue"
+    set result [::SetIndexAttribute $nodeId $index $attributeType $attributeValue]
+
+    return $result
+}
+
+#-------------------------------------------------------------------------------
+#  openConfLib::SetSubIndexAttribute
+#  Description: Set the attribute value of a sub-index of an index.
+#               List arg 0 - The openCONFIGURATOR::Library::ErrorHandling::Result obj
+#-------------------------------------------------------------------------------
+#Result SetSubIndexAttribute(const UINT32 nodeId, const UINT32 index, const UINT32 subIndex, AttributeType attributeType, const std::string attributeValue);
+proc openConfLib::SetSubIndexAttribute { nodeId index subIndex attributeType attributeValue} {
+    openConfLib::PrintText "::SetSubIndexAttribute $nodeId $index $subIndex $attributeType $attributeValue"
+    set result [::SetSubIndexAttribute $nodeId $index $subIndex $attributeType $attributeValue]
+
+    return $result
+}
