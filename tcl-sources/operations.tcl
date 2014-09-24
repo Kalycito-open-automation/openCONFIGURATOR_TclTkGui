@@ -2178,11 +2178,6 @@ proc Operations::MNProperties {node nodeId} {
     }
     set locNodeName [lindex $result 1]
 
-#Workaround for node name the library has openPOWERLINK_MN(240) as the name.
-    if { $nodeId == 240 } {
-        set locNodeName "openPOWERLINK_MN"
-    }
-
     set result [openConfLib::GetNodeParameter $nodeId $::STATIONTYPE ]
     openConfLib::ShowErrorMessage [lindex $result 0]
     if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
@@ -2981,23 +2976,6 @@ proc Operations::AddCN {cnName tmpImpDir nodeId} {
 
         thread::send  [tsv::set application importProgress] "StartProgress"
         set result [WrapperInteractions::Import $treeNodeCN $nodeId]
-        #rebuild the mn tree
-        set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
-        set tmpNode [string range $MnTreeNode 2 end]
-        #there can be one OBD in MN so -1 is hardcoded
-        #set ObdTreeNode OBD$tmpNode-1
-        # catch {$treePath delete $ObdTreeNode}
-        #insert the OBD ico only for expert view mode
-        #if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-        #    $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
-        #}
-        #set mnNodeId 240
-        #if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
-            # error has occured
-        #    thread::send  [tsv::set application importProgress] "StopProgress"
-        #    Operations::CloseProject
-        #    return 0
-        #}
         thread::send  [tsv::set application importProgress] "StopProgress"
         if { $result == "fail" } {
             return

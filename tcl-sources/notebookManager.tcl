@@ -1287,33 +1287,8 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
             return
         }
     }
-######################FIXME########################
-    set status_save 1
-    #if the forced cycle no is changed and saved subobjects will be added to MN
-    #based on the internal logic so need to rebuild the mn tree
-    #delete the OBD node and rebuild the tree
-    set MnTreeNode [lindex [$treePath nodes ProjectNode] 0]
-    puts "MnTreeNode:$MnTreeNode"
-    set tmpNode [string range $MnTreeNode 2 end]
-    puts "tmpNode:$tmpNode"
-    #there can be one OBD in MN so -1 is hardcoded
-    set ObdTreeNode OBD$tmpNode-1
-    catch {$treePath delete $ObdTreeNode}
-    #insert the OBD ico only for expert view mode
 
-    image create photo img_pdo -file "$image_dir/pdo.gif"
-    if { [string match "EXPERT" $Operations::viewType ] == 1 } {
-        $treePath insert 0 $MnTreeNode $ObdTreeNode -text "OBD" -open 0 -image img_pdo
-    }
-    set mnNodeId 240
-    thread::send [tsv::get application importProgress] "StartProgress"
-    if { [ catch { set result [WrapperInteractions::Import $ObdTreeNode $mnNodeId] } ] } {
-        # error has occured
-        #thread::send  [tsv::set application importProgress] "StopProgress"
-        #Operations::CloseProject
-        #return 0
-    }
-    thread::send  [tsv::set application importProgress] "StopProgress"
+    set status_save 1
 
     $cnPropSaveBtn configure -command "NoteBookManager::SaveCNValue $nodeId $frame0 $frame1 $frame2 $multiPrescalDatatype"
 
