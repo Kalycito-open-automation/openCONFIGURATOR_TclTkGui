@@ -276,28 +276,3 @@ proc Console::ClearMsgs {} {
         $windowPath configure -state disabled
     }
 }
-
-#-------------------------------------------------------------------------------
-#  Console::BlinkText
-#
-#  Arguments: -
-#
-#  Results: -
-#
-#  Description:  Clear information, error and warning message
-#-------------------------------------------------------------------------------
-proc Console::BlinkText {{win {}} {tag {}} } {
-    if {$win == ""} {
-        return
-    }
-
-    set fg [$win cget -foreground]
-    for {set blinkcount 0} { $blinkcount < 3 } { incr blinkcount} {
-        $win tag configure $tag -foreground [$win cget -background]
-        update idletasks
-        after 500
-        $win tag configure $tag -foreground $fg
-        update idletasks
-        after 500
-    }
-}

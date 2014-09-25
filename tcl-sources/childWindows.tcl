@@ -588,7 +588,7 @@ proc ChildWindows::SaveProjectAsWindow {} {
             Console::DisplayErrMsg "Error in saving project $saveProjectAs"
             return
         } else {
-            #since the .oct file will be saved with same name as folder variable 'tempProjectNameNoExtn' is used twice
+            #since the .xml file will be saved with same name as folder variable 'tempProjectNameNoExtn' is used twice
             set openResult [Operations::openProject [file join $saveProjectAs $tempProjectName].xml]
             if {$openResult == 1} {
                 Console::ClearMsgs

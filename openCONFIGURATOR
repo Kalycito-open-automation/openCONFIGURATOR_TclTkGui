@@ -233,9 +233,10 @@ proc InitOpenConfigurator {argc argv} {
     # Draw the Main window
     wm withdraw .
     wm title . "openCONFIGURATOR"
+
     catch {
-        set element [image create photo -file [file join $imagesDir openConfig.gif] ]
-        wm iconphoto . -default $element
+        # set element [image create photo -format gif -file [file join $imagesDir openConfig.gif] ]
+        # wm iconphoto . -default $element
     }
 
     Operations::BasicFrames
@@ -245,6 +246,13 @@ proc InitOpenConfigurator {argc argv} {
         wm deiconify .
         raise .
         focus .
+    }
+
+    catch {
+        set element [image create photo -format gif -file [file join $imagesDir openConfig.gif] ]
+        wm iconphoto . -default $element
+		wm withdraw .
+		wm state . normal
     }
 
     LoadOpenConfiguratorLibrary

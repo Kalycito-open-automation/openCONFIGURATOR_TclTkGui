@@ -923,7 +923,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
             global $chkGen
 
             set checkBoxValue [subst $[subst $chkGen]]
-            puts "$nodeId $indexId $subIndexId CHECKBOX VALUE: $checkBoxValue --- $::FORCETOCDC"
+            # puts "$nodeId $indexId $subIndexId CHECKBOX VALUE: $checkBoxValue --- $::FORCETOCDC"
             set result [openConfLib::SetSubIndexAttribute $nodeId $indexId $subIndexId $::FORCETOCDC $checkBoxValue]
             openConfLib::ShowErrorMessage $result
             if { [Result_IsSuccessful $result] != 1 } {
@@ -951,7 +951,7 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
             set chkGen [$frame0.frame1.ch_gen cget -variable]
             global $chkGen
             set checkBoxValue [subst $[subst $chkGen]]
-            puts "$nodeId $indexId CHECKBOX VALUE: $checkBoxValue --- $::FORCETOCDC"
+            # puts "$nodeId $indexId CHECKBOX VALUE: $checkBoxValue --- $::FORCETOCDC"
             set result [openConfLib::SetIndexAttribute $nodeId $indexId $::FORCETOCDC $checkBoxValue]
             openConfLib::ShowErrorMessage $result
             if { [Result_IsSuccessful $result] != 1 } {
@@ -1079,7 +1079,7 @@ proc NoteBookManager::SaveMNValue { frame0 frame1 } {
                     # it is an index
                     set saveCmd "openConfLib::SetIndexActualValue $nodeId [lindex $objectList 0] $validValue"
                 } else {
-                    #it is a subindex
+                    #it is a sub-index
                     set saveCmd "openConfLib::SetSubIndexActualValue $nodeId [lindex $objectList 0] [lindex $objectList 1] $validValue"
                 }
 
@@ -1090,7 +1090,7 @@ proc NoteBookManager::SaveMNValue { frame0 frame1 } {
                     return
                 }
 
-                #value for MN porpety is edited need to change
+                #value for MN property is edited need to change
                 set status_save 1
                 Validation::ResetPromptFlag
             } else {
@@ -1175,7 +1175,7 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
         return
     }
 
-    #validate whether the entered cycle reponse time is greater tha 1F98 03 value
+    #validate whether the entered cycle reponse time is greater than 1F98 03 value
     set validateResult [$frame0.cycleframe.en_time validate]
     switch -- $validateResult {
         0 {
@@ -1253,7 +1253,6 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
         }
     }
 
-
     set saveSpinVal ""
     #if the check button is enabled and a valid value is obtained from spin box call the API
     set chkState [$frame2.ch_adv cget -state]
@@ -1262,7 +1261,7 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
     set chkVal [subst $[subst $chkVar] ]
     #check the state and if it is selected.
     if { ($chkState == "normal") && ($chkVal == 1) && ($multiPrescalDatatype != "") } {
-        #check wheteher a valid data is set or not
+        #check wheather a valid data is set or not
         set spinVar [$frame2.sp_cycleNo cget -textvariable]
         global $spinVar
         set spinVal [subst $[subst $spinVar] ]
@@ -1279,7 +1278,7 @@ proc NoteBookManager::SaveCNValue {nodeId frame0 frame1 frame2 {multiPrescalData
         }
     }
 
-    puts "SaveSpin:$saveSpinVal"
+    # puts "SaveSpin:$saveSpinVal"
     if { $saveSpinVal != "" } {
         set result [openConfLib::SetNodeParameter $nodeId $::FORCEDMULTIPLEXEDCYCLE 0x$saveSpinVal]
         openConfLib::ShowErrorMessage $result
@@ -1368,13 +1367,6 @@ proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
 proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     global treePath
 
-    # no need to get the nodeid from 18xx or 14xx
-    #set nodeidVal [$tablePath cellcget $rowIndex,1 -text]
-    #set result [regexp {[\(][0-9]+[\)]} $nodeidVal match]
-    #puts "Result: $result match: $match"
-    #set locNodeId [string range $match 1 end-1]
-    #puts "$locNodeId"
-
     set idxidVal [$tablePath cellcget $rowIndex,1 -text]
 
     set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxidVal match]
@@ -1390,7 +1382,7 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     set selectedNode [$treePath selection get]
     set tempList "[split [$treePath itemcget $selectedNode -text ] -]"
     set pdoType  [lindex $tempList 0]
-    puts "tempList:$tempList pdoType:$pdoType"
+    # puts "tempList:$tempList pdoType:$pdoType"
     set result [Operations::GetNodeIdType $selectedNode]
     set locNodeId [lindex $result 0]
 
@@ -1419,8 +1411,8 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
         }
         4 {
-            #puts "Offset Loading"
-            #Nothing to do for offset. Entry greyed out.
+            # puts "Offset Loading"
+            # Nothing to do for offset. Entry greyed out.
         }
     }
     return $text
@@ -1479,16 +1471,16 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
     set mappParamIndexId [string trim [$propertyFrame.en_mapparam get]]
 
     set targetNodeId [string trim [$propertyFrame.com_sendto get]]
-    puts "targetNodeId:$targetNodeId"
+    # puts "targetNodeId:$targetNodeId"
     set result [regexp {[\(][0-9]+[\)]} $targetNodeId match]
     if { $result == 0} {
         #TODO remove this after fixing nodeid always integetr in singleclicknode
         set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $targetNodeId match]
     }
 
-    puts "result:$result match:$match"
+    # puts "result:$result match:$match"
     set targetNodeId [string range $match 1 end-1]
-    puts "targetNodeId:$targetNodeId"
+    # puts "targetNodeId:$targetNodeId"
 
     set mappingVersion [string trim [$propertyFrame.en_mapver get]]
 
@@ -1521,7 +1513,7 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
     } else {
         set subIndexList [lindex $result 2]
     }
-    puts "subIndexList:$subIndexList"
+    # puts "subIndexList:$subIndexList"
     foreach subIndex $subIndexList {
         if { $subIndex == 0 } {
             continue
@@ -1544,7 +1536,7 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
         }
 
         set value $length$offset$reserved$locSidxId$locIdxId
-        puts "value:::: $value"
+        # puts "value:::: $value"
         if { [string length $value] != 16 } {
             set flag 1
             incr rowCount
@@ -1555,14 +1547,7 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
         set result [openConfLib::IsExistingSubIndex $nodeId $mappParamIndexId $subIndex]
         if { [lindex $result 1] } {
             set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId $subIndex $value]
-
-            # if { [expr [expr 0x$locIdxId > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
-                # if The value is valid and the 00th subindex is set to the subindex id. But Spec says: Number of mapped objects.
-                # TODO Need to discuss.
-                #set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $subIndex]
-#Do we need this?
-#### TODO Update no.entries in GUI
-            # }
+            # TODO handle result
         }
         incr rowCount
     }
