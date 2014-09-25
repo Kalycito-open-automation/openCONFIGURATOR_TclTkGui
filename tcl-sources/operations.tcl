@@ -105,45 +105,6 @@ tsv::set application importProgress [thread::create -joinable {
     thread::wait
 }]
 
-#initiate helpStatus variable
-tsv::set application helpStatus 0
-tsv::set application helpHtml [thread::create -joinable {
-    proc launchHelpTool {} {
-        global masterRootDir
-        global tcl_platform
-        global widgetColor
-        set masterRootDir [tsv::get application rootDir]
-
-        source [file join $masterRootDir lib helpviewer helpviewer.tcl]
-        wm withdraw .
-        if {"$tcl_platform(platform)" == "unix"} {
-            catch {
-                set element [image create photo -file [file join $masterRootDir openConfig.gif] ]
-                wm iconphoto .help -default $element
-            }
-        }
-        wm protocol .help WM_DELETE_WINDOW help_exit
-        wm title .help "Help-openCONFIGURATOR"
-        BWidget::place .help 0 0 center
-        update idletasks
-        tsv::set application helpStatus 1
-    }
-
-    proc help_exit {} {
-        tsv::set application helpStatus 0
-        catch { destroy .help }
-    }
-
-    proc ForceBgColor {widget} {
-        global tcl_platform
-
-        if {"$tcl_platform(platform)" != "windows"} {
-            $widget configure -bg \#d7d5d3
-        }
-    }
-
-    thread::wait
-}]
 
 set dir [file dirname [info script]]
 source [file join $dir option.tcl]
@@ -643,8 +604,8 @@ proc Operations::OpenProjectWindow { } {
     set splitpath [split $projectfilename "/"]
     set foldername [lindex $splitpath end-1]
     if { [ string match "*\"*" $foldername ] } {
-    tk_messageBox -message "Project folder name is not valid" -title "Open Project Error" -icon error -parent .
-    return
+        tk_messageBox -message "Project folder name is not valid" -title "Open Project Error" -icon error -parent .
+        return
     }
     set filenamewithext [lindex $splitpath end]
     set filename [string range $filenamewithext 0 end-4]
@@ -1587,7 +1548,7 @@ proc Operations::SingleClickNode {node} {
         set commParam "$commParam$subStr"
         set mappParam "$mappParam$subStr"
 
-        puts "node:$node commParam:$commParam mappParam:$mappParam"
+        # puts "node:$node commParam:$commParam mappParam:$mappParam"
 
         $propertyFrame.en_comparam configure -state disabled
         NoteBookManager::SetEntryValue $propertyFrame.en_comparam 0x$commParam
@@ -1606,7 +1567,7 @@ proc Operations::SingleClickNode {node} {
             } else {
                 set val [lindex $result 1]
             }
-            puts "en_numberofentries- val:$val"
+            # puts "en_numberofentries- val:$val"
             NoteBookManager::SetEntryValue $propertyFrame.en_numberofentries $val
         }
 
@@ -1679,7 +1640,7 @@ proc Operations::SingleClickNode {node} {
 
             if { $subIndex != 0 } {
 
-                puts "subIndex:$subIndex"
+                # puts "subIndex:$subIndex"
                 set result [openConfLib::GetSubIndexAttribute $nodeId 0x$mappParam $subIndex $::ACCESSTYPE]
                 if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
                     $tableFrame insert $popCount [list "" "" "" "" "" ""]
@@ -2119,12 +2080,22 @@ proc Operations::SingleClickNode {node} {
     return
 }
 
+#-------------------------------------------------------------------------------
+#  Operations::PDO_NumberOfEntries_EditingFinished
+#  Description: Handles the editing finished event from NumberOfEntries textbox
+#               in a PDO table.
+#  Arguments: input           -
+#             parentFrame     -
+#             mode            -
+#             idx             -
+#             dataType        -
+#-------------------------------------------------------------------------------
 proc Operations::PDO_NumberOfEntries_EditingFinished { input parentFrame mode idx {dataType ""} } {
     global nodeSelect
     global pdo_en_numberofentries
     global pdo_en_totalbytes
 
-    puts "!!!! $input $mode $idx $dataType"
+    # puts "!!!! $input $mode $idx $dataType"
 
     set retVal [Validation::IsDec $input $parentFrame.en_numberofentries $mode $idx $dataType]
 
@@ -2136,7 +2107,7 @@ proc Operations::PDO_NumberOfEntries_EditingFinished { input parentFrame mode id
 
     # set totalNumberOfBytes [NoteBookManager::GetEntryValue $parentFrame.en_totalbytes]
     set mappingIndexId [NoteBookManager::GetEntryValue $parentFrame.en_mapparam]
-puts "Act: $numberOfEntries :::: $retVal"
+    # puts "Act: $numberOfEntries :::: $retVal"
     if { $numberOfEntries == "" || $numberOfEntries == 0 } {
         set numberOfEntries 0
         set pdo_en_totalbytes 0
@@ -2150,7 +2121,7 @@ puts "Act: $numberOfEntries :::: $retVal"
     } else {
         set nodeId $result
     }
-    puts "##$nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE"
+    # puts "##$nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE"
 
     set result [openConfLib::GetSubIndexAttribute $nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE ]
     # openConfLib::ShowErrorMessage [lindex $result 0]
@@ -2172,9 +2143,8 @@ puts "Act: $numberOfEntries :::: $retVal"
     set length 0x[NoteBookManager::AppendZero $length 4]
     set offset 0x[NoteBookManager::AppendZero $offset 4]
 
-    puts "%% $length : $offset"
+    # puts "%% $length : $offset"
     set pdo_en_totalbytes "[expr $length + $offset]"
-    # NoteBookManager::SetEntryValue $parentFrame.en_numberofentries [expr $length + $offset]
 
     return $retVal
 }
@@ -2410,9 +2380,6 @@ proc Operations::CNProperties {node nodeId} {
     set nodeIdSidx [lindex [Validation::InputToHex $nodeId INTEGER8] 0]
     # puts "nodeIdSidx:$nodeIdSidx"
     set Operations::PRES_TIMEOUT_OBJ [list 0x1F92 $nodeIdSidx]
-
-
-
 
     set pResCycleTimeLimitValue 25
     set pResCycleTimeLimitAct 25
@@ -2770,11 +2737,6 @@ proc Operations::Saveproject {} {
         #there is no project directory or project name no need to save
         return
     } else {
-        #foreach filePath [glob -nocomplain [file join $projectDir octx "*"]] {
-        #   catch { file delete -force -- $filePath }
-        #}
-        #set savePjtName [string range $projectName 0 end-[ string length [file extension $projectName] ]]
-        #set savePjtDir [string range $projectDir 0 end-[string length $savePjtName] ]
         thread::send  [tsv::set application importProgress] "StartProgress"
         set result [SaveProject]
         if { [Result_IsSuccessful $result] != 1 } {
@@ -3085,6 +3047,11 @@ proc Operations::GetNodelistWithName {} {
     return $retNodeIdList
 }
 
+#-------------------------------------------------------------------------------
+#  Operations::GetNodeIdWithName
+#  Arguments: nodeId
+#  Description : Returns the name of node for the given nodeId in the format (NAME(NODE_ID))
+#-------------------------------------------------------------------------------
 proc Operations::GetNodeIdWithName { nodeId } {
 
     set result [openConfLib::GetNodeParameter $nodeId $::NODENAME]
@@ -4105,7 +4072,7 @@ proc Operations::DeleteTreeNode {} {
 
     set nodeList ""
     set nodeList [Operations::GetNodeList]
-    puts "nodeList:$nodeList"
+    # puts "nodeList:$nodeList"
     if { ([lsearch -exact $nodeList $node ]!= -1) } {
         set result [tk_messageBox -message "Do you want to delete node?" -type yesno -icon question -title "Question" -parent .]
         switch -- $result {
@@ -4296,7 +4263,6 @@ proc Operations::GetNodeList {} {
 #
 #  Description: Returns the node id and node type for the node from tree widget
 #-------------------------------------------------------------------------------
-
 proc Operations::GetNodeIdType {nodeTree} {
     global treePath
 
@@ -4325,11 +4291,11 @@ proc Operations::GetNodeIdType {nodeTree} {
     }
 
     set name [$treePath itemcget $parent -text]
-    puts "name:$name"
+    # puts "name:$name"
     set result [regexp {[\(][0-9]+[\)]} $name match]
-    puts "Result: $result match: $match"
+    # puts "Result: $result match: $match"
     set locNodeId [string range $match 1 end-1]
-    puts "$locNodeId"
+    # puts "$locNodeId"
     return $locNodeId
 }
 

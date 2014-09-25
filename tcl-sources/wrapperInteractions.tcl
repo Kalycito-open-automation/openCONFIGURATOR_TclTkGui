@@ -161,15 +161,20 @@ proc WrapperInteractions::Import { parentNode nodeId } {
     return pass
 }
 
-################################################################################
-# Returns the list of index id with 0x based on the type
-# type shall be 0 - all
-#               1 - TPDO
-#               2 - RPDO
-#               3 - NonPDOnodes
-#               4 - TxCommunicationParams
-#               5 - RxCommunicationParams
-################################################################################
+#-------------------------------------------------------------------------------
+#  WrapperInteractions::GetIndexId
+#
+#  Arguments: nodeId - Node id of the node
+#             type   -  shall be one of the below list
+#                    0 - all
+#                    1 - TPDO
+#                    2 - RPDO
+#                    3 - NonPDOnodes
+#                    4 - TxCommunicationParams
+#                    5 - RxCommunicationParams
+#
+#  Results: Returns the list of index id with 0x based on the type
+#-------------------------------------------------------------------------------
 proc WrapperInteractions::GetIndexId {nodeId type} {
     set returnList ""
     set result [openConfLib::GetIndices $nodeId]
@@ -217,6 +222,13 @@ proc WrapperInteractions::GetIndexId {nodeId type} {
     return $returnList
 }
 
+#-------------------------------------------------------------------------------
+#  WrapperInteractions::GetMappingParamIndex
+#
+#  Arguments: communicationParamIndex - Communication parameter IndexId
+#
+#  Results: Returns the corresponding mapping parameter index id with 0x
+#-------------------------------------------------------------------------------
 proc WrapperInteractions::GetMappingParamIndex { communicationParamIndex } {
 
     if {[string match "0x14*" $communicationParamIndex]} {

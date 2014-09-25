@@ -314,14 +314,7 @@ proc Validation::IsDec {input entryPath mode idx {dataType ""}} {
     set reqLengt [expr $reqLengt+1]
     }
     if { $tempInput == "" || ([Validation::CheckDecimalNumber $tempInput] == 1 &&  $tempInput <= $maxLimit && $tempInput >= $minLimit && [string length $tempInput] <= $reqLengt ) || ($tempInput == "-" && [string match -nocase "INTEGER*" $stdDataType]) } {
-        ##if { $tempInput != ""} {
-        #if { [string match "*.en_value1" $entryPath] } {
-        #    set limitResult [CheckAgainstLimits $entryPath $tempInput $dataType]
-        #    if { [lindex $limitResult 0] == 0 } {
-        #        return 0
-        #    }
-        #}
-        ##}
+
         if {[string match "*.en_lower1" $entryPath] && $tempInput != "-"} {
             set LOWER_LIMIT $tempInput
         } elseif {[string match "*.en_upper1" $entryPath] && $tempInput != "-"} {
@@ -744,69 +737,59 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
             if {[string length $input] != 6} {
                 return 0;
             }
-            puts "Rows: "
 
-            # foreach tempList $populatedCommParamList {
-            #    set rowlist [lindex $tempList 2]
-            #    #puts "rowlist: $rowlist"
-            #    set chkRslt [lsearch $rowlist $rowIndex]
-            #    if { $chkRslt != -1} {
-                    set maxRow [$tablePath size]
-                    puts "maxRow: $maxRow"
-                    set counter 1
-                    for {set indRow 0} {$indRow < $maxRow} {incr indRow} {
-                        puts "x is $indRow"
-                        # while 1a00 has one index
-                        if { $counter == 1 } {
-                            #puts "counter == 1"
-                            # 1st subindex in an channel for which offset is 0x0000
-                            $tablePath cellconfigure $indRow,4 -text "0x0000"
-                            set offsetVal [$tablePath cellcget $indRow,4 -text]
-                            if { $indRow == $rowIndex } {
-                                set lengthVal $input
-                            } else {
-                                set lengthVal [$tablePath cellcget $indRow,3 -text]
-                            }
-                            #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
-                        } elseif { $counter == $maxRow } {
-                            #puts "counter == maxRow"
-                            #no need to manipulate and set offset value to next row if it is a last row
-                            set totalOffset [expr $offsetVal+$lengthVal]
-                            #puts "totalOffset: $totalOffset"
-                            set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                            #puts "totalOffsethex: $totalOffsethex"
-                            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
-                        } elseif { $indRow == $rowIndex } {
-                            #puts "indRow == rowIndex"
-                            set totalOffset [expr $offsetVal+$lengthVal]
-                            #puts "totalOffset: $totalOffset"
-                            set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
-                            set offsetVal [$tablePath cellcget $indRow,4 -text]
-                            #puts "offsetVal: $offsetVal"
-                            set lengthVal $input
-                            #puts "inputlengthval: $lengthVal"
-                        } else {
-                            #puts "Else"
-                            set totalOffset [expr $offsetVal+$lengthVal]
-                            #puts "totalOffset: $totalOffset"
-                            set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                            #puts "totalOffsethex: $totalOffsethex"
-                            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
-                            set offsetVal [$tablePath cellcget $indRow,4 -text]
-                            set lengthVal [$tablePath cellcget $indRow,3 -text]
-                            #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
-                        }
-
-                        if { [ string length $lengthVal ] == 0 } {
-                            set lengthVal "0x0000"
-                        }
-                        incr counter
+            set maxRow [$tablePath size]
+            # puts "maxRow: $maxRow"
+            set counter 1
+            for {set indRow 0} {$indRow < $maxRow} {incr indRow} {
+                # puts "x is $indRow"
+                # while 1a00 has one index
+                if { $counter == 1 } {
+                    #puts "counter == 1"
+                    # 1st subindex in an channel for which offset is 0x0000
+                    $tablePath cellconfigure $indRow,4 -text "0x0000"
+                    set offsetVal [$tablePath cellcget $indRow,4 -text]
+                    if { $indRow == $rowIndex } {
+                        set lengthVal $input
+                    } else {
+                        set lengthVal [$tablePath cellcget $indRow,3 -text]
                     }
-            #    } else {
+                    #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
+                } elseif { $counter == $maxRow } {
+                    #puts "counter == maxRow"
+                    #no need to manipulate and set offset value to next row if it is a last row
+                    set totalOffset [expr $offsetVal+$lengthVal]
+                    #puts "totalOffset: $totalOffset"
+                    set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
+                    #puts "totalOffsethex: $totalOffsethex"
+                    $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+                } elseif { $indRow == $rowIndex } {
+                    #puts "indRow == rowIndex"
+                    set totalOffset [expr $offsetVal+$lengthVal]
+                    #puts "totalOffset: $totalOffset"
+                    set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
+                    $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+                    set offsetVal [$tablePath cellcget $indRow,4 -text]
+                    #puts "offsetVal: $offsetVal"
+                    set lengthVal $input
+                    #puts "inputlengthval: $lengthVal"
+                } else {
+                    #puts "Else"
+                    set totalOffset [expr $offsetVal+$lengthVal]
+                    #puts "totalOffset: $totalOffset"
+                    set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
+                    #puts "totalOffsethex: $totalOffsethex"
+                    $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+                    set offsetVal [$tablePath cellcget $indRow,4 -text]
+                    set lengthVal [$tablePath cellcget $indRow,3 -text]
+                    #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
+                }
 
-            #    }
-            #}
+                if { [ string length $lengthVal ] == 0 } {
+                    set lengthVal "0x0000"
+                }
+                incr counter
+            }
         }
         4 {
             # do nothing for offset
