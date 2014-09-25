@@ -2215,12 +2215,19 @@ proc Operations::MNProperties {node nodeId} {
     set MNDatalist ""
 
     # value from 1006 for Cycle time
-    set result [Operations::GetObjectValueData $nodeId $Operations::CYCLE_TIME_OBJ]
-    if { [lindex $result 0] } {
-        set locCycleTimeDatatype [lindex $result 1]
+    set result [openConfLib::GetIndexAttribute $nodeId $Operations::CYCLE_TIME_OBJ $::ACTUALVALUE]
+    if { [Result_IsSuccessful [lindex $result 0]] } {
         $tmpInnerf0.cycleframe.en_time configure -state normal -validate none -bg $savedBg
         $tmpInnerf0.cycleframe.en_time delete 0 end
-        $tmpInnerf0.cycleframe.en_time insert 0 [lindex $result 2]
+        $tmpInnerf0.cycleframe.en_time insert 0 [lindex $result 1]
+
+        set result [openConfLib::GetIndexAttribute $nodeId $Operations::CYCLE_TIME_OBJ $::DATATYPE]
+        if { [Result_IsSuccessful [lindex $result 0]] } {
+            set locCycleTimeDatatype [lindex $result 1]
+        } else {
+            set locCycleTimeDatatype ""
+        }
+
         Operations::CheckConvertValue $tmpInnerf0.cycleframe.en_time $locCycleTimeDatatype "dec"
         lappend MNDatalist [list cycleTimeDatatype $locCycleTimeDatatype]
     } else {
@@ -2228,7 +2235,7 @@ proc Operations::MNProperties {node nodeId} {
         $tmpInnerf0.cycleframe.en_time configure -state normal -validate none
         $tmpInnerf0.cycleframe.en_time delete 0 end
         $tmpInnerf0.cycleframe.en_time configure -state disabled
-        Console::DisplayErrMsg "[lindex $result 3]" error
+        Console::DisplayErrMsg "ERR: [Result_GetErrorString [lindex $result 0]]" error
     }
 
     set result [Operations::GetObjectValueData $nodeId $Operations::LOSS_SOC_TOLERANCE]
@@ -3757,11 +3764,23 @@ proc Operations::BuildProject {} {
             tk_messageBox -message "$msg" -icon warning -title "Warning" -parent .
             return
         } elseif {$errCycleTimeFlag == 1} {
-            set result [tk_messageBox -message "$msg\nDo you want to set the default value 50000 µs" -type yesno -icon info -title "Information" -parent .]
+            # Initialize the default Cycle time to 50ms
+            set defaultCycleTimeValue 50000
+
+            # Read the default value from the library.
+            set result [openConfLib::GetIndexAttribute $mnNodeId $Operations::CYCLE_TIME_OBJ $::DEFAULTVALUE]
+            if {[Result_IsSuccessful [lindex $result 0]]} {
+                set defaultCycleTimeValue [lindex $result 1]
+                if { $defaultCycleTimeValue == "" } {
+                    set defaultCycleTimeValue 50000
+                }
+            }
+
+            set result [tk_messageBox -message "$msg\nDo you want to set the default value $defaultCycleTimeValue µs" -type yesno -icon info -title "Information" -parent .]
             switch -- $result {
                 yes {
                         #hard code the value 50000 for 1006 object in MN
-                        set result [openConfLib::SetIndexActualValue $mnNodeId $Operations::CYCLE_TIME_OBJ 50000]
+                        set result [openConfLib::SetIndexActualValue $mnNodeId $Operations::CYCLE_TIME_OBJ $defaultCycleTimeValue]
                         openConfLib::ShowErrorMessage $result
                         if { [Result_IsSuccessful $result] != 1 } {
                             return
