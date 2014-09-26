@@ -18,9 +18,8 @@ GOTO:EOF
 
 :ERRORTCLVersion
 @echo on
-@ECHO Current TCL version installed is %2%. Install ActiveTCL 8.6.x
+@ECHO Current TCL version installed is "%2%". Install ActiveTCL 8.6.x
 @ECHO ActiveTcl 8.6 can be downloaded at http://www.activestate.com/activetcl
 @ECHO NOTE: Download only 32 bit variant in order to run openCONFIGURATOR!
 @echo off
 PAUSE
-
