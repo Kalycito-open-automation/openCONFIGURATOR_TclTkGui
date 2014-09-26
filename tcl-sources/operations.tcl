@@ -1434,7 +1434,7 @@ proc Operations::SingleClickNode {node} {
                 switch -- $result {
                     yes {
                         #save the value
-                        if { [string match "TPDO-*" $nodeSelect] || [string match "RPDO-*" $nodeSelect] } {
+                        if { [string match "TPDONode-*" $nodeSelect] || [string match "RPDONode-*" $nodeSelect] } {
                             $tableSaveBtn invoke
                         } elseif { [string match "*SubIndex*" $nodeSelect] } {
                             $subindexSaveBtn invoke
@@ -1453,7 +1453,7 @@ proc Operations::SingleClickNode {node} {
             }
             Validation::ResetPromptFlag
         } elseif { $st_save == "2" } {
-
+            puts "Any changes made are discarded"
         } else {
             Validation::ResetPromptFlag
             return
@@ -1746,6 +1746,7 @@ proc Operations::SingleClickNode {node} {
 
         #puts "populatedCommParamList: $populatedCommParamList"
         #puts "populatedPDOList: $populatedPDOList"
+        Validation::ResetPromptFlag
         return
     }
 
@@ -2145,6 +2146,8 @@ proc Operations::PDO_NumberOfEntries_EditingFinished { input parentFrame mode id
 
     # puts "%% $length : $offset"
     set pdo_en_totalbytes "[expr $length + $offset]"
+
+    Validation::SetPromptFlag
 
     return $retVal
 }
@@ -2902,6 +2905,7 @@ proc Operations::ResetGlobalData {} {
     set lastConv ""
     set LastTableFocus ""
     Validation::ResetPromptFlag
+    set temp_st_save 2
     set st_save 2
     set st_autogen 1
     set lastRadioVal ""

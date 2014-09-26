@@ -726,10 +726,16 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
             # sidx and length should be set empty after index is edited or modified
             $tablePath cellconfigure $rowIndex,2 -text "Default\(0x00\)"
             $tablePath cellconfigure $rowIndex,3 -text "0x0000"
+
+            Validation::SetPromptFlag
+            return 1
         }
         2 {
             # length should be set empty after sidx is modified or edited
             $tablePath cellconfigure $rowIndex,3 -text "0x0000"
+
+            Validation::SetPromptFlag
+            return 1
         }
         3 {
             #puts "tablePath: $tablePath,"
@@ -789,6 +795,7 @@ proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entry
                     set lengthVal "0x0000"
                 }
                 incr counter
+                Validation::SetPromptFlag
             }
         }
         4 {

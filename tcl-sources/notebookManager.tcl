@@ -969,7 +969,8 @@ proc NoteBookManager::SaveValue { frame0 frame1 {objectType ""} } {
         }
     }
 
-    #Validation::ResetPromptFlag
+    Validation::ResetPromptFlag
+
     if { [lsearch $savedValueList $nodeSelect] == -1 } {
         lappend savedValueList $nodeSelect
     }
@@ -1609,6 +1610,7 @@ proc NoteBookManager::SetEntryValue {entryPath insertValue} {
     $entryPath delete 0 end
     $entryPath insert 0 $insertValue
     $entryPath configure -state $entryState
+    Validation::SetPromptFlag
 }
 
 #-------------------------------------------------------------------------------
