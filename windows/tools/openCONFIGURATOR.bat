@@ -57,9 +57,9 @@ tclsh86 openCONFIGURATOR
 GOTO:EOF
 
 :Error
-START displayErrorMsg.bat 1
+START windows\tools\displayErrorMsg.bat 1
 GOTO:EOF
 
 :ERRORTCLVersion
-START displayErrorMsg.bat 2 %TclVersion%
+START windows\tools\displayErrorMsg.bat 2 %TclVersion%
 GOTO:EOF
