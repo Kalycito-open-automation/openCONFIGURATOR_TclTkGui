@@ -164,6 +164,7 @@ proc ChildWindows::ProjectSettingWindow {} {
 # TODO if errror set st_viewtype to 0
 
     set st_save 1
+    set temp_st_save $st_save
 
     set result [openConfLib::GetActiveAutoCalculationConfig]
     set tempautoGen [lindex $result 1]
@@ -236,6 +237,7 @@ proc ChildWindows::ProjectSettingWindow {} {
         global st_save
         global st_autogen
         global st_viewType
+        global temp_st_save
 
         set result [openConfLib::GetActiveView]
         set st_viewType [lindex $result 1]
@@ -249,6 +251,8 @@ proc ChildWindows::ProjectSettingWindow {} {
         } else {
             set st_autogen 2
         }
+
+        set temp_st_save $st_save
 
         destroy .projSett
     }
