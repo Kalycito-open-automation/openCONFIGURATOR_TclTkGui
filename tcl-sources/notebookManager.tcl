@@ -459,7 +459,7 @@ proc NoteBookManager::create_table {nbpath choice} {
     ttk::label $propInFrm.la_empty3 -text "  "
 
     ttk::combobox $propInFrm.com_sendto
-    ttk::entry $propInFrm.en_numberofentries -width 23 -justify left -validate key -textvariable pdo_en_numberofentries  -validatecommand "Operations::PDO_NumberOfEntries_EditingFinished %P $propInFrm %d %i UNSIGNED8"
+    ttk::entry $propInFrm.en_numberofentries -width 23 -justify left -validate key -textvariable pdo_en_numberofentries  -validatecommand "NoteBookManager::PDO_NumberOfEntries_EditingFinished %P $propInFrm %d %i UNSIGNED8"
     ttk::entry $propInFrm.en_mapver -width 20 -textvariable tmpNodeTime$_pageCounter -justify left -validate key -validatecommand "Validation::IsHex %P %s $propInFrm.en_mapver %d %i integer8"
     ttk::entry $propInFrm.en_comparam -state disabled -width 20
     ttk::entry $propInFrm.en_mapparam -state disabled -width 20
@@ -528,12 +528,12 @@ proc NoteBookManager::create_table {nbpath choice} {
             -resizable 1 -movablecolumns 0 -movablerows 0 \
             -showseparators 1 -spacing 10 -font custom1 \
             -editstartcommand NoteBookManager::StartEditCombo \
-            -editendcommand NoteBookManager::EndEdit]
+            -editendcommand NoteBookManager::EndEditCombo]
 
             $st columnconfigure 0 -editable no
             $st columnconfigure 1 -editable no -editwindow ComboBox
             $st columnconfigure 2 -editable no -editwindow ComboBox
-            $st columnconfigure 3 -editable no -editwindow ComboBox
+            $st columnconfigure 3 -editable no
             $st columnconfigure 4 -editable no
     } else {
         #invalid choice
@@ -1328,6 +1328,22 @@ proc NoteBookManager::StartEdit {tablePath rowIndex columnIndex text} {
 }
 
 #-------------------------------------------------------------------------------
+#  NoteBookManager::EndEdit
+#
+#  Arguments: tablePath   - Path of the tablelist widget
+#             rowIndex    - Row of the edited cell
+#             columnIndex - Column of the edited cell
+#             text        - Entered value
+#
+#  Results: text - To be displayed in tablelist
+#
+#  Description: To validate the entered value when the focus goes out of the cell
+#-------------------------------------------------------------------------------
+proc NoteBookManager::EndEdit {tablePath rowIndex columnIndex text} {
+    return $text
+}
+
+#-------------------------------------------------------------------------------
 #  NoteBookManager::StartEditCombo
 #
 #  Arguments:  tablePath   - path of the tablelist widget
@@ -1347,12 +1363,6 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
     set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxidVal match]
     set locIdxId [string range $match 1 end-1]
 
-    set sidxVal [$tablePath cellcget $rowIndex,2 -text]
-    set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
-    set locSidxId [string range $match 1 end-1]
-
-    set lengthVal [$tablePath cellcget $rowIndex,3 -text]
-    set offsetVal [$tablePath cellcget $rowIndex,4 -text]
 
     set selectedNode [$treePath selection get]
     set tempList "[split [$treePath itemcget $selectedNode -text ] -]"
@@ -1377,13 +1387,9 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
             set sidxList [lsort $sidxList]
             $win configure -values "$sidxList"
             $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
-            }
+        }
         3 {
-            set sidxLength [Operations::FuncSubIndexLength $locNodeId $locIdxId $locSidxId]
-            set sidxLength [lappend sidxLength "0x0000"]
-            set sidxLength [lsort $sidxLength]
-            $win configure -values "$sidxLength"
-            $win configure -invalidcommand bell -validate key  -validatecommand "Validation::SetTableComboValue %P $tablePath $rowIndex $columnIndex $win"
+            # Length disabled.
         }
         4 {
             # puts "Offset Loading"
@@ -1394,7 +1400,7 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
 }
 
 #-------------------------------------------------------------------------------
-#  NoteBookManager::EndEdit
+#  NoteBookManager::EndEditCombo
 #
 #  Arguments: tablePath   - Path of the tablelist widget
 #             rowIndex    - Row of the edited cell
@@ -1405,8 +1411,180 @@ proc NoteBookManager::StartEditCombo {tablePath rowIndex columnIndex text} {
 #
 #  Description: To validate the entered value when the focus goes out of the cell
 #-------------------------------------------------------------------------------
-proc NoteBookManager::EndEdit {tablePath rowIndex columnIndex text} {
+proc NoteBookManager::EndEditCombo {tablePath rowIndex columnIndex text} {
+
+    # Update the parsing of the table and set the number of entries here!!!
+    # puts "EndEdit text : $text OldValue: [$tablePath cellcget $rowIndex,$columnIndex -text]"
+    switch -- $columnIndex {
+          0 {
+              # Do nothing for Sno
+
+          }
+          1 {
+                # TODO see object type and sub-object for VAR objects a tweak is needed.
+                set objectId [Operations::GetIdFromFullText $text 2]
+                puts "Object: $objectId "
+                if { $objectId > 0 } {
+                    set numberofentries [$tablePath cellcget $rowIndex,0 -text]
+                    NoteBookManager::PDO_SetNumberOfEntries $numberofentries $tablePath
+                }
+          }
+          2 {
+                set objectId [$tablePath cellcget $rowIndex,1 -text]
+                set objectId [Operations::GetIdFromFullText $objectId 2]
+                set subobjectId [Operations::GetIdFromFullText $text 3]
+
+                puts "Object: $objectId SubobjectId: $subobjectId"
+                if { $objectId > 0 && $subobjectId > 0 } {
+                    set numberofentries [$tablePath cellcget $rowIndex,0 -text]
+                    NoteBookManager::PDO_SetNumberOfEntries $numberofentries $tablePath
+                }
+          }
+    }
     return $text
+}
+
+#-------------------------------------------------------------------------------
+#  NoteBookManager::PDO_SetNumberOfEntries
+#  Arguments: numberOfEntries - Value to be updated in the numberof entries box.
+#             tablePath       - Path of the table to fetch and update totalBytes
+#  Description : Sets the number of entries value and total bytes for number of entries.
+#-------------------------------------------------------------------------------
+proc NoteBookManager::PDO_SetNumberOfEntries { numberOfEntries tablePath } {
+    global pdo_en_numberofentries
+    global pdo_en_totalbytes
+
+    set pdo_en_numberofentries $numberOfEntries
+    set rowIndex [expr $numberOfEntries - 1]
+    set length [$tablePath cellcget $rowIndex,3 -text]
+    set offset [$tablePath cellcget $rowIndex,4 -text]
+
+    set pdo_en_totalbytes [expr [expr $offset + $length] / 8]
+}
+
+proc NoteBookManager::AutoSetOffset { tablePath rowIndex columnIndex } {
+
+    set maxRow [$tablePath size]
+    # puts "maxRow: $maxRow"
+    set counter 1
+    for {set indRow 0} {$indRow < $maxRow} {incr indRow} {
+        # puts "x is $indRow"
+        # while 1a00 has one index
+        if { $counter == 1 } {
+            #puts "counter == 1"
+            # 1st subindex in an channel for which offset is 0x0000
+            $tablePath cellconfigure $indRow,4 -text "0x0000"
+            set offsetVal [$tablePath cellcget $indRow,4 -text]
+            set lengthVal [$tablePath cellcget $indRow,3 -text]
+            # puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
+        } elseif { $counter == $maxRow } {
+            #puts "counter == maxRow"
+            #no need to manipulate and set offset value to next row if it is a last row
+            set totalOffset [expr $offsetVal+$lengthVal]
+            #puts "totalOffset: $totalOffset"
+            set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
+            #puts "totalOffsethex: $totalOffsethex"
+            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+        } elseif { $indRow == $rowIndex } {
+            #puts "indRow == rowIndex"
+            set totalOffset [expr $offsetVal+$lengthVal]
+            #puts "totalOffset: $totalOffset"
+            set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
+            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+            set offsetVal [$tablePath cellcget $indRow,4 -text]
+            #puts "offsetVal: $offsetVal"
+            set lengthVal [$tablePath cellcget $indRow,3 -text]
+            # puts "inputlengthval: $lengthVal"
+        } else {
+            #puts "Else"
+            set totalOffset [expr $offsetVal+$lengthVal]
+            #puts "totalOffset: $totalOffset"
+            set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
+            #puts "totalOffsethex: $totalOffsethex"
+            $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
+            set offsetVal [$tablePath cellcget $indRow,4 -text]
+            set lengthVal [$tablePath cellcget $indRow,3 -text]
+            #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
+        }
+
+        if { [ string length $lengthVal ] == 0 } {
+            set lengthVal "0x0000"
+        }
+        incr counter
+        Validation::SetPromptFlag
+    }
+}
+
+
+#-------------------------------------------------------------------------------
+#  NoteBookManager::PDO_NumberOfEntries_EditingFinished
+#  Description: Handles the editing finished event from NumberOfEntries textbox
+#               in a PDO table.
+#  Arguments: input           -
+#             parentFrame     -
+#             mode            -
+#             idx             -
+#             dataType        -
+#-------------------------------------------------------------------------------
+proc NoteBookManager::PDO_NumberOfEntries_EditingFinished { input parentFrame mode idx {dataType ""} } {
+    global nodeSelect
+    global pdo_en_numberofentries
+    global pdo_en_totalbytes
+
+    # puts "!!!! $input $mode $idx $dataType"
+
+    set retVal [Validation::IsDec $input $parentFrame.en_numberofentries $mode $idx $dataType]
+
+    if { $retVal == 1} {
+        set numberOfEntries $input
+    } else {
+        set numberOfEntries [NoteBookManager::GetEntryValue $parentFrame.en_numberofentries]
+    }
+
+    # set totalNumberOfBytes [NoteBookManager::GetEntryValue $parentFrame.en_totalbytes]
+    set mappingIndexId [NoteBookManager::GetEntryValue $parentFrame.en_mapparam]
+    # puts "Act: $numberOfEntries :::: $retVal"
+    if { $numberOfEntries == "" || $numberOfEntries == 0 } {
+        set numberOfEntries 0
+        set pdo_en_totalbytes 0
+        return $retVal
+    }
+    set numberOfEntries [lindex [Validation::InputToHex $numberOfEntries "UNSIGNED8"] 0]
+
+    set result [Operations::GetNodeIdType $nodeSelect]
+    if {$result == -1} {
+        return $retVal
+    } else {
+        set nodeId $result
+    }
+    # puts "##$nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE"
+
+    set result [openConfLib::GetSubIndexAttribute $nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE ]
+    # openConfLib::ShowErrorMessage [lindex $result 0]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        set pdo_en_totalbytes 0
+        return 0
+    }
+
+    set mappActualValue [lindex $result 1]
+    if {[string match -nocase "0x*" $mappActualValue] } {
+        #remove appended 0x
+        set mappActualValue [string range $mappActualValue 2 end]
+    } else {
+        # no 0x no need to do anything
+    }
+
+    set length [string range $mappActualValue 0 3]
+    set offset [string range $mappActualValue 4 7]
+    set length 0x[NoteBookManager::AppendZero $length 4]
+    set offset 0x[NoteBookManager::AppendZero $offset 4]
+
+    # puts "%% $length : $offset"
+    set pdo_en_totalbytes "[expr [expr $length + $offset] / 8]"
+
+    Validation::SetPromptFlag
+
+    return $retVal
 }
 
 #-------------------------------------------------------------------------------
@@ -1459,6 +1637,7 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
 
     set mappingVersion [string trim [$propertyFrame.en_mapver get]]
 
+    set numberOfValidEntries 0
     set numberOfEntries [string trim [$propertyFrame.en_numberofentries get]]
 
     set totalBytes [string trim [$propertyFrame.en_totalbytes get]]
@@ -1469,11 +1648,6 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
     # }
 
     set result [openConfLib::SetSubIndexActualValue $nodeId $commParamIndexId "0x02" $mappingVersion]
-    openConfLib::ShowErrorMessage $result
-    # if { [Result_IsSuccessful $result] == 0 } {
-    # }
-
-    set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfEntries]
     openConfLib::ShowErrorMessage $result
     # if { [Result_IsSuccessful $result] == 0 } {
     # }
@@ -1523,6 +1697,10 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
         if { [lindex $result 1] } {
             set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId $subIndex $value]
             # TODO handle result
+
+            if { [expr [expr 0x$locIdxId > 0x0000 ] && [expr 0x$length > 0x0000 ]]} {
+                set numberOfValidEntries [$tableWid cellcget $rowCount,0 -text]
+            }
         }
         incr rowCount
     }
@@ -1530,6 +1708,35 @@ proc NoteBookManager::SaveTable {tableWid propertyFrame} {
     if { $flag == 1} {
         Console::DisplayInfo "Only the PDO mapping table entries that are completely filled(Offset, Length, Index and Sub Index) are saved"
     }
+
+    if { [expr $numberOfEntries != $numberOfValidEntries] } {
+        set result [tk_messageBox -message "The last valid entry is $numberOfValidEntries. You have enabled only $numberOfEntries entry(s) enabled. Do you want to enable till the last valid entry($numberOfValidEntries)?" -parent . -type yesno -icon question]
+        switch -- $result {
+            yes {
+                #save the value
+                set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfValidEntries]
+                openConfLib::ShowErrorMessage $result
+                if { [Result_IsSuccessful $result] == 0 } {
+                    puts "SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfValidEntries"
+                }
+                NoteBookManager::PDO_SetNumberOfEntries $numberOfValidEntries $tableWid
+                Console::DisplayInfo "Number of valid entries updated to $numberOfValidEntries." info
+            }
+            no  {
+                #continue
+                set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfEntries]
+                openConfLib::ShowErrorMessage $result
+                if { [Result_IsSuccessful $result] == 0 } {
+                    puts "SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfEntries"
+                }
+            }
+        }
+    }
+
+    set result [openConfLib::SetSubIndexActualValue $nodeId $mappParamIndexId "0x00" $numberOfEntries]
+    openConfLib::ShowErrorMessage $result
+    # if { [Result_IsSuccessful $result] == 0 } {
+    # }
 
     #PDO entries value is changed need to save
     set status_save 1
