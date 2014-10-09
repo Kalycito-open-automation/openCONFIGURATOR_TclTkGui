@@ -716,89 +716,84 @@ proc Validation::SetTableValue { entryPath mode idx input } {
     $entryPath configure -validate key
 }
 
-proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entryPath} {
+proc Validation::SetTableComboValue { input tablePath rowIndex columnIndex entryPath } {
+    global nodeSelect
+
+    #getting Id and Type of node
+    set result [Operations::GetNodeIdType $nodeSelect]
+    if {$result == -1} {
+        #the node is not an index, subindex, TPDO or RPDO do nothing
+        return 0
+    } else {
+        # it is index or subindex
+        set nodeId $result
+    }
 
     switch -- $columnIndex {
         0 {
             # Do nothing for Sno
         }
         1 {
+            # puts "Index: $input"
+
+            if {[string length $input] < 8} {
+                puts "Index returns 0"
+                return 0
+            }
+
             # sidx and length should be set empty after index is edited or modified
             $tablePath cellconfigure $rowIndex,2 -text "Default\(0x00\)"
-            $tablePath cellconfigure $rowIndex,3 -text "0x0000"
+            # $tablePath cellconfigure $rowIndex,3 -text "0x0000"
+
+            # set idxidVal [$tablePath cellcget $rowIndex,1 -text]
+            set idxidVal $input
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxidVal match]
+            set locIdxId [string range $match 1 end-1]
+
+            set sidxVal [$tablePath cellcget $rowIndex,2 -text]
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
+            set locSidxId [string range $match 1 end-1]
+
+            set result [Operations::FuncSubIndexLength $nodeId $locIdxId $locSidxId]
+            $tablePath cellconfigure $rowIndex,3 -text "$result"
+
+            NoteBookManager::AutoSetOffset $tablePath $rowIndex $columnIndex
 
             Validation::SetPromptFlag
             return 1
         }
         2 {
-            # length should be set empty after sidx is modified or edited
-            $tablePath cellconfigure $rowIndex,3 -text "0x0000"
+            # puts "Sub-index: $input"
+            #puts "tablePath: $tablePath,"
+            #puts "rowIndex: $rowIndex, columnIndex: $columnIndex, input: $input"
+            if {[string length $input] < 6} {
+                # puts "Returns 0"
+                return 0
+            }
+
+            set idxidVal [$tablePath cellcget $rowIndex,1 -text]
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $idxidVal match]
+            set locIdxId [string range $match 1 end-1]
+
+            set sidxVal $input
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $sidxVal match]
+            set locSidxId [string range $match 1 end-1]
+
+            set result [Operations::FuncSubIndexLength $nodeId $locIdxId $locSidxId]
+            $tablePath cellconfigure $rowIndex,3 -text "$result"
+
+            NoteBookManager::AutoSetOffset $tablePath $rowIndex $columnIndex
 
             Validation::SetPromptFlag
+
             return 1
         }
         3 {
-            #puts "tablePath: $tablePath,"
-            #puts "rowIndex: $rowIndex, columnIndex: $columnIndex, input: $input"
-            if {[string length $input] != 6} {
-                return 0;
-            }
-
-            set maxRow [$tablePath size]
-            # puts "maxRow: $maxRow"
-            set counter 1
-            for {set indRow 0} {$indRow < $maxRow} {incr indRow} {
-                # puts "x is $indRow"
-                # while 1a00 has one index
-                if { $counter == 1 } {
-                    #puts "counter == 1"
-                    # 1st subindex in an channel for which offset is 0x0000
-                    $tablePath cellconfigure $indRow,4 -text "0x0000"
-                    set offsetVal [$tablePath cellcget $indRow,4 -text]
-                    if { $indRow == $rowIndex } {
-                        set lengthVal $input
-                    } else {
-                        set lengthVal [$tablePath cellcget $indRow,3 -text]
-                    }
-                    #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
-                } elseif { $counter == $maxRow } {
-                    #puts "counter == maxRow"
-                    #no need to manipulate and set offset value to next row if it is a last row
-                    set totalOffset [expr $offsetVal+$lengthVal]
-                    #puts "totalOffset: $totalOffset"
-                    set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                    #puts "totalOffsethex: $totalOffsethex"
-                    $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
-                } elseif { $indRow == $rowIndex } {
-                    #puts "indRow == rowIndex"
-                    set totalOffset [expr $offsetVal+$lengthVal]
-                    #puts "totalOffset: $totalOffset"
-                    set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                    $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
-                    set offsetVal [$tablePath cellcget $indRow,4 -text]
-                    #puts "offsetVal: $offsetVal"
-                    set lengthVal $input
-                    #puts "inputlengthval: $lengthVal"
-                } else {
-                    #puts "Else"
-                    set totalOffset [expr $offsetVal+$lengthVal]
-                    #puts "totalOffset: $totalOffset"
-                    set totalOffsethex 0x[NoteBookManager::AppendZero [string toupper [format %x $totalOffset]] 4]
-                    #puts "totalOffsethex: $totalOffsethex"
-                    $tablePath cellconfigure $indRow,4 -text "$totalOffsethex"
-                    set offsetVal [$tablePath cellcget $indRow,4 -text]
-                    set lengthVal [$tablePath cellcget $indRow,3 -text]
-                    #puts "offsetVal: $offsetVal, lengthVal: $lengthVal"
-                }
-
-                if { [ string length $lengthVal ] == 0 } {
-                    set lengthVal "0x0000"
-                }
-                incr counter
-                Validation::SetPromptFlag
-            }
+            puts "LengthInvoked"
+            return 0
         }
         4 {
+            puts "OffsetInvoked"
             # do nothing for offset
         }
     }

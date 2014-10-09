@@ -1698,7 +1698,7 @@ proc Operations::SingleClickNode {node} {
                     }
                 } else {
                 # as a default the first cell is always non editable, adding it to the list only when made editable
-                    foreach col [list 1 2 3 ] {
+                    foreach col [list 1 2 ] {
                         # puts "pblm. $popCount,$col"
                         $tableFrame cellconfigure $popCount,$col -editable yes
                     }
@@ -1709,7 +1709,7 @@ proc Operations::SingleClickNode {node} {
                 incr popCount 1
 
                 if {$noOfValidEntries == $popCount} {
-                    NoteBookManager::SetEntryValue $propertyFrame.en_totalbytes [expr $offset + $length]
+                    NoteBookManager::SetEntryValue $propertyFrame.en_totalbytes [expr [expr $offset + $length] / 8]
                 }
             }
         }
@@ -2064,77 +2064,6 @@ proc Operations::SingleClickNode {node} {
         $tmpInnerf1.en_value1 configure -validate key -vcmd { return 0 } -bg $savedBg
     }
     return
-}
-
-#-------------------------------------------------------------------------------
-#  Operations::PDO_NumberOfEntries_EditingFinished
-#  Description: Handles the editing finished event from NumberOfEntries textbox
-#               in a PDO table.
-#  Arguments: input           -
-#             parentFrame     -
-#             mode            -
-#             idx             -
-#             dataType        -
-#-------------------------------------------------------------------------------
-proc Operations::PDO_NumberOfEntries_EditingFinished { input parentFrame mode idx {dataType ""} } {
-    global nodeSelect
-    global pdo_en_numberofentries
-    global pdo_en_totalbytes
-
-    # puts "!!!! $input $mode $idx $dataType"
-
-    set retVal [Validation::IsDec $input $parentFrame.en_numberofentries $mode $idx $dataType]
-
-    if { $retVal == 1} {
-        set numberOfEntries $input
-    } else {
-        set numberOfEntries [NoteBookManager::GetEntryValue $parentFrame.en_numberofentries]
-    }
-
-    # set totalNumberOfBytes [NoteBookManager::GetEntryValue $parentFrame.en_totalbytes]
-    set mappingIndexId [NoteBookManager::GetEntryValue $parentFrame.en_mapparam]
-    # puts "Act: $numberOfEntries :::: $retVal"
-    if { $numberOfEntries == "" || $numberOfEntries == 0 } {
-        set numberOfEntries 0
-        set pdo_en_totalbytes 0
-        return $retVal
-    }
-    set numberOfEntries [lindex [Validation::InputToHex $numberOfEntries "UNSIGNED8"] 0]
-
-    set result [Operations::GetNodeIdType $nodeSelect]
-    if {$result == -1} {
-        return $retVal
-    } else {
-        set nodeId $result
-    }
-    # puts "##$nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE"
-
-    set result [openConfLib::GetSubIndexAttribute $nodeId $mappingIndexId $numberOfEntries $::ACTUALVALUE ]
-    # openConfLib::ShowErrorMessage [lindex $result 0]
-    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
-        set pdo_en_totalbytes 0
-        return 0
-    }
-
-    set mappActualValue [lindex $result 1]
-    if {[string match -nocase "0x*" $mappActualValue] } {
-        #remove appended 0x
-        set mappActualValue [string range $mappActualValue 2 end]
-    } else {
-        # no 0x no need to do anything
-    }
-
-    set length [string range $mappActualValue 0 3]
-    set offset [string range $mappActualValue 4 7]
-    set length 0x[NoteBookManager::AppendZero $length 4]
-    set offset 0x[NoteBookManager::AppendZero $offset 4]
-
-    # puts "%% $length : $offset"
-    set pdo_en_totalbytes "[expr $length + $offset]"
-
-    Validation::SetPromptFlag
-
-    return $retVal
 }
 
 #-------------------------------------------------------------------------------
@@ -3022,6 +2951,42 @@ proc Operations::GetNodelistWithName {} {
 }
 
 #-------------------------------------------------------------------------------
+#  Operations::GetIdFromFullText
+#  Arguments: fullText - Which is similar to - 'Name(Id)'.
+#           : type - 0 - Invalid
+#                    1 - NodeID
+#                    2 - ObjectId
+#                    3 - SubObjectId
+#  Description : Returns the ID by parsing the fullText depending on the type supplied.
+#  Returns     : The Id for the given type.
+#-------------------------------------------------------------------------------
+proc Operations::GetIdFromFullText { fullText type} {
+
+    switch -- $type {
+        0 { # Invalid
+            puts "Invalid"
+        }
+        1 { # NodeId
+            set result [regexp {[\(][0-9]+[\)]} $fullText match]
+            #puts "Result: $result match: $match"
+            set locNodeId [string range $match 1 end-1]
+            return $locNodeId
+        }
+        2 { # Object Id
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $fullText match]
+            set locIdxId [string range $match 1 end-1]
+            return $locIdxId
+        }
+        3 { # SubObject Id
+            set result [regexp {[\(]0[xX][0-9a-fA-F]+[\)]} $fullText match]
+            set locSidxId [string range $match 1 end-1]
+            return $locSidxId
+        }
+    }
+    return ""
+}
+
+#-------------------------------------------------------------------------------
 #  Operations::GetNodeIdWithName
 #  Arguments: nodeId
 #  Description : Returns the name of node for the given nodeId in the format (NAME(NODE_ID))
@@ -3030,10 +2995,43 @@ proc Operations::GetNodeIdWithName { nodeId } {
 
     set result [openConfLib::GetNodeParameter $nodeId $::NODENAME]
     if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
-        return ""
+        return "\($nodeId\)"
     }
     set nodeName [lindex $result 1]
     return "$nodeName\($nodeId\)"
+}
+
+#-------------------------------------------------------------------------------
+#  Operations::GetObjectIdWithName
+#  Arguments: nodeId      - ID of the node in hex with 0x prefix (Eg: 0xF0)
+#             objectId    - ID of the object(Index) in hex with 0x prefix (Eg: 0x1600)
+#  Description : Returns the name of object for the given inputs in the format (NAME(ObjectId))
+#-------------------------------------------------------------------------------
+proc Operations::GetObjectIdWithName { nodeId objectId } {
+
+    set result [openConfLib::GetIndexAttribute $nodeId $objectId $::NAME]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        return "\($objectId\)"
+    }
+    set objectName [lindex $result 1]
+    return "$objectName\($objectId\)"
+}
+
+#-------------------------------------------------------------------------------
+#  Operations::GetSubobjectIdWithName
+#  Arguments: nodeId      - ID of the node in hex with 0x prefix (Eg: 0xF0)
+#             objectId    - ID of the object(Index) in hex with 0x prefix (Eg: 0x1600)
+#             subobjectId - ID of the subobject(SubIndex) in hex with 0x prefix (Eg: 0x0A)
+#  Description : Returns the name of subobject for the given inputs in the format (NAME(SubobjectId))
+#-------------------------------------------------------------------------------
+proc Operations::GetSubobjectIdWithName { nodeId objectId subobjectId } {
+
+    set result [openConfLib::GetSubIndexAttribute $nodeId $objectId $subobjectId $::NAME]
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        return "\($subobjectId\)"
+    }
+    set subobjectName [lindex $result 1]
+    return "$subobjectName\($subobjectId\)"
 }
 
 #-------------------------------------------------------------------------------
@@ -3234,11 +3232,11 @@ proc Operations::FuncSubIndexLength {nodeIdparm idxIdparm sidxparm} {
     # puts "Len: nodeIdparm:$nodeIdparm idxIdparm:$idxIdparm sidxparm:$sidxparm"
     #puts "treePath: $treePath"
     list mappingSidxLength
-    set mappingSidxLength ""
+    set mappingSidxLength "0x0000"
     set nodeId ""
 
     set result [openConfLib::GetIndexAttribute $nodeIdparm $idxIdparm $::OBJECTTYPE]
-    openConfLib::ShowErrorMessage [lindex $result 0]
+    # openConfLib::ShowErrorMessage [lindex $result 0]
     if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
         return $mappingSidxLength
     }
