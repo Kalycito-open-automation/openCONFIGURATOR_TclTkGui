@@ -78,29 +78,29 @@ proc NoteBookManager::create_tab { nbpath choice } {
 
     set uf [$sf getframe]
     $uf configure -height 20
-    set tabTitlef0 [TitleFrame $uf.tabTitlef0 -text "Sub Index" ]
+    set tabTitlef0 [TitleFrame $uf.tabTitlef0 -text "Sub-object" ]
     set tabInnerf0 [$tabTitlef0 getframe]
     set tabTitlef1 [TitleFrame $uf.tabTitlef1 -text "Properties" ]
     set tabInnerf1 [$tabTitlef1 getframe]
     set tabInnerf0_1 [frame $tabInnerf0.frame1 ]
 
-    label $tabInnerf0.la_idx     -text "Index  "
+    label $tabInnerf0.la_idx     -text "Object ID  "
     label $tabInnerf0.la_empty1 -text ""
     label $tabInnerf0.la_empty2 -text ""
     label $tabInnerf0.la_nam     -text "Name           "
     label $tabInnerf0.la_empty3 -text ""
     label $tabInnerf0_1.la_generate -text ""
-    label $tabInnerf1.la_obj     -text "Object Type"
+    label $tabInnerf1.la_obj     -text "Object type"
     label $tabInnerf1.la_empty4 -text ""
-    label $tabInnerf1.la_data    -text "Data Type"
+    label $tabInnerf1.la_data    -text "Data type"
     label $tabInnerf1.la_empty5 -text ""
-    label $tabInnerf1.la_access  -text "Access Type"
+    label $tabInnerf1.la_access  -text "Access type"
     label $tabInnerf1.la_empty6 -text ""
     label $tabInnerf1.la_value   -text "Value"
-    label $tabInnerf1.la_default -text "Default Value"
-    label $tabInnerf1.la_upper   -text "Upper Limit"
-    label $tabInnerf1.la_lower   -text "Lower Limit"
-    label $tabInnerf1.la_pdo   -text "PDO Mapping"
+    label $tabInnerf1.la_default -text "Default value"
+    label $tabInnerf1.la_upper   -text "Upper limit"
+    label $tabInnerf1.la_lower   -text "Lower limit"
+    label $tabInnerf1.la_pdo   -text "PDO mapping"
 
     entry $tabInnerf0.en_idx1 -state disabled -width 20
     entry $tabInnerf0.en_nam1 -state disabled -width 20 -textvariable tmpNam$_pageCounter -relief ridge -justify center -bg white -width 30 -validate key -vcmd "Validation::IsValidStr %P"
@@ -113,7 +113,6 @@ proc NoteBookManager::create_tab { nbpath choice } {
     entry $tabInnerf1.en_default1 -state disabled -width 20
     entry $tabInnerf1.en_value1 -width 20 -textvariable tmpValue$_pageCounter  -relief ridge -bg white
     bind $tabInnerf1.en_value1 <FocusOut> "NoteBookManager::ValueFocusChanged $tabInnerf1 $tabInnerf1.en_value1"
-
 
     set frame1 [frame $tabInnerf1.frame1]
     set ra_dec [radiobutton $frame1.ra_dec -text "Dec" -variable ra_dataType -value dec -command "NoteBookManager::ConvertDec $tabInnerf0 $tabInnerf1"]
@@ -166,7 +165,7 @@ proc NoteBookManager::create_tab { nbpath choice } {
     grid remove $ra_dec
     grid remove $ra_hex
     if {$choice == "index"} {
-        $tabTitlef0 configure -text "Index"
+        $tabTitlef0 configure -text "Object"
         $tabTitlef1 configure -text "Properties"
         grid config $tabInnerf0.la_idx -row 0 -column 0 -sticky w
         grid config $tabInnerf0.en_idx1 -row 0 -column 1 -sticky w -padx 0
@@ -180,10 +179,10 @@ proc NoteBookManager::create_tab { nbpath choice } {
         bind $tabInnerf0_1.la_generate <1> "$tabInnerf0_1.ch_gen toggle ; Validation::SetPromptFlag"
         $tabInnerf0_1.la_generate configure -text "Force CDC export"
     } elseif { $choice == "subindex" } {
-        $tabTitlef0 configure -text "Sub Index"
+        $tabTitlef0 configure -text "Sub-object"
         $tabTitlef1 configure -text "Properties"
 
-        label $tabInnerf0.la_sidx -text "Sub Index  "
+        label $tabInnerf0.la_sidx -text "Sub-object ID"
         entry $tabInnerf0.en_sidx1 -state disabled -width 20
 
         grid config $tabInnerf0.la_sidx -row 0 -column 2 -sticky w
@@ -302,7 +301,7 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
     set ra_StMulti  [radiobutton $tabInnerf1.ra_StMulti  -text "Multiplexed station" -variable ra_statType$_pageCounter -value "StMulti" ]
     set ra_StChain  [radiobutton $tabInnerf1.ra_StChain  -text "Chained station"     -variable ra_statType$_pageCounter -value "StChain" ]
 
-    grid config $tabTitlef0 -row 0 -column 0 -sticky ew -ipady 7 ;
+    grid config $tabTitlef0 -row 0 -column 0 -sticky ew -ipady 7
 
     grid config $tabInnerf0.la_align1    -row 0 -column 0 -padx 5
     grid config $tabInnerf0.la_nodeNo    -row 2 -column 1 -sticky w
@@ -320,15 +319,15 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
     grid config $frame1                  -row 6 -column 2 -padx 5
 
     if { $choice == "mn" } {
-        $tabInnerf0.la_time  configure -text "Cycle Time"
+        $tabInnerf0.la_time  configure -text "Cycle time"
 
         $tabInnerf0.tabTitlef1 configure -text "Advanced"
         $tabInnerf0.en_nodeNo configure -state disabled
-        $tabInnerf1.la_advOption4 configure  -text "Loss of SoC Tolerance"
+        $tabInnerf1.la_advOption4 configure  -text "Loss of SoC tolerance"
         $tabInnerf1.la_advOptionUnit4 configure -text "µs"
         $tabInnerf1.la_advOption1 configure -text "Asynchronous MTU size"
         $tabInnerf1.la_advOptionUnit1 configure -text "Bytes"
-        $tabInnerf1.la_advOption2 configure -text "Asynchronous Timeout"
+        $tabInnerf1.la_advOption2 configure -text "Asynchronous timeout"
         $tabInnerf1.la_advOptionUnit2 configure -text "ns"
         $tabInnerf1.la_advOption3 configure -text "Multiplexing prescaler"
 
@@ -362,12 +361,12 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
 
         grid forget $tabInnerf0.en_nodeNo
         grid config $tabInnerf0.sp_nodeNo    -row 2 -column 2 -sticky w -padx 5
-        $tabInnerf0.la_time  configure -text "PollResponse Timeout"
+        $tabInnerf0.la_time  configure -text "PollResponse timeout"
         $tabInnerf0.tabTitlef1 configure -text "Type of station"
 
         set tabTitlef2 [TitleFrame $tabInnerf1.tabTitlef2 -text "Advanced" ]
         set tabInnerf2 [$tabTitlef2 getframe]
-        set ch_adv [checkbutton $tabInnerf2.ch_adv -onvalue 1 -offvalue 0 -command "NoteBookManager::forceCycleChecked $tabInnerf2 ch_advanced" -variable ch_advanced -text "Force Cycle"]
+        set ch_adv [checkbutton $tabInnerf2.ch_adv -onvalue 1 -offvalue 0 -command "NoteBookManager::forceCycleChecked $tabInnerf2 ch_advanced" -variable ch_advanced -text "Force cycle"]
         spinbox $tabInnerf2.sp_cycleNo -state normal -textvariable spCycleNoList$_pageCounter \
             -bg white -width $spinWidth \
             -from 1 -to 239 -increment 1 -justify center
@@ -377,7 +376,7 @@ proc NoteBookManager::create_nodeFrame {nbpath choice} {
         grid config $ra_StChain           -row 2 -column 0 -sticky w -padx 5
         grid config $tabInnerf1.la_empty5 -row 3 -column 0
         grid config $ra_StMulti           -row 4 -column 0 -sticky w -padx 5
-        grid config $tabTitlef2           -row 5 -column 0 -sticky e -columnspan 2 -padx 20;# -ipadx 10
+        grid config $tabTitlef2           -row 5 -column 0 -sticky e -columnspan 2 -padx 20
         grid config $tabInnerf1.la_empty7 -row 7 -column 0
 
         grid config $ch_adv                -row 0 -column 0
@@ -453,10 +452,10 @@ proc NoteBookManager::create_table {nbpath choice} {
     ttk::label $propInFrm.la_emptycol3 -text "      "
     ttk::label $propInFrm.la_comparam -text "Communication parameter"
     ttk::label $propInFrm.la_mapparam -text "Mapping parameter"
-    ttk::label $propInFrm.la_sendto -text "Send to (Node Id)"
+    ttk::label $propInFrm.la_sendto -text "Send to (Node ID)"
     ttk::label $propInFrm.la_numberofentries -text "Number of valid entries"
     ttk::label $propInFrm.la_mapver -text "Mapping version "
-    ttk::label $propInFrm.la_totalbytes -text "Total bytes   "
+    ttk::label $propInFrm.la_totalbytes -text "Total bytes  "
     ttk::label $propInFrm.la_empty3 -text "  "
 
     ttk::combobox $propInFrm.com_sendto
@@ -501,9 +500,9 @@ proc NoteBookManager::create_table {nbpath choice} {
     if {$choice == "pdo"} {
         set st [tablelist::tablelist $st \
             -columns {0 "No" left
-            0 "Index" center
-            0 "Sub Index" center
-            0 "Length" center
+            0 "Object" center
+            0 "Sub-object" center
+            0 "Length (bits)" center
             0 "Offset" center} \
             -setgrid 0 -width 0 \
             -stripebackground gray98 \
@@ -520,8 +519,8 @@ proc NoteBookManager::create_table {nbpath choice} {
     } elseif {$choice == "AUTOpdo"} {
         set st [tablelist::tablelist $st \
             -columns {0 "S.No" left
-            0 "Index" center
-            0 "Sub Index" center
+            0 "Object" center
+            0 "Sub-object" center
             0 "Length" center
             0 "Offset" center} \
             -setgrid 0 -width 0 \
