@@ -381,7 +381,7 @@ proc ChildWindows::AddCNWindow {} {
     }
     $frame1.en_imppath config -state disabled
 
-    button $frame1.bt_imppath -width 8 -text Browse -command {
+    button $frame1.bt_imppath -width 8 -text " Browse... " -command {
         set types {
                 {{XDC/XDD Files} {.xd*} }
                 {{XDD Files}     {.xdd} }
@@ -692,7 +692,7 @@ proc ChildWindows::NewProjectWindow {} {
     $frame2_1.ra_yes select
     ChildWindows::NewProjectMNText $frame2_1.t_desc
 
-    button $frame2_1.bt_imppath -state disabled -width 8 -text Browse -command {
+    button $frame2_1.bt_imppath -state disabled -width 8 -text " Browse... " -command {
         set types {
                 {{XDC/XDD Files} {.xd*} }
                 {{XDD Files}     {.xdd} }
@@ -820,7 +820,7 @@ proc ChildWindows::NewProjectWindow {} {
     $frame1_1.ra_prompt select
     ChildWindows::NewProjectText $frame1_1.t_desc 1
 
-    button $frame1_1.bt_pjpath -width 8 -text Browse -command {
+    button $frame1_1.bt_pjpath -width 8 -text " Browse... " -command {
         set tmpPjtDir [tk_chooseDirectory -title "Project Location" -initialdir $defaultProjectDir -parent .newprj]
         if {$tmpPjtDir == ""} {
             focus .newprj
@@ -863,7 +863,7 @@ proc ChildWindows::NewProjectWindow {} {
         bind $winNewProj <KeyPress-Return> "$frame2_2.bt_next invoke"
     }
 
-    button $frame1_4.bt_cancel -width 8 -text Cancel -command {
+    button $frame1_4.bt_cancel -width 8 -text "Cancel" -command {
         global projectName
         global projectDir
         global st_save
@@ -1023,13 +1023,8 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autog
     image create photo img_mn -file "$image_dir/mn.gif"
     image create photo img_pdo -file "$image_dir/pdo.gif"
 
-    $treePath insert end ProjectNode Network-1 -text "openPOWERLINK_Network" -open 1 -image img_mn
+    $treePath insert end ProjectNode Network-1 -text "POWERLINK" -open 1 -image img_mn
     thread::send [tsv::get application importProgress] "StartProgress"
-
-    set mnName "MN"
-    set mnNodeId 240
-    $treePath insert end Network-1 MN-$mnNodeId -text "$mnName\($mnNodeId\)" -open 1 -image img_mn
-    lappend nodeIdList $mnNodeId
 
     set result [openConfLib::NewProject $pjtName $projectDir $tmpImpDir]
     openConfLib::ShowErrorMessage $result
@@ -1039,6 +1034,20 @@ proc ChildWindows::NewProjectCreate {tmpPjtDir tmpPjtName tmpImpDir tempst_autog
     }
 
 #puts "importing wrapper $Operations::viewType"
+
+
+    set mnNodeId 240
+
+    set result [openConfLib::GetNodeParameter $mnNodeId $::NODENAME]
+    # openConfLib::ShowErrorMessage $result
+    if { [Result_IsSuccessful [lindex $result 0]] != 1 } {
+        set mnName "MN"
+    } else {
+        set mnName [lindex $result 1]
+    }
+
+    $treePath insert end Network-1 MN-$mnNodeId -text "$mnName\($mnNodeId\)" -open 1 -image img_mn
+    lappend nodeIdList $mnNodeId
 
     set result [WrapperInteractions::Import MN-$mnNodeId $mnNodeId]
     thread::send  [tsv::set application importProgress] "StopProgress"

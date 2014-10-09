@@ -727,7 +727,7 @@ proc Operations::RePopulate { projectDir projectName } {
     image create photo img_cn -file "$image_dir/cn.gif"
 
     $treePath insert end root ProjectNode -text $projectName -open 1 -image img_network
-    $treePath insert end ProjectNode Network-1 -text "openPOWERLINK_Network" -open 1 -image img_mn
+    $treePath insert end ProjectNode Network-1 -text "POWERLINK" -open 1 -image img_mn
 
     set result [openConfLib::GetNodes]
     openConfLib::ShowErrorMessage [lindex $result 0]
@@ -830,7 +830,7 @@ proc Operations::BasicFrames { } {
             {command "New &Project..." {} "New Project" {Ctrl n}  -command { Operations::InitiateNewProject } }
             {command "&Open Project..." {}  "Open Project" {Ctrl o} -command { Operations::OpenProjectWindow } }
             {command "&Save Project" {noFile}  "Save Project" {Ctrl s} -command Operations::Saveproject}
-            {command "Save Project as..." {noFile}  "Save Project as" {} -command ChildWindows::SaveProjectAsWindow }
+            {command "Save Project As..." {noFile}  "Save Project As..." {} -command ChildWindows::SaveProjectAsWindow }
             {command "&Close Project" {}  "Close Project" {} -command Operations::InitiateCloseProject }
             {separator}
             {command "E&xit" {}  "Exit openCONFIGURATOR" {Alt x} -command Operations::exit_app}
@@ -900,7 +900,7 @@ proc Operations::BasicFrames { } {
     set Operations::cnMenu [menu  .cnMenu -tearoff 0]
     $Operations::cnMenu add command -label "Replace with XDC/XDD..." -command {Operations::ReImport}
     $Operations::cnMenu add separator
-    $Operations::cnMenu add command -label "Delete" -command {Operations::DeleteTreeNode}
+    $Operations::cnMenu add command -label "Delete Node" -command {Operations::DeleteTreeNode}
 
     set Operations::networkMenu [menu .networkMenu -tearoff 0]
     $Operations::networkMenu add command -label "Add CN..." -command "ChildWindows::AddCNWindow"
@@ -935,21 +935,27 @@ proc Operations::BasicFrames { } {
     set bbox [ButtonBox::create $toolbar.bbox1 -spacing 0 -padx 1 -pady 1]
     set Buttons(new) [ButtonBox::add $bbox -image img_page_white \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-            -helptext "Create new project" -command { Operations::InitiateNewProject }]
+            -helptext "Create New Project" -command { Operations::InitiateNewProject }]
     set Buttons(save) [ButtonBox::add $bbox -image img_disk \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Save Project" -command Operations::Saveproject]
     set Buttons(saveAll) [ButtonBox::add $bbox -image img_disk_multiple \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-            -helptext "Save Project as" -command ChildWindows::SaveProjectAsWindow]
+            -helptext "Save Project As" -command ChildWindows::SaveProjectAsWindow]
+    pack $bbox -side left -anchor w
+
+    set sep0 [Separator::create $toolbar.sep0 -orient vertical]
+    pack $sep0 -side left -fill y -padx 4 -anchor w
+
+    set bbox [ButtonBox::create $toolbar.bbox11 -spacing 0 -padx 1 -pady 1]
     set toolbarButtons(Operations::OpenProjectWindow) [ButtonBox::add $bbox -image img_openfolder \
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
             -helptext "Open Project" -command Operations::OpenProjectWindow]
-
     pack $bbox -side left -anchor w
+
     set prgressindicator 8
-    set sep0 [Separator::create $toolbar.sep0 -orient vertical]
-    pack $sep0 -side left -fill y -padx 4 -anchor w
+    set sep1 [Separator::create $toolbar.sep1 -orient vertical]
+    pack $sep1 -side left -fill y -padx 4 -anchor w
 
     set bbox [ButtonBox::create $toolbar.bbox2 -spacing 1 -padx 1 -pady 1]
     pack $bbox -side left -anchor w
@@ -958,13 +964,13 @@ proc Operations::BasicFrames { } {
             -width 21\
             -helptype balloon\
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-            -helptext "Search Network Browser for text"\
+            -helptext "Search In Network Browser"\
             -command "FindSpace::ToggleFindWin"]
     pack $bb_find -side left -padx 4
     set sep4 [Separator::create $toolbar.sep4 -orient vertical]
     pack $sep4 -side left -fill y -padx 4 -anchor w
 
-    set bbox [ButtonBox::create $toolbar.bbox5 -spacing 1 -padx 1 -pady 1]
+    set bbox [ButtonBox::create $toolbar.bbox5 -spacing 6 -padx 1 -pady 1]
     set bb_build [ButtonBox::add $bbox -image img_build \
             -height 21\
             -width 21\
@@ -978,7 +984,7 @@ proc Operations::BasicFrames { } {
             -width 21\
             -helptype balloon\
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-            -helptext "clean Project"\
+            -helptext "Clean Project"\
             -command "Operations::CleanProject"]
     pack $bbox -side left -anchor w
     set sep2 [Separator::create $toolbar.sep2 -orient vertical]
@@ -991,7 +997,7 @@ proc Operations::BasicFrames { } {
             -width 40\
             -helptype balloon\
             -highlightthickness 0 -takefocus 0 -relief link -borderwidth 1 -padx 1 -pady 1 \
-            -helptext "kalycito" \
+            -helptext "Kalycito Infotech Pvt Ltd" \
             -command Operations::about ]
     pack $bb_kaly -side right  -padx 4
 
