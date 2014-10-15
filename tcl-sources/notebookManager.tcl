@@ -460,7 +460,7 @@ proc NoteBookManager::create_table {nbpath choice} {
 
     ttk::combobox $propInFrm.com_sendto
     ttk::entry $propInFrm.en_numberofentries -width 23 -justify left -validate key -textvariable pdo_en_numberofentries  -validatecommand "NoteBookManager::PDO_NumberOfEntries_EditingFinished %P $propInFrm %d %i UNSIGNED8"
-    ttk::entry $propInFrm.en_mapver -width 20 -textvariable tmpNodeTime$_pageCounter -justify left -validate key -validatecommand "Validation::IsHex %P %s $propInFrm.en_mapver %d %i integer8"
+    ttk::entry $propInFrm.en_mapver -width 20 -textvariable pdo_en_mapver -justify left -validate key -validatecommand "Validation::IsHex %P %s $propInFrm.en_mapver %d %i integer8"
     ttk::entry $propInFrm.en_comparam -state disabled -width 20
     ttk::entry $propInFrm.en_mapparam -state disabled -width 20
     ttk::entry $propInFrm.en_totalbytes -state disabled -width 20 -textvariable pdo_en_totalbytes

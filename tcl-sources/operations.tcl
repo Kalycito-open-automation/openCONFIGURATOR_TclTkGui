@@ -2804,6 +2804,7 @@ proc Operations::ResetGlobalData {} {
     global st_save
     global st_autogen
     global lastRadioVal
+    global lastVideoModeSel
 
     #reset all the globaly maintained values
     set nodeIdList ""
@@ -2823,6 +2824,7 @@ proc Operations::ResetGlobalData {} {
     set st_save 2
     set st_autogen 1
     set lastRadioVal ""
+    set lastVideoModeSel -1
     #no need to reset lastOpenPjt, lastXD, tableSaveBtn, indexSaveBtn and subindexSaveBtn
 
     #no index subindex or pdo table should be displayed
@@ -4614,6 +4616,7 @@ proc Operations::ViewModeChanged {} {
     global projectName
     global lastVideoModeSel
     global st_viewType
+    global status_save
 
     # puts "projectDir:$projectDir projectName:$projectName lastVideoModeSel:$lastVideoModeSel st_viewType:$st_viewType"
 
@@ -4662,6 +4665,7 @@ proc Operations::ViewModeChanged {} {
         set lastVideoModeSel $tempViewType
     }
 
+    set status_save 1
     #remove all the frames
     Operations::RemoveAllFrames
     #rebuild the tree
