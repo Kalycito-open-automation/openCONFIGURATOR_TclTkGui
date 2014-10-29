@@ -1,0 +1,13 @@
+
+[Desktop Entry]
+Version=${CPACK_PACKAGE_VERSION}
+Encoding=UTF-8
+Name=${CPACK_PACKAGE_NAME}
+Type=Application
+GenericName=${CPACK_PACKAGE_NAME}
+Comment=${CPACK_PACKAGE_DESCRIPTION}
+Exec=openconfigurator
+Icon=flair
+Categories=Development;
+GenericName[en_IN]=${CPACK_PACKAGE_NAME}
+Name[en_IN]=${CPACK_PACKAGE_NAME}
