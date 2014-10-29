@@ -69,13 +69,10 @@ set linksDiscussionHelp "http://sourceforge.net/p/openconf/discussion/help/"
 #-------------------------
 #   Source files
 #-------------------------
-#set rootDir [pwd]
+set rootDir [pwd]
 if {"$tcl_platform(platform)" == "windows"} {
-    set rootDir [pwd]
     set platformText "windows"
 } elseif {"$tcl_platform(platform)" == "unix"} {
-    #set rootDir /usr/share/openCONFIGURATOR-$version
-    set rootDir /usr/share/openconfigurator-tcltk
     set platformText "linux"
 }
 
@@ -97,8 +94,6 @@ source [file join $tclSrcDir childWindows.tcl]
 source [file join $tclSrcDir validation.tcl]
 source [file join $tclSrcDir operations.tcl]
 source [file join $tclSrcDir version.tcl]
-
-
 
 if { $argc == 1 && ( $argv == "--version" || $argv == "-V" ) } {
     puts "\nDeveloped by Kalycito Powerlink Team\nopenCONFIGURATOR version $version\n"

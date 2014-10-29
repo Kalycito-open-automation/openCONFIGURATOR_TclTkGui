@@ -1,2 +1,9 @@
 *~
 Thumbs.db
+build/
+resources/txt2cdc*
+./openCONFIGURATOR.sh
+./openCONFIGURATOR.so
+./openCONFIGURATOR.dll
+./linux/libs/openConfiguratorWrapper.so
+./package.info
