@@ -264,35 +264,35 @@ proc Operations::openFILE { path filename } {\
     append file_path "$filename"
     if { [file isfile $file_path] } {
 
-    set fp [open $file_path r]
-    set file_data [read $fp]
-    close $fp
+        set fp [open $file_path r]
+        set file_data [read $fp]
+        close $fp
 
-    set framec [frame $openFileWindow.framec -borderwidth 1 ]
-    set tabTitlef0 [TitleFrame $framec.tabTitlef0 -text "$filename" ]
-    set tabInnerf0 [$tabTitlef0 getframe]
-    set scrollWin [ScrolledWindow $tabInnerf0.scrollWin]
-    pack $scrollWin -fill both -expand 1
-    set sf [ScrollableFrame $scrollWin.sf -height 400 -width 450 -background white]
-    $scrollWin setwidget $sf
-    set uf [$sf getframe]
+        set framec [frame $openFileWindow.framec -borderwidth 1 ]
+        set tabTitlef0 [TitleFrame $framec.tabTitlef0 -text "$filename" ]
+        set tabInnerf0 [$tabTitlef0 getframe]
+        set scrollWin [ScrolledWindow $tabInnerf0.scrollWin]
+        pack $scrollWin -fill both -expand 1
+        set sf [ScrollableFrame $scrollWin.sf -height 400 -width 450 -background white]
+        $scrollWin setwidget $sf
+        set uf [$sf getframe]
 
-    label $uf.word -text "$file_data" -justify left -background white
-    grid config $framec -row 2 -column 0 -columnspan 5 -sticky w -padx 10 -pady 10
-    grid config $tabTitlef0 -row 0 -column 0 -columnspan 5 -sticky w -padx 10 -pady 10
-    grid config $uf.word -row 2 -rowspan 5 -column 0
+        label $uf.word -text "$file_data" -justify left -background white
+        grid config $framec -row 2 -column 0 -columnspan 5 -sticky w -padx 10 -pady 10
+        grid config $tabTitlef0 -row 0 -column 0 -columnspan 5 -sticky w -padx 10 -pady 10
+        grid config $uf.word -row 2 -rowspan 5 -column 0
 
     } else {
-    set frameb [frame $openFileWindow.frameb]
-    label $frameb.title -text "Error"
-    text $frameb.txt -height 3 -width 50 -state disabled -background white
-    $frameb.txt configure -state normal
-    $frameb.txt delete 1.0 end
-    $frameb.txt insert 1.0 "File not found. Please contact the project support team"
-    $frameb.txt configure -state disabled
-    grid config $frameb.txt -row 1 -column 0
-    grid config $frameb -row 1 -column 0 -sticky w -padx 10 -pady 10
-    grid config $frameb.title -row 0 -column 0 -columnspan 2
+        set frameb [frame $openFileWindow.frameb]
+        label $frameb.title -text "Error"
+        text $frameb.txt -height 3 -width 50 -state disabled -background white
+        $frameb.txt configure -state normal
+        $frameb.txt delete 1.0 end
+        $frameb.txt insert 1.0 "File not found. Please contact the project support team"
+        $frameb.txt configure -state disabled
+        grid config $frameb.txt -row 1 -column 0
+        grid config $frameb -row 1 -column 0 -sticky w -padx 10 -pady 10
+        grid config $frameb.title -row 0 -column 0 -columnspan 2
     }
 
     grid config $framea -row 0 -column 0 -sticky w -padx 10 -pady 10
@@ -575,7 +575,10 @@ proc Operations::OpenProjectWindow { } {
     }
 
     set types {
-        {"All Project Files"     {*.xml } }
+        {"openCONFIGURATOR Project Files"     {*.xml *.oct} }
+        {"New Project Files"     {*.xml} }
+        {"Old Project Files"     {*.oct } }
+        {"All Files"     {*} }
     }
 
     if { ![file isdirectory $lastOpenPjt] && [file exists $lastOpenPjt] } {
@@ -593,16 +596,21 @@ proc Operations::OpenProjectWindow { } {
 
     set tempPjtName [file tail $projectfilename]
     set ext [file extension $projectfilename]
-        if {[string compare $ext ".xml"]} {
+    if { ![string compare $ext ".xml"] && ![string compare $ext ".oct"]} {
         set projectDir ""
         tk_messageBox -message "Extension $ext not supported" -title "Open Project Error" -icon error -parent .
         return
     }
 
-    #save the path of opened project
-    set lastOpenPjt $projectfilename
 
-    Operations::openProject $projectfilename
+    if {[string compare $ext ".oct"] == 0 } {
+        ProjectUpgradeWindow::InitConversion $projectfilename
+    } else {
+        #save the path of opened project
+        set lastOpenPjt $projectfilename
+
+        Operations::openProject $projectfilename
+    }
 }
 
 #-------------------------------------------------------------------------------
@@ -905,7 +913,7 @@ proc Operations::BasicFrames { } {
     image create photo img_page_white -file "$image_dir/page_white.gif"
     image create photo img_disk -file "$image_dir/disk.gif"
     image create photo img_disk_multiple -file "$image_dir/disk_multiple.gif"
-    image create photo img_openfolder -file "$image_dir/openfolder.gif"
+    image create photo img_openfolder -file "$image_dir/folder.gif"
     image create photo img_find -file "$image_dir/find.gif"
     image create photo img_build -file "$image_dir/build.gif"
     image create photo img_clean -file "$image_dir/clean.gif"
