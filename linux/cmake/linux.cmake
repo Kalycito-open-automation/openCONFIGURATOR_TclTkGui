@@ -113,6 +113,13 @@ FILE(COPY "${OPENCONF_LINUX_DIR}/libs/${LSB_CODE_NAME}/${CPACK_DEBIAN_PACKAGE_AR
     DESTINATION ${OPENCONF_LINUX_DIR}/libs/
     )
 
+FILE(COPY "${OPENCONF_LINUX_DIR}/libs/${LSB_CODE_NAME}/${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}/project_upgrade.so"
+    DESTINATION ${OPENCONF_TCL_ROOT_DIR}
+    )
+FILE(COPY "${OPENCONF_LINUX_DIR}/libs/${LSB_CODE_NAME}/${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}/project_upgradeWrapper.so"
+    DESTINATION ${OPENCONF_LINUX_DIR}/libs/
+    )
+
 ################################################################################
 # Excludes the files and folders from the repository to create the package
 ################################################################################
@@ -130,9 +137,9 @@ SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME_LOWER}_${CPACK_PACKAGE_VERSION
 # Set all the dependencies for openCONFIGURATOR
 ################################################################################
 IF((${LSB_VER} STREQUAL "14.04") OR (${LSB_VER} STREQUAL "14.10"))
-    SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-filesystem1.54.0, libboost-system1.54.0, tcl, libtcl8.6 (>=8.6.0), tcl8.6 (>=8.6.0-2), tk8.6 (>= 8.6.0-2), libtk8.6 (>= 8.6.0), tcllib, tklib, libxml2 (>=2.7.8), tcl-thread, libstdc++6, libc6, libxss1")
+    SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-filesystem1.54.0, libboost-system1.54.0, tcl, libtcl8.6 (>=8.6.0), tcl8.6 (>=8.6.0-2), tk8.6 (>= 8.6.0-2), libtk8.6 (>= 8.6.0), tcllib, tklib, libxml2 (>=2.7.8), libxml2-utils, tcl-thread, libstdc++6, libc6, libxss1")
 ELSEIF((${LSB_VER} STREQUAL "12.04") OR (${LSB_VER} STREQUAL "10.04"))
-    SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libxss1, tcl8.5 (>=8.5.0-2), tk8.5 (>=8.5.0-1), libxml2 (>=2.7.8), tclthread, libstdc++6, tcllib, tklib")
+    SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libxss1, tcl8.5 (>=8.5.0-2), tk8.5 (>=8.5.0-1), libxml2 (>=2.7.8), libxml2-utils, tclthread, libstdc++6, tcllib, tklib")
 ELSE()
     MESSAGE(FATAL_ERROR "${LSB_ID} - ${LSB_CODE_NAME} - version ${LSB_VER} is not supported!")
 ENDIF()

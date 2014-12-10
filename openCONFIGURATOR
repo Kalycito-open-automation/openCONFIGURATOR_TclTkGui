@@ -87,6 +87,8 @@ set tclSrcDir [file join $rootDir tcl-sources]
 
 tsv::set application rootDir $rootDir
 source [file join $tclSrcDir openConfAPI.tcl]
+source [file join $tclSrcDir openConfProjectUpgradeAPI.tcl]
+source [file join $tclSrcDir projectUpgradeWindow.tcl]
 source [file join $tclSrcDir console.tcl]
 source [file join $tclSrcDir notebookManager.tcl]
 source [file join $tclSrcDir wrapperInteractions.tcl]
@@ -159,7 +161,46 @@ proc LoadOpenConfiguratorLibrary {} {
     }
 }
 
+#------------------------------------------------------------------------------
+# Loads the openCONFIGURATOR project upgrade library using tcl-load
+#------------------------------------------------------------------------------
+proc LoadOpenConfiguratorProjectUpgradeLibrary {} {
+    global libsDir
+    global tcl_platform
 
+    lappend auto_path $libsDir
+
+    if {"$tcl_platform(platform)" == "windows"} {
+        set ::env(Path) $libsDir\;$::env(Path)
+    } elseif {"$tcl_platform(platform)" == "unix"} {
+        # if it is an empty string or doesn't exist, set the LD_LIBRARY_PATH
+        if { ![info exists ::env(LD_LIBRARY_PATH)] || $::env(LD_LIBRARY_PATH) == "" } {
+            set ::env(LD_LIBRARY_PATH) " "
+        }
+        set ::env(LD_LIBRARY_PATH) $libsDir:$::env(LD_LIBRARY_PATH)
+    } else {
+        tk_messageBox -message "openCONFIGURATOR project upgrade libraries are not compiled for $tcl_platform(platform) platform \
+        \nCannot proceed.\nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
+        exit
+    }
+
+    # Loading shared libraries
+    if {"$tcl_platform(platform)" == "windows"} {
+        if {[catch {load project_upgradeWrapper.dll ProjectUpgradeWrapper} errormessage]} {
+            tk_messageBox -message "Error loading shared libraries\nCannot proceed\nConsult the user manual to troubleshoot.\nError: $errormessage" -title Info -icon error
+            exit
+        }
+    } elseif { "$tcl_platform(platform)" == "unix"} {
+        if { [catch {load $libsDir/project_upgradeWrapper.so Projectupgradewrapper} errormessage] } {
+            tk_messageBox -message "Error loading shared libraries\nCannot proceed\nConsult the user manual to troubleshoot.\nError: $errormessage" -title Info -icon error
+            exit
+        }
+    } else {
+        tk_messageBox -message "openCONFIGURATOR project upgrade libraries are not compiled for $tcl_platform(platform) platform \
+        \nCannot proceed.\nContact the forum support page.\nLink: $linksDiscussionHelp" -title Info -icon error
+        exit
+    }
+}
 
 #-------------------------------------------------------------------------------
 #  InitOpenConfigurator
@@ -251,6 +292,7 @@ proc InitOpenConfigurator {argc argv} {
     }
 
     LoadOpenConfiguratorLibrary
+    LoadOpenConfiguratorProjectUpgradeLibrary
 
     $treePath delete end root ProjectNode
     set projectDir ""
