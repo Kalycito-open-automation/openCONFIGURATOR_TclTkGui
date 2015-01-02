@@ -5,9 +5,9 @@
   any POWERLINK network. It ideally complements openPOWERLINK, the open-source 
   POWERLINK protocol stack for master and slave
 
-----------------------------
-      License
-----------------------------
+----------------------------------------------------------
+                        License
+----------------------------------------------------------
     Copyright © 2014 - Kalycito Infotech Private Limited.
     All rights reserved.
 
@@ -34,58 +34,74 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-----------------------------
-    RELEASE NOTE
-----------------------------
-This release V-1.4.0 includes major changes in the GUI and the library on top 
-of version V-1.3.1 in compliance with the openPOWERLINK Specification 
-EPSG DS-301 v1.2.0
+----------------------------------------------------------
+                     RELEASE NOTE
+----------------------------------------------------------
+openCONFIGURATOR 1.4.0 is a major release and introduces a lot of new 
+features and enhancements. These changes include the introduction of 
+a new C++ based API, a project file format and project folder structure.
+A tool for upgrading old projects to the new format is provided as well.
+Boost logging mechanism is introduced to make debugging easier.
 
-----------------------------
-       BEHAVIOR
-----------------------------
-- Currently openCONFIGURATOR version 1.4.0 does not support projects 
-created with earlier versions of openCONFIGURATOR.
-- The API's of openCONFIGURATOR v1.4.0 library are updated and will not support 
-backward compatibility. 
-- Disabled the possibility of adding object / sub-object. The user is not 
-expected to change the XDD/XDC as it should be provided by the device manufacturer.
-- In Windows, it is recommended to use only 32 bit binaries of ActiveTCL 
-version 8.6.
-
-----------------------------
-      FEATURES
-----------------------------
+--------------------------------------------------------
+                     FEATURES
+--------------------------------------------------------
+- New C++ based API and API documentation.
+- New schema-validated project file.
+- New project folder structure.
+- Configuration files are saved as valid XDCs.
+- Introduce boost logging mechanism.
+- Add the source code for the TXT2CDC tool.
 - New PDO mapping properties section for PDO mapping table.
-- Auto calculates the number of valid entries.
-- PDO mapping is made visible in the simple view.
-- The API functions has been updated with new signatures.
-- The binary packaging process is automated with CMake to generate platform dependent packages.
-- Upgrade libxml2 and tablelist packages to the latest stable version.
+- The binary packaging process is automated with CMake to generate 
+platform dependent packages.
+- Pre v1.4.0 project upgrade tool.
 - Validate the XDDs for new nodes before import.
-- Support for IP_ADDRESS data type
-- Application-crash with large process-image
-- Populate object 0x1F9B from MN to all CNs
-- Force to CDC feature
+- Support for IP_ADDRESS data type.
+- Populate object 0x1F9B from MN to all CNs.
+- Force object/sub-object values to CDC.
+- Enable PDO mapping in the simple view.
+- Auto calculates the number of valid mapping entries.
+- Many stability enhancements.
 
-----------------------------
-      BUG FIXES
-----------------------------
-- Avoid deleting sub-object deletion for 1C09,1F26,1F8B,1F8D,1F27,1F84 Objects.
-- Incorrectly calculated PResTimeOut value.
-- Incorrectly calculated number of days in configuration date (0x1F26).
-- MN mapping generation of non existing mapping indices
-- Limit the no. of cross-traffic channels for a CN to feature SPDORPDOChannels value
-- Handle MN PDO generation for non supported DTs
-- Objects with defaultValue != actualValue are not exported
-- Validate non-hex actualValues acc. to their high-/lowLimit
-- Avoid renaming of project file names
-- Non-Unique channel names in xap.xml
-- other stability fixes and help informations.
+--------------------------------------------------------
+                     BUG FIXES
+--------------------------------------------------------
+- Remove the possibility to Add / Delete / change the properties of a 
+Object/Sub-object to avoid unwanted side effects.
+- Avoid sub-object deletion for 1C09,1F26,1F8B,1F8D,1F27,1F84 Objects in 
+the library.
+- Fix incorrectly calculated PResTimeOut value.
+- Fix incorrectly calculated number of days in configuration date (0x1F26).
+- Fix MN mapping generation of non existing mapping indices.
+- Bound the limit of number of cross-traffic channels for a CN to the feature 
+'SPDORPDOChannels' value.
+- Fix application-crash for configurations with large process-images.
+- Fix handling MN PDO generation for non supported data types.
+- Fix objects with defaultValue not equal actualValue are not exported.
+- Validate non-hex actualValues according to their high/lowLimit.
+- Avoid renaming of project file names.
+- Fix Non-Unique channel names in xap.xml.
+- Many small stability fixes and help informations.
 
-------------------------------
-  KNOWN ISSUES and WORK AROUND
-------------------------------
+--------------------------------------------------------
+              BACKWARD COMPATIBILITY
+--------------------------------------------------------
+- The API is not backward compatible to older versions of openCONFIGURATOR.
+- The projects created with v1.4.0 cannot be opened by older version of 
+openCONFIGURATOR.
+
+--------------------------------------------------------
+                 LIBRARY UPGRADES
+--------------------------------------------------------
+- Upgrade the linked TCL library version to 8.6.x on Windows and Ubuntu 
+14.04 32 and 64 bit platforms.
+- Upgrade libxml2 and tablelist packages to the latest stable version.
+- Add Boost v1.54.0 library dependency.
+
+------------------------------------------------------------
+              KNOWN ISSUES and WORK AROUND
+------------------------------------------------------------
 - Currently projects created with earlier versions of openCONFIGURATOR are not supported.
 - In Windows only 32 bit is supported, install only Tcl/Tk 32 bit version
 - The PDO mapping table does not auto calculate datasize for the complex datatypes.
@@ -100,9 +116,9 @@ version 8.6.
     2) Create the CN and MN mapping with the required values.
     3) Build the project to generate the CDC.
 
-------------------------------
-          SUPPORT
-------------------------------
+------------------------------------------------------------
+                      SUPPORT
+------------------------------------------------------------
 - Refer the user-manual inside the package 'docs' directory.
 - For more information and help on using openCONFIGURATOR, please post us on the 
   help forum at http://sourceforge.net/p/openconf/discussion/help/
