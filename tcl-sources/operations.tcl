@@ -860,7 +860,7 @@ proc Operations::BasicFrames { } {
         "&Help" {} {} 0 {
        {command "&Getting Started" {noFile} "Quick start guide" {} -command "Operations::OpenDocument 2 QuickStartGuide.pdf" }
        {command "User &Manual       F1" {noFile} "User manual    F1" {} -command "Operations::OpenDocument 2 UserManual.pdf" }
-       {command "&Release Note" {noFile} "Release note" {} -command "Operations::openFILE 1 ReleaseNote.txt" }
+       {command "&Release Note" {noFile} "Release note" {} -command "Operations::openFILE 1 Readme.txt" }
        {separator}
        {command "&Online Support" {noFile} "Online Support" {} -command "Operations::LocateUrl http://sourceforge.net/p/openconf/discussion/" }
        {separator}
