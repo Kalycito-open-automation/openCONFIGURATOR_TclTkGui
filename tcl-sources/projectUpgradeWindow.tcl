@@ -39,7 +39,9 @@ namespace eval ProjectUpgradeWindow {
 #               octProjectFile - Path of the project file.
 #-------------------------------------------------------------------------------
 proc ProjectUpgradeWindow::InitConversion { octProjectFile } {
+     global previousXddPath
 
+    set previousXddPath ""
     set result [tk_messageBox -message "It is detected that this project has been created with old versions of openCONFIGURATOR.\nDo you want to upgrade it to the new format?" -type yesno -icon question -title "Question" -parent .]
     switch -- $result {
          yes {
@@ -363,6 +365,7 @@ proc ProjectUpgradeWindow::CreateXddSelectFrame { tbl row col w } {
 #-------------------------------------------------------------------------------
 proc ProjectUpgradeWindow::ChooseInputXdd { tbl row col w key } {
     global rootDir
+    global previousXddPath
 
     set nodeId [$tbl cellcget $row,0 -text]
     set nodeName [$tbl cellcget $row,1 -text]
@@ -374,7 +377,12 @@ proc ProjectUpgradeWindow::ChooseInputXdd { tbl row col w key } {
         {"XML Device Configuration Files"   {*.xdc } }
     }
 
-    set inputXdd [tk_getOpenFile -title "Choose the XDD for $nodeName\($nodeId\) " -initialdir $rootDir -filetypes $types -parent .]
+    # Book keep the path of the already chosen XDD/XDC.
+    set previousXddPath [expr {$previousXddPath ne "" ? $previousXddPath : $rootDir}]
+
+    set inputXdd [tk_getOpenFile -title "Choose the XDD/XDC for $nodeName\($nodeId\) " -initialdir $previousXddPath -filetypes $types -parent .]
+
+    set previousXddPath [expr {$inputXdd ne "" ? [file dirname $inputXdd] : $previousXddPath}]
 
     # Validate input XDD inside the library
     set result [openConfProjectUpgradeLib::SetXddPath $nodeId $inputXdd]

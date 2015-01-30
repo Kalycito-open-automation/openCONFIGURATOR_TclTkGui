@@ -1527,12 +1527,12 @@ proc Operations::SingleClickNode {node} {
         if {[string match "TPDONode-*" $node] } {
             set commParam "18"
             set mappParam "1A"
-            $propertyFrame.la_sendto configure -text "Send to (Node Id)"
+            $propertyFrame.la_sendto configure -text "Send to (Node ID)"
         } else {
             #must be RPDO
             set commParam "14"
             set mappParam "16"
-            $propertyFrame.la_sendto configure -text "Receive from (Node Id)"
+            $propertyFrame.la_sendto configure -text "Receive from (Node ID)"
         }
         set commParamList ""
         set mappParamList ""
