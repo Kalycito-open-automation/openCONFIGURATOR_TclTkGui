@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xs:schema elementFormDefault="qualified" targetNamespace="http://sourceforge.net/projects/openconf/configuration"
     xmlns:oc="http://sourceforge.net/projects/openconf/configuration"
     xmlns:ppc="http://ethernet-powerlink.org/POWERLINK" xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -9,7 +9,7 @@
         <xs:annotation>
             <xs:documentation xml:lang="en"> The openCONFIGURATOR project configuration represents a configured
                 POWERLINK network. </xs:documentation>
-        </xs:annotation>        
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" name="Generator" type="oc:tGenerator" />
@@ -278,7 +278,21 @@
         <xs:annotation>
             <xs:documentation xml:lang="en">An abstract type for a POWERLINK node (MN or CN). </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="name" type="ppc:tNonEmptyString" />        
+		<xs:sequence>
+			<xs:element name="ForcedObjects" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					Persists the configuration objects which are forced to the POWERLINK configuration.
+				</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence minOccurs="1" maxOccurs="unbounded">
+						<xs:element ref="oc:Object"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+        <xs:attribute name="name" type="ppc:tNonEmptyString" />
         <xs:attribute name="isAsyncOnly" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation xml:lang="en"> "True" -> AsyncOnly node. "False" -> Isochonrously accessed node. See
@@ -407,11 +421,11 @@
                     <xs:annotation>
                         <xs:documentation  xml:lang="en">
                             Pathname in UNIX-Style (forward slashes).
-                            Optional for MNs to support EPSG DS 302-A (High Availability). 
+                            Optional for MNs to support EPSG DS 302-A (High Availability).
                             For High Availability, the MN-element contains a list of references (RMNList) to CN-elements which represent the redundant MNs.
                         </xs:documentation>
                     </xs:annotation>
-                    <xs:simpleType>                        
+                    <xs:simpleType>
                         <xs:restriction base="xs:anyURI">
                             <xs:minLength value="1" />
                         </xs:restriction>
@@ -449,5 +463,13 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-
+	<xs:element name="Object">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">One object that is forced to the configuration defined by index and subindex.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="index" type="ppc:tParameterIndex"/>
+			<xs:attribute name="subindex" type="ppc:tParameterSubIndex" use="optional"/>
+		</xs:complexType>
+	</xs:element>
 </xs:schema>
