@@ -118,6 +118,7 @@ proc openConfLib::IsExistingNode { nodeId } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_boolpointer $existsTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -141,6 +142,7 @@ proc openConfLib::GetNodeCount { } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_uintpointer $nodeCountTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -177,6 +179,7 @@ proc openConfLib::GetNodeParameter { nodeId param  } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_stringpointer $valueTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -200,6 +203,7 @@ proc openConfLib::GetDataTypeSize { type } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_uintpointer $sizeTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -223,6 +227,7 @@ proc openConfLib::GetFeatureValue { nodeId feature  } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_stringpointer $valueTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -322,6 +327,7 @@ proc openConfLib::GetPath { id } {
     lappend retVal $result
     lappend retVal $path
 
+    delete_stringpointer $pathTemp
     openConfLib::PrintText "path: $path"
 
     return $retVal
@@ -370,6 +376,7 @@ proc openConfLib::GetActiveAutoCalculationConfig {  } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_stringpointer $idTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -406,6 +413,7 @@ proc openConfLib::GetViewSetting { viewType name } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_stringpointer $tempValueStr
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -457,6 +465,7 @@ proc openConfLib::GetActiveView { } {
 
     openConfLib::PrintText "value: $value"
 
+    delete_ViewTypep $viewTypeTemp
     return $retVal
 }
 
@@ -529,6 +538,7 @@ proc openConfLib::GetIndexAttribute { nodeId index attributeType } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_stringpointer $tempAttributeValue
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -552,6 +562,7 @@ proc openConfLib::GetSubIndexAttribute { nodeId index subIndex attributeType } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_stringpointer $tempAttributeValue
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -575,6 +586,7 @@ proc openConfLib::IsExistingIndex { nodeId index } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_boolpointer $existsTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -598,6 +610,7 @@ proc openConfLib::IsExistingSubIndex { nodeId index subIndex } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_boolpointer $existsTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -621,6 +634,7 @@ proc openConfLib::GetIndexCount { nodeId } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_uintpointer $indexCountTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -644,6 +658,7 @@ proc openConfLib::GetSubIndexCount { nodeId index } {
     lappend retVal $result
     lappend retVal $value
 
+    delete_uintpointer $subIndexCountTemp
     openConfLib::PrintText "value: $value"
 
     return $retVal
@@ -698,6 +713,8 @@ proc openConfLib::GetNodes { } {
         lappend nodeidlist [UIntVector_get $nodeIdlistTemp $inc]
     }
     lappend retVal $nodeidlist
+
+    delete_UIntVector $nodeIdlistTemp
     openConfLib::PrintText "No:$noOfElements value:$nodeidlist"
 
     return $retVal
@@ -729,6 +746,8 @@ proc openConfLib::GetIndices { nodeId } {
         lappend indexList [UIntVector_get $indexListTemp $inc]
     }
     lappend retVal $indexList
+
+    delete_UIntVector $indexListTemp
     openConfLib::PrintText "No:$noOfElements value:$indexList"
 
     return $retVal
@@ -760,6 +779,8 @@ proc openConfLib::GetSubIndices { nodeId indexId } {
         lappend indexList [UIntVector_get $subIndexListTemp $inc]
     }
     lappend retVal $indexList
+
+    delete_UIntVector $subIndexListTemp
     openConfLib::PrintText "No:$noOfElements value:$indexList"
 
     return $retVal
