@@ -542,7 +542,7 @@ proc NoteBookManager::create_table {nbpath choice} {
 
     $scrollWin setwidget $st
     pack $st -fill both -expand true -side top
-    $st configure -height 4 -width 40 -stretch all
+    $st configure -height 4 -width 40 -stretch {1 2}
 
     set fram [ frame $frmPath.f1 ]
     label $fram.la_empty -text "  " -height 1
