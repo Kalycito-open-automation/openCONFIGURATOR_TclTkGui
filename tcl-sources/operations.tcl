@@ -1862,6 +1862,10 @@ proc Operations::SingleClickNode {node} {
         }
     }
 
+    if { [string match -nocase "ARRAY" [lindex $IndexProp 1] ] ||  [string match -nocase "RECORD" [lindex $IndexProp 1] ] } {
+        $tmpInnerf0.frame1.ch_gen configure -state disabled
+    }
+
     #for index less than 2000 only name and value can be edited
     $tmpInnerf0.en_nam1 configure -validate none -state normal
     $tmpInnerf0.en_nam1 delete 0 end
